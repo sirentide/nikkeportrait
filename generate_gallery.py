@@ -126,7 +126,7 @@ for filename in os.listdir(folder_path):
 
         html_template += f"""
     <div class="photo" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}" data-name="{characterName}">
-        <img src="{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
+        <img src="image\{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
     </div>
 """
 
