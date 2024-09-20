@@ -1,0 +1,70 @@
+.filter-buttons {
+    display: flex;
+    flex-direction: column;  /* Stack filter groups vertically */
+    gap: 0.5rem;  /* Space between filter groups */
+}
+
+.filter-buttons > div {
+    display: flex;
+    align-items: center; /* Center items vertically */
+}
+
+h4 {
+    margin-right: 2rem; /* Space between title and checkboxes */
+    margin-left: 30.5rem; /* Space between title and checkboxes */
+    margin-bottom: 0;   /* No bottom margin to avoid extra space */
+    white-space: nowrap; /* Prevent wrapping */
+    align-items: center; /* Center items vertically */
+    width: 100px; /* Fixed width for consistent alignment */
+}
+
+label {
+    display: flex;
+    align-items: center;  /* Center checkbox and label text vertically */
+    margin-top: 1.5rem;   /* No bottom margin to avoid extra space */
+    margin-right: 10px;  /* Space between labels */
+}
+
+/* Optional: Make all checkboxes have the same width for uniformity */
+label input {
+    margin-right: 5px; /* Space between checkbox and text */
+}
+
+button {
+    width: auto; /* Set width to auto to shrink to content size */
+    max-width: 150px; /* Optional: Set a maximum width */
+    font-size: 14px; /* Adjust font size */
+    padding: 5px 10px; /* Reduce padding */
+    margin-top: 10px; /* Add space above */
+    margin-left: auto; /* Center it horizontally if in flex container */
+    margin-right: auto; /* Center it horizontally if in flex container */
+    display: block; /* Make it a block element for centering */
+    background-color: #444; /* Ensure color matches your theme */
+    border-radius: 3px; /* Slightly round corners */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+button:hover {
+    background-color: #666; /* Change on hover */
+}
+
+
+
+#searchInput {
+    font-size: 14px; /* Adjust font size */
+    padding: 5px; /* Reduce padding */
+    width: 200px; /* Set a fixed width */
+    margin-left: auto; /* Center it horizontally if in flex container */
+    margin-right: auto; /* Center it horizontally if in flex container */
+    display: block; /* Make it a block element for centering */
+}
+
+h3 {
+    text-align: center; /* Center the text */
+    margin: 10px 0; /* Adjust top and bottom margin */
+}
+
+#gallery {
+    margin-left: auto; /* Center it horizontally if in flex container */
+    margin-right: auto; /* Center it horizontally if in flex container */
+}
