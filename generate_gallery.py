@@ -129,9 +129,10 @@ for filename in os.listdir(folder_path):
         # Update HTML template with image and data attributes
         html_template += f"""
     <div class="photo" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}" data-name="{characterName}">
-        <img src="{folder_path}{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
+        <img src="image/{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
     </div>
 """
+
 
 
 
