@@ -74,7 +74,8 @@
         <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
         <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
     </div>
-    <button onclick="resetFilters()">Show All</button>
+    <button onclick="toggleShowHide()">Show All</button>
+    <button onclick="hideAll()">Hide All</button>
 </div>
 
 
@@ -782,26 +783,12 @@ function toggleImageSelection(imgElement) {
             event.dataTransfer.effectAllowed = "move";
         };
 
-        // Placeholder for drag-and-drop
-        let placeholder = document.createElement('div');
-        placeholder.style.height = "100px"; // Match the height of your images
-        placeholder.style.backgroundColor = "rgba(0, 0, 255, 0.3)"; // Light blue color
-        placeholder.style.margin = "5px 0"; // Spacing
-        placeholder.style.display = "none"; // Initially hidden
-        selectedContainer.appendChild(placeholder);
-
         selectedContainer.ondragover = function(event) {
             event.preventDefault(); // Prevent default to allow drop
-            placeholder.style.display = "block"; // Show placeholder
-        };
-
-        selectedContainer.ondragleave = function() {
-            placeholder.style.display = "none"; // Hide placeholder when leaving
         };
 
         selectedContainer.ondrop = function(event) {
             event.preventDefault();
-            placeholder.style.display = "none"; // Hide placeholder after drop
             const draggedImgSrc = event.dataTransfer.getData("text/plain");
             const draggedImg = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === draggedImgSrc);
 
@@ -826,31 +813,6 @@ function toggleImageSelection(imgElement) {
             }
         };
 
-        selectedContainer.onmousemove = function(event) {
-            // Show the placeholder where the mouse is located
-            const targetImg = document.elementFromPoint(event.clientX, event.clientY);
-            if (targetImg && targetImg.tagName === "IMG") {
-                const rect = targetImg.getBoundingClientRect();
-                const offset = event.clientY - rect.top;
-
-                // Position the placeholder
-                if (offset < rect.height / 2) {
-                    placeholder.style.display = "block";
-                    selectedContainer.insertBefore(placeholder, targetImg.parentElement);
-                } else {
-                    const nextElement = targetImg.parentElement.nextElementSibling;
-                    placeholder.style.display = "block";
-                    if (nextElement) {
-                        selectedContainer.insertBefore(placeholder, nextElement);
-                    } else {
-                        selectedContainer.appendChild(placeholder);
-                    }
-                }
-            } else {
-                placeholder.style.display = "none"; // Hide if not over an image
-            }
-        };
-
         // Add click event to remove from selection
         selectedImg.onclick = function() {
             imgElement.classList.remove('selected');  // Unselect the original image
@@ -867,12 +829,52 @@ function toggleImageSelection(imgElement) {
 
 
 
-    function resetFilters() {
-        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
+
+   // Function to show or hide all images
+let showAll = true; // Set to true to indicate that images are hidden by default
+
+// Function to toggle between showing and hiding all images
+function toggleShowHide() {
+    const photos = document.querySelectorAll('.photo');
+
+    // Toggle display based on the current state
+    if (showAll) {
+        photos.forEach(photo => {
+            photo.style.display = 'flex'; // Show all photos
         });
-        updateFilters();
+        showAll = false;
+    } else {
+        photos.forEach(photo => {
+            photo.style.display = 'none'; // Hide all photos
+        });
+        showAll = true;
     }
+}
+
+// Function to hide all images
+function hideAll() {
+    const photos = document.querySelectorAll('.photo');
+    photos.forEach(photo => {
+        photo.style.display = 'none'; // Hide all photos
+    });
+    showAll = true; // Reset state so "Show All" can be clicked to show photos
+}
+
+// Function to reset filters and show all photos
+function resetFilters() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateFilters();
+    showAll = false; // Reset state so the "Show All" button will work correctly
+}
+
+// Hide all images on page load
+window.onload = function() {
+    hideAll(); // Call hideAll function to hide all images by default
+};
+
+
 
     sortImages();
 </script>
