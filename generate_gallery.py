@@ -1,13 +1,14 @@
 import os
 
-# Define the path to your image folder
-folder_path = 'E:/Coding/nikkesportrait/image/'
+# Define the folder where the images are stored relative to the script's location
+# Use relative paths instead of absolute ones
+current_dir = os.path.dirname(__file__)  # Get the directory of the current script
+folder_path = os.path.join(current_dir, 'image')  # This assumes 'image' folder is at the same level as the script
 
 # Check if the folder exists
 if not os.path.exists(folder_path):
     print(f"Folder does not exist: {folder_path}")
     exit()
-
     
 
 # Initialize the HTML template
