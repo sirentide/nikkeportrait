@@ -1,7 +1,7 @@
 import os
 
 # Define the path to your image folder
-folder_path = r"E:\Coding\mynikkes\image"  # Update this path
+folder_path = 'E:/Coding/nikkesportrait/image/'
 
 # Check if the folder exists
 if not os.path.exists(folder_path):
@@ -124,11 +124,17 @@ for filename in os.listdir(folder_path):
 
         print(f"Extracted: Faction: {faction}, Rarity: {rarity}, Type: {type_}, Position: {position}, Weapon: {weapon_type}, Character: {characterName}")
 
+        # Update HTML template with image and data attributes
         html_template += f"""
     <div class="photo" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}" data-name="{characterName}">
-        <img src="image\{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
+        <img src="{folder_path}{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
     </div>
 """
+
+
+
+print(f"Image Path: {os.path.join(folder_path, filename)}")
+
 
 
 
@@ -402,8 +408,8 @@ function toggleImageSelection(imgElement) {
 """
 
 # Save the HTML to a file
-output_path = os.path.join(folder_path, 'photo_gallery.html')
+output_path = 'E:/Coding/nikkesportrait/index.html'
 with open(output_path, 'w', encoding='utf-8') as file:
     file.write(html_template)
 
-print(f"HTML file generated successfully at: {output_path}")
+print(f"HTML file generated successfully at: {output_path}")    
