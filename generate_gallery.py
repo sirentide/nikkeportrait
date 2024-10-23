@@ -87,19 +87,25 @@ html_template = """
         <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
         <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
         <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
-    </div>
-    <button onclick="toggleShowHide()">Show All</button>
-    <button onclick="hideAll()">Hide All</button>
+        </div>
+</div>
+    
+<div class="sort-controls">
+    <button id="showHideButton" onclick="toggleShowHide()">Show All</button>
+    
+    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
+    
+    <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
 </div>
 
 
 
 
-<div class="filter-buttons">
+    <div class="filter-buttons">
     <!-- Existing filter sections -->
     <h3>Search by Name:</h3>
     <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-</div>
+    </div>
 
 
 
@@ -113,25 +119,27 @@ for filename in os.listdir(folder_path):
         print(f"Processing file: {filename}")
 
         parts = filename.replace('.webp', '').split('_')
-        if len(parts) < 6:
+        if len(parts) < 7:  # Expecting 7 parts with the number included
             print(f"Skipping file with unexpected format: {filename}")
             continue
         
-        faction = parts[0].lower()
-        rarity = parts[1].lower()
-        type_ = parts[2].lower()
-        position = parts[3].lower()
-        weapon_type = parts[4].lower()
-        characterName = parts[5]  # Assuming the character name is the last part
+        number = parts[0]  # First part is the number
+        faction = parts[1].lower()
+        rarity = parts[2].lower()
+        type_ = parts[3].lower()
+        position = parts[4].lower()
+        weapon_type = parts[5].lower()
+        characterName = parts[6]  # Assuming the character name is the last part
 
-        print(f"Extracted: Faction: {faction}, Rarity: {rarity}, Type: {type_}, Position: {position}, Weapon: {weapon_type}, Character: {characterName}")
+        print(f"Extracted: Number: {number}, Faction: {faction}, Rarity: {rarity}, Type: {type_}, Position: {position}, Weapon: {weapon_type}, Character: {characterName}")
 
         # Update HTML template with image and data attributes
         html_template += f"""
-    <div class="photo" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}" data-name="{characterName}">
+    <div class="photo" data-number="{number}" data-name="{characterName}" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}">
         <img src="image/{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
     </div>
-"""
+    """
+
 
 
 
@@ -263,21 +271,85 @@ selectedContainer.onmouseleave = function() {
     placeholder.style.display = "none"; // Hide when mouse leaves the container
 };
 
+let sortOrder = 'name'; // Default sort order
+let sortDirection = 'asc'; // Default sort direction
+let currentSortCriteria = 'name'; // Default sort criteria
+let currentSortOrder = 'asc'; // Default sort order
+
+function toggleSortCriteria() {
+    // Toggle between 'name' and 'number'
+    if (currentSortCriteria === 'name') {
+        currentSortCriteria = 'number';
+        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen';
+    } else {
+        currentSortCriteria = 'name';
+        document.getElementById('sortToggle').innerText = 'Sort by Name';
+    }
+    sortImages(); // Call your sort function after toggling
+}
+
+function toggleSortOrder() {
+    // Toggle between 'asc' and 'desc'
+    if (currentSortOrder === 'asc') {
+        currentSortOrder = 'desc';
+        document.getElementById('orderToggle').innerText = 'Highest';
+    } else {
+        currentSortOrder = 'asc';
+        document.getElementById('orderToggle').innerText = 'Lowest';
+    }
+    sortImages(); // Call your sort function after toggling
+}
+
+function toggleSortCriteria() {
+    // Toggle between 'name' and 'number'
+    if (currentSortCriteria === 'name') {
+        currentSortCriteria = 'number';
+        document.getElementById('sortToggle').innerText = 'Sort by Name';
+    } else {
+        currentSortCriteria = 'name';
+        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen';
+    }
+    sortImages(); // Call your sort function after toggling
+}
+
 function sortImages() {
     const photosArray = Array.from(document.querySelectorAll('.photo'));
+
     photosArray.sort((a, b) => {
-        const nameA = a.getAttribute('data-name').toLowerCase(); // Adjust to extract name correctly
-        const nameB = b.getAttribute('data-name').toLowerCase();
-        return nameA.localeCompare(nameB); // Compare the names
+        let comparison = 0;
+        if (currentSortCriteria === 'name') {
+            const nameA = a.getAttribute('data-name').toLowerCase();
+            const nameB = b.getAttribute('data-name').toLowerCase();
+            comparison = nameA.localeCompare(nameB);
+        } else if (currentSortCriteria === 'number') {
+            const numberA = parseInt(a.getAttribute('data-number'), 10);
+            const numberB = parseInt(b.getAttribute('data-number'), 10);
+            comparison = numberA - numberB; // Sort by actual number
+        }
+
+        // Reverse comparison if descending
+        return currentSortOrder === 'asc' ? comparison : -comparison;
     });
 
     const gallery = document.querySelector('.gallery');
-    gallery.innerHTML = ''; // Clear the current gallery
-    photosArray.forEach(photo => gallery.appendChild(photo)); // Re-append sorted photos
+    gallery.innerHTML = ''; // Clear current images
+    photosArray.forEach(photo => gallery.appendChild(photo)); // Add sorted photos back
 }
 
-// Call this function on page load to sort by default
-window.onload = sortImages;
+
+// Function to set the sort order
+function setSortOrder(order) {
+    sortOrder = order; // Set the sort order
+    sortImages(); // Sort images after setting order
+}
+
+// Function to set the sort direction
+function setSortDirection(direction) {
+    sortDirection = direction; // Set the sort direction
+    sortImages(); // Sort images after setting direction
+}
+
+
 
 
 function toggleImageSelection(imgElement) {
@@ -379,6 +451,8 @@ function toggleShowHide() {
     }
 }
 
+
+
 // Function to hide all images
 function hideAll() {
     const photos = document.querySelectorAll('.photo');
@@ -406,6 +480,9 @@ window.onload = function() {
 
     sortImages();
 </script>
+
+
+
 
 </body>
 </html>
