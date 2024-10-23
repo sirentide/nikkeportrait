@@ -89,7 +89,7 @@ html_template = """
         <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
         </div>
     <div>
-    <button id="showHideButton" onclick="toggleShowHide()">Show All</button>
+    <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
 </div>
     
 <div class="sort-controls">
