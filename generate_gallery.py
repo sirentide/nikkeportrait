@@ -88,26 +88,20 @@ html_template = """
         <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
         <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
         </div>
+    <div>
+    <button id="showHideButton" onclick="toggleShowHide()">Show All</button>
 </div>
     
 <div class="sort-controls">
-    <button id="showHideButton" onclick="toggleShowHide()">Show All</button>
-    
-    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
-    
-    <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
+    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
+    <button id="orderToggle" onclick="toggleSortOrder()">Highest</button>
 </div>
-
-
-
 
     <div class="filter-buttons">
     <!-- Existing filter sections -->
     <h3>Search by Name:</h3>
     <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
     </div>
-
-
 
 <div class="gallery">
 """
@@ -280,10 +274,10 @@ function toggleSortCriteria() {
     // Toggle between 'name' and 'number'
     if (currentSortCriteria === 'name') {
         currentSortCriteria = 'number';
-        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen';
+        document.getElementById('sortToggle').innerText = 'Sort by Name'; //Sort by Name
     } else {
         currentSortCriteria = 'name';
-        document.getElementById('sortToggle').innerText = 'Sort by Name';
+        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen'; //Sort by Burst Gen
     }
     sortImages(); // Call your sort function after toggling
 }
@@ -292,10 +286,10 @@ function toggleSortOrder() {
     // Toggle between 'asc' and 'desc'
     if (currentSortOrder === 'asc') {
         currentSortOrder = 'desc';
-        document.getElementById('orderToggle').innerText = 'Highest';
+        document.getElementById('orderToggle').innerText = 'Lowest'; //Lowest
     } else {
         currentSortOrder = 'asc';
-        document.getElementById('orderToggle').innerText = 'Lowest';
+        document.getElementById('orderToggle').innerText = 'Highest'; //Highest
     }
     sortImages(); // Call your sort function after toggling
 }

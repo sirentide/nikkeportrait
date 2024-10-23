@@ -69,38 +69,24 @@ h3 {
     margin-right: auto; /* Center it horizontally if in flex container */
 }
 
-.sort-container {
-    display: flex;              /* Use flexbox for alignment */
-    justify-content: center;    /* Center buttons horizontally */
-    margin-top: 20px;          /* Space above each container */
+.sort-controls {
+    display: flex;               /* Use flexbox for alignment */
+    justify-content: center;     /* Center buttons horizontally */
+    align-items: center;         /* Center items vertically */
+    margin-top: 10px;           /* Space above the container */
 }
 
-.sort-container button {
-    margin: 5px;               /* Space between buttons */
-    padding: 10px 20px;        /* Padding for better clickability */
-    background-color: #444;    /* Dark gray background */
-    color: #fff;               /* White text */
-    border: none;              /* No border */
-    border-radius: 5px;       /* Rounded corners */
-    cursor: pointer;           /* Pointer cursor */
+.sort-controls button {
+    margin: 0 5px;              /* Small horizontal space between buttons */
+    padding: 5px 10px;          /* Adjust padding for a more compact button */
+    background-color: #444;     /* Dark gray background */
+    color: #fff;                /* White text */
+    border: none;               /* No border */
+    border-radius: 5px;        /* Rounded corners */
+    cursor: pointer;            /* Pointer cursor */
     transition: background-color 0.3s; /* Smooth transition */
 }
 
-.sort-container button:hover {
-    background-color: #666;    /* Change background on hover */
-}
-
-/* Add flex properties to the button containers */
-.sort-controls {
-    display: flex;              /* Use flexbox for controls */
-    justify-content: center;    /* Center items horizontally */
-    align-items: center;        /* Center items vertically */
-    flex-direction: row;        /* Arrange buttons in a row */
-    flex-wrap: wrap;           /* Allow wrapping to next line if needed */
-    margin: 5px 0;             /* Space above and below each control */
-}
-
-.sort-controls label {
-    margin-right: 10px;        /* Space between label and button */
-    text-align: center;         /* Center label text */
+.sort-controls button:hover {
+    background-color: #666;     /* Change background on hover */
 }
