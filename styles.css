@@ -90,3 +90,37 @@ h3 {
 .sort-controls button:hover {
     background-color: #666;     /* Change background on hover */
 }
+
+/* Flexbox container */
+.button-container {
+    display: flex;               /* Enable Flexbox */
+    justify-content: center;     /* Center horizontally */
+    align-items: center;         /* Center vertically */
+    height: 17vh;              /* Full viewport height for vertical centering */
+}
+
+/* Style for the load button */
+#loadButton {
+    background-color: #4CAF50; /* Green background */
+    border: none;              /* No border */
+    color: white;              /* White text */
+    padding: 10px 20px;       /* Padding for spacing */
+    text-align: center;        /* Center text */
+    text-decoration: none;     /* No underline */
+    display: inline-block;     /* Inline block for spacing */
+    font-size: 16px;           /* Increase font size */
+    margin: 4px 2px;          /* Margin for spacing */
+    cursor: pointer;           /* Pointer cursor on hover */
+    border-radius: 5px;       /* Rounded corners */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+/* Hover effect */
+#loadButton:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+/* Optional: Style for the file input (hidden) */
+#loadFileInput {
+    display: none; /* Hide the file input */
+}

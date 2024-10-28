@@ -90,6 +90,18 @@
     <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
     </div>
 
+    <div>
+    <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
+</div>
+
+<div class="button-container">
+<div>
+    <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
+    <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
+    <button id="copyURLButton" onclick="copyURL()">Copy Shareable URL</button>
+</div>
+</div>
+
 <div class="gallery">
 
     <div class="photo" data-number="105" data-name="asuka" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
@@ -934,8 +946,37 @@ function toggleImageSelection(imgElement) {
         selectedItem.appendChild(selectedImg);
         selectedContainer.appendChild(selectedItem);
     }
+    generateShareableURL();
 }
 
+function generateShareableURL() {
+    const selectedImages = Array.from(document.querySelectorAll('.photo.selected'));
+    const imageData = selectedImages.map(img => {
+        const imgElement = img.querySelector('img');
+        return imgElement.alt; // Assuming alt contains unique info like filename
+    });
+
+    const baseUrl = window.location.origin + window.location.pathname; // Get the current page URL
+    const queryString = imageData.length > 0 ? `?images=${encodeURIComponent(imageData.join(','))}` : '';
+    const shareableURL = baseUrl + queryString;
+
+    // Update the URL in the address bar without reloading
+    history.pushState(null, '', shareableURL);
+
+    // Optionally, you can provide feedback to the user
+    console.log('Shareable URL:', shareableURL);
+}
+
+function copyURL() {
+    const shareableURL = window.location.href; // Get the current URL
+    navigator.clipboard.writeText(shareableURL)
+        .then(() => {
+            alert('Shareable URL copied to clipboard!');
+        })
+        .catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+}
 
 
 
@@ -985,6 +1026,55 @@ window.onload = function() {
     hideAll(); // Call hideAll function to hide all images by default
 };
 
+function saveSelectedImages() {
+    const selectedImages = document.querySelectorAll('#selectedContainer img');
+    const imageArray = Array.from(selectedImages).map(img => img.src);
+
+    // Create a blob from the image array
+    const fileData = JSON.stringify(imageArray, null, 2); // Convert to JSON format
+    const blob = new Blob([fileData], { type: 'application/json' }); // Create a blob
+    const url = URL.createObjectURL(blob); // Create a URL for the blob
+
+    // Create a link element and trigger the download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'selected_images.json'; // Filename for the downloaded file
+    document.body.appendChild(a); // Append link to body
+    a.click(); // Trigger download
+    document.body.removeChild(a); // Remove link from body
+    URL.revokeObjectURL(url); // Free up memory
+}
+
+function loadSelectedImages(event) {
+    const file = event.target.files[0]; // Get the selected file
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageArray = JSON.parse(e.target.result); // Parse the JSON file
+            const selectedContainer = document.getElementById('selectedContainer');
+            selectedContainer.innerHTML = ''; // Clear current selections
+
+            imageArray.forEach(src => {
+                // Create a new image element and add it to the selected container
+                const img = document.createElement('img');
+                img.src = src;
+                img.style.width = "100px"; // Size in the selected container
+                img.style.height = "100px"; // Size in the selected container
+                img.draggable = true; // Make it draggable
+
+                img.onclick = function() {
+                    // Remove from selection when clicked
+                    img.classList.remove('selected');
+                    selectedContainer.removeChild(img);
+                };
+
+                selectedContainer.appendChild(img); // Add the image to the selected container
+            });
+        };
+        reader.readAsText(file); // Read the file as text
+    }
+}
 
 
     sortImages();
