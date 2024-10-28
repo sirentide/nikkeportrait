@@ -115,11 +115,6 @@ html_template = """
 </div>
 </div>
 
-    <button id="generateURLButton" onclick="generateShareableURL()">Generate Shareable URL</button>
-    <button id="copyURLButton" onclick="copyURL()">Copy Shareable URL</button>
-
-    <script src="script.js"></script>
-
 <div class="gallery">
 """
 
@@ -353,7 +348,7 @@ function setSortDirection(direction) {
 
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
-    const imgSrc = imgElement.querySelector('img').src;
+    const imgSrc = imgElement.src;
 
     // Check if the image is already selected
     if (imgElement.classList.contains('selected')) {
@@ -424,37 +419,9 @@ function toggleImageSelection(imgElement) {
         selectedItem.appendChild(selectedImg);
         selectedContainer.appendChild(selectedItem);
     }
+    generateShareableURL();
 }
 
-function generateShareableURL() {
-    const selectedImages = Array.from(document.querySelectorAll('.photo.selected'));
-    const imageData = selectedImages.map(img => {
-        const imgElement = img.querySelector('img');
-        return imgElement.alt; // Assuming alt contains unique info like filename
-    });
-
-    const baseUrl = window.location.origin + window.location.pathname; // Get the current page URL
-    const queryString = imageData.length > 0 ? `?images=${encodeURIComponent(imageData.join(','))}` : '';
-    const shareableURL = baseUrl + queryString;
-
-    // Update the URL in the address bar without reloading
-    history.pushState(null, '', shareableURL);
-
-    // Optionally, you can provide feedback to the user
-    console.log('Shareable URL:', shareableURL);
-    alert(`Shareable URL generated: ${shareableURL}`); // Feedback to user
-}
-
-function copyURL() {
-    const shareableURL = window.location.href; // Get the current URL
-    navigator.clipboard.writeText(shareableURL)
-        .then(() => {
-            alert('Shareable URL copied to clipboard!');
-        })
-        .catch(err => {
-            console.error('Failed to copy: ', err);
-        });
-}
 
 
 
