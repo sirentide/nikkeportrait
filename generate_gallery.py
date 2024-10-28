@@ -112,9 +112,13 @@ html_template = """
 <div>
     <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
     <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
+</div>
+</div>
+
+    <button id="generateURLButton" onclick="generateShareableURL()">Generate Shareable URL</button>
     <button id="copyURLButton" onclick="copyURL()">Copy Shareable URL</button>
-</div>
-</div>
+
+    <script src="script.js"></script>
 
 <div class="gallery">
 """
@@ -349,7 +353,7 @@ function setSortDirection(direction) {
 
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
-    const imgSrc = imgElement.src;
+    const imgSrc = imgElement.querySelector('img').src;
 
     // Check if the image is already selected
     if (imgElement.classList.contains('selected')) {
@@ -420,7 +424,6 @@ function toggleImageSelection(imgElement) {
         selectedItem.appendChild(selectedImg);
         selectedContainer.appendChild(selectedItem);
     }
-    generateShareableURL();
 }
 
 function generateShareableURL() {
@@ -439,6 +442,7 @@ function generateShareableURL() {
 
     // Optionally, you can provide feedback to the user
     console.log('Shareable URL:', shareableURL);
+    alert(`Shareable URL generated: ${shareableURL}`); // Feedback to user
 }
 
 function copyURL() {
