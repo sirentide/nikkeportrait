@@ -675,45 +675,33 @@
 <script>
 function updateFilters() {
     const photos = document.querySelectorAll('.photo');
-    
-    // Get all checkbox elements for different filters
-    const typeChecks = document.querySelectorAll('input[type="checkbox"][value="b1"], input[type="checkbox"][value="b2"], input[type="checkbox"][value="b3"], input[type="checkbox"][value="a"]');
-    const positionChecks = document.querySelectorAll('input[type="checkbox"][value="def"], input[type="checkbox"][value="sp"], input[type="checkbox"][value="atk"]');
-    const factionChecks = document.querySelectorAll('input[type="checkbox"][value="elysion"], input[type="checkbox"][value="missilis"], input[type="checkbox"][value="tetra"], input[type="checkbox"][value="abnormal"], input[type="checkbox"][value="pilgrim"]');
-    const rarityChecks = document.querySelectorAll('input[type="checkbox"][value="ssr"], input[type="checkbox"][value="sr"], input[type="checkbox"][value="r"]');
-    const weaponChecks = document.querySelectorAll('input[type="checkbox"][value="smg"], input[type="checkbox"][value="ar"], input[type="checkbox"][value="snr"], input[type="checkbox"][value="rl"], input[type="checkbox"][value="sg"], input[type="checkbox"][value="mg"]');
 
-    const searchInput = document.getElementById('searchInput').value.toLowerCase(); // Get search input value
+    // Extract the checked filters and search input
+    const selectedFilters = {
+        type: Array.from(document.querySelectorAll('input[type="checkbox"][value^="b"], input[type="checkbox"][value="a"]')).filter(chk => chk.checked).map(chk => chk.value),
+        position: Array.from(document.querySelectorAll('input[type="checkbox"][value="def"], input[type="checkbox"][value="sp"], input[type="checkbox"][value="atk"]')).filter(chk => chk.checked).map(chk => chk.value),
+        faction: Array.from(document.querySelectorAll('input[type="checkbox"][value="elysion"], input[type="checkbox"][value="missilis"], input[type="checkbox"][value="tetra"], input[type="checkbox"][value="abnormal"], input[type="checkbox"][value="pilgrim"]')).filter(chk => chk.checked).map(chk => chk.value),
+        rarity: Array.from(document.querySelectorAll('input[type="checkbox"][value="ssr"], input[type="checkbox"][value="sr"], input[type="checkbox"][value="r"]')).filter(chk => chk.checked).map(chk => chk.value),
+        weapon: Array.from(document.querySelectorAll('input[type="checkbox"][value="smg"], input[type="checkbox"][value="ar"], input[type="checkbox"][value="snr"], input[type="checkbox"][value="rl"], input[type="checkbox"][value="sg"], input[type="checkbox"][value="mg"]')).filter(chk => chk.checked).map(chk => chk.value),
+    };
+
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
 
     photos.forEach(photo => {
-        const type = photo.getAttribute('data-type').toLowerCase();
-        const position = photo.getAttribute('data-position').toLowerCase();
-        const faction = photo.getAttribute('data-faction').toLowerCase();
-        const rarity = photo.getAttribute('data-rarity').toLowerCase();
-        const weapon = photo.getAttribute('data-weapon').toLowerCase();
-        const imgAlt = photo.querySelector('img').alt.toLowerCase(); // Get the alt text for filtering by name
+        const attributes = {
+            type: photo.getAttribute('data-type'),
+            position: photo.getAttribute('data-position'),
+            faction: photo.getAttribute('data-faction'),
+            rarity: photo.getAttribute('data-rarity'),
+            weapon: photo.getAttribute('data-weapon'),
+            name: photo.getAttribute('data-name').toLowerCase(),
+        };
 
-        // Check conditions for each filter
-        const typeMatch = Array.from(typeChecks).some(check => check.checked && type.includes(check.value));
-        const positionMatch = Array.from(positionChecks).some(check => check.checked && position.includes(check.value));
-        const factionMatch = Array.from(factionChecks).some(check => check.checked && faction.includes(check.value));
-        const rarityMatch = Array.from(rarityChecks).some(check => check.checked && rarity === check.value); // Adjusted to match exactly
-        const weaponMatch = Array.from(weaponChecks).some(check => check.checked && weapon.includes(check.value));
-        const nameMatch = imgAlt.includes(searchInput); // Match against the search input
+        const isMatch = Object.keys(selectedFilters).every(key => {
+            return selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key]);
+        }) && (searchValue === '' || attributes.name.includes(searchValue));
 
-        // Determine if the photo should be displayed
-        if (
-            (typeMatch || !Array.from(typeChecks).some(check => check.checked)) &&
-            (positionMatch || !Array.from(positionChecks).some(check => check.checked)) &&
-            (factionMatch || !Array.from(factionChecks).some(check => check.checked)) &&
-            (rarityMatch || !Array.from(rarityChecks).some(check => check.checked)) && // Exact match for rarity
-            (weaponMatch || !Array.from(weaponChecks).some(check => check.checked)) &&
-            (nameMatch || searchInput === "") // Include name filter
-        ) {
-            photo.style.display = 'flex';
-        } else {
-            photo.style.display = 'none';
-        }
+        photo.style.display = isMatch ? 'flex' : 'none';
     });
 }
 
