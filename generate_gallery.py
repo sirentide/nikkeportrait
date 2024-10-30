@@ -32,7 +32,6 @@ html_template = """
         .photo { display: none; flex-direction: column; align-items: center; }
         .photo img { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border-radius: 5px; }
         .photo img.selected { border: 2px solid blue; }  /* Selection indicator */
-        .filter-buttons { margin-bottom: 20px; }
         label { margin-right: 10px; color: #fff; }
         #selectedContainer { margin-top: 20px; }
         h3, h4 { color: #fff; }  /* Header colors */
@@ -55,67 +54,80 @@ html_template = """
 <div class="filter-buttons">
     <div>
         <h4>Type:</h4>
-        <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-        <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-        <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-        <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
+            <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
+            <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
+            <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+        </div>
     </div>
     <div>
         <h4>Position:</h4>
-        <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
-        <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
-        <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
+            <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
+            <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
+        </div>
     </div>
     <div>
         <h4>Faction:</h4>
-        <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-        <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-        <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-        <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-        <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
+            <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
+            <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
+            <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
+            <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+        </div>
     </div>
     <div>
         <h4>Rarity:</h4>
-        <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-        <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-        <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
+            <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
+            <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+        </div>
     </div>
     <div>
         <h4>Weapon Type:</h4>
-        <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-        <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-        <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-        <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-        <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-        <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
+            <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
+            <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
+            <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
+            <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
+            <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
         </div>
-    <div>
-    <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
+    </div>
 </div>
+
     
 <div class="sort-controls">
     <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
     <button id="orderToggle" onclick="toggleSortOrder()">Highest</button>
+    <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
 </div>
 
     <div class="filter-buttons">
     <!-- Existing filter sections -->
     <h3>Search by Name:</h3>
     <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
+    <div class="gallery">
     </div>
 
+    
     <div>
-    <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
+    
 </div>
 
 <div class="button-container">
 <div>
     <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
+    <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
     <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
 </div>
 </div>
 
-<div class="gallery">
+
 """
 
 
@@ -417,7 +429,6 @@ function toggleImageSelection(imgElement) {
         selectedItem.appendChild(selectedImg);
         selectedContainer.appendChild(selectedItem);
     }
-    generateShareableURL();
 }
 
 

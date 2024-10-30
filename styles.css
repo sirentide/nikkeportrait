@@ -1,126 +1,140 @@
-.filter-buttons {
-    display: flex;
-    flex-direction: column;  /* Stack filter groups vertically */
-    gap: 0.5rem;  /* Space between filter groups */
+body {
+    font-family: Arial, sans-serif; /* Clean font for readability */
+    background-color: #000000; /* Black background for entire body */
+    color: #FFFFFF; /* White text for readability */
+    padding: 20px; /* Padding around the body */
 }
 
+/* Centering the filter buttons */
+.filter-buttons {
+    display: flex;
+    flex-direction: column; /* Stack filter groups vertically */
+    align-items: center; /* Center horizontally */
+    margin: 20px auto; /* Center the entire filter section */
+    padding: 15px; /* Add padding */
+    background-color: #000000; /* Black background for filter buttons */
+    border-radius: 5px; /* Rounded corners */
+}
+
+/* Container for filter groups */
 .filter-buttons > div {
     display: flex;
     align-items: center; /* Center items vertically */
+    margin-bottom: 5px; /* Space between filter groups */
 }
 
+
+
+
+/* Heading styles */
 h4 {
-    margin-right: 2rem; /* Space between title and checkboxes */
-    margin-left: 30.5rem; /* Space between title and checkboxes */
-    margin-bottom: 0;   /* No bottom margin to avoid extra space */
-    white-space: nowrap; /* Prevent wrapping */
+    margin-right: 1.5rem; /* Space between title and checkboxes */
     align-items: center; /* Center items vertically */
-    width: 100px; /* Fixed width for consistent alignment */
+    white-space: nowrap; /* Prevent wrapping */
+    font-size: 0.9rem; /* Slightly larger for visibility */
+    width: 80px; /* Fixed width for consistent alignment */
 }
 
+.checkbox-group {
+    display: flex; /* Flexbox for alignment */
+    flex-wrap: wrap; /* Allow wrapping to the next line */
+}
+
+/* Label styles */
 label {
     display: flex;
-    align-items: center;  /* Center checkbox and label text vertically */
-    margin-top: 1.5rem;   /* No bottom margin to avoid extra space */
-    margin-right: 10px;  /* Space between labels */
+    align-items: center; /* Center checkbox and label text vertically */
+    color: #FFFFFF; /* White color for labels */
 }
 
-/* Optional: Make all checkboxes have the same width for uniformity */
+
+/* Checkbox input */
 label input {
-    margin-right: 5px; /* Space between checkbox and text */
+    margin-right: 15px; /* Space between checkbox and text */
 }
 
+/* Button styles */
 button {
-    width: auto; /* Set width to auto to shrink to content size */
-    max-width: 150px; /* Optional: Set a maximum width */
-    font-size: 14px; /* Adjust font size */
-    padding: 5px 10px; /* Reduce padding */
-    margin-top: 10px; /* Add space above */
-    margin-left: auto; /* Center it horizontally if in flex container */
-    margin-right: auto; /* Center it horizontally if in flex container */
-    display: block; /* Make it a block element for centering */
-    background-color: #444; /* Ensure color matches your theme */
-    border-radius: 3px; /* Slightly round corners */
+    width: 200px; /* Consistent button width */
+    height: 35px; /* Standard height */
+    font-size: 1rem; /* Font size */
+    margin-top: 1rem; /* Space above */
+    background-color: #444444; /* Dark gray background for buttons */
+    border: none; /* No border */
+    color: white; /* White text */
+    border-radius: 5px; /* Rounded corners */
     cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition */
 }
 
 button:hover {
-    background-color: #666; /* Change on hover */
+    background-color: #666666; /* Change to lighter gray on hover */
 }
 
-
-
+/* Search input styling */
 #searchInput {
-    font-size: 14px; /* Adjust font size */
-    padding: 5px; /* Reduce padding */
-    width: 200px; /* Set a fixed width */
-    margin-left: auto; /* Center it horizontally if in flex container */
-    margin-right: auto; /* Center it horizontally if in flex container */
-    display: block; /* Make it a block element for centering */
+    font-size: 1rem; /* Font size */
+    padding: 8px; /* Padding */
+    width: 200px; /* Width */
+    margin: 1rem auto; /* Center it horizontally */
+    display: block; /* Make it a block element */
+    border: 1px solid #ccc; /* Border around input */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #222222; /* Dark background for input */
+    color: #FFFFFF; /* White text for input */
 }
 
-h3 {
-    text-align: center; /* Center the text */
-    margin: 10px 0; /* Adjust top and bottom margin */
-}
-
-#gallery {
-    margin-left: auto; /* Center it horizontally if in flex container */
-    margin-right: auto; /* Center it horizontally if in flex container */
-}
-
+/* Sort controls */
 .sort-controls {
-    display: flex;               /* Use flexbox for alignment */
-    justify-content: center;     /* Center buttons horizontally */
-    align-items: center;         /* Center items vertically */
-    margin-top: 10px;           /* Space above the container */
+    display: flex; /* Flexbox for layout */
+    justify-content: center; /* Center buttons */
+    align-items: center; /* Center items vertically */
+    margin-top: 10px; /* Space above the container */
 }
 
+/* Sort button styles */
 .sort-controls button {
-    margin: 0 5px;              /* Small horizontal space between buttons */
-    padding: 5px 10px;          /* Adjust padding for a more compact button */
-    background-color: #444;     /* Dark gray background */
-    color: #fff;                /* White text */
-    border: none;               /* No border */
-    border-radius: 5px;        /* Rounded corners */
-    cursor: pointer;            /* Pointer cursor */
+    margin: 0 5px; /* Small space between buttons */
+    padding: 8px 15px; /* Adjust padding */
+    background-color: #444444; /* Dark gray background */
+    color: #FFFFFF; /* White text */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
     transition: background-color 0.3s; /* Smooth transition */
 }
 
 .sort-controls button:hover {
-    background-color: #666;     /* Change background on hover */
+    background-color: #666666; /* Change on hover */
 }
 
-/* Flexbox container */
+/* Flexbox container for buttons */
 .button-container {
-    display: flex;               /* Enable Flexbox */
-    justify-content: center;     /* Center horizontally */
-    align-items: center;         /* Center vertically */
-    height: 17vh;              /* Full viewport height for vertical centering */
+    display: flex; /* Flexbox for layout */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin: 20px 0; /* Margin around container */
+}
+
+/* Hidden file input */
+#loadFileInput {
+    display: none; /* Hide file input */
 }
 
 /* Style for the load button */
 #loadButton {
     background-color: #4CAF50; /* Green background */
-    border: none;              /* No border */
-    color: white;              /* White text */
-    padding: 10px 20px;       /* Padding for spacing */
-    text-align: center;        /* Center text */
-    text-decoration: none;     /* No underline */
-    display: inline-block;     /* Inline block for spacing */
-    font-size: 16px;           /* Increase font size */
-    margin: 4px 2px;          /* Margin for spacing */
-    cursor: pointer;           /* Pointer cursor on hover */
-    border-radius: 5px;       /* Rounded corners */
+    border: none; /* No border */
+    color: #FFFFFF; /* White text */
+    padding: 10px 20px; /* Padding for spacing */
+    font-size: 16px; /* Font size */
+    margin: 4px 2px; /* Margin for spacing */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 5px; /* Rounded corners */
     transition: background-color 0.3s; /* Smooth transition */
 }
 
-/* Hover effect */
+/* Load button hover effect */
 #loadButton:hover {
     background-color: #45a049; /* Darker green on hover */
-}
-
-/* Optional: Style for the file input (hidden) */
-#loadFileInput {
-    display: none; /* Hide the file input */
 }
