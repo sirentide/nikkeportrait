@@ -344,8 +344,6 @@ function setSortDirection(direction) {
 }
 
 
-
-
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
