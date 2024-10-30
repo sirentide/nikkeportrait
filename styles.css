@@ -10,7 +10,7 @@ body {
     display: flex;
     flex-direction: column; /* Stack filter groups vertically */
     align-items: center; /* Center horizontally */
-    margin: 20px auto; /* Center the entire filter section */
+    margin: 10px auto; /* Center the entire filter section */
     padding: 15px; /* Add padding */
     background-color: #000000; /* Black background for filter buttons */
     border-radius: 5px; /* Rounded corners */
