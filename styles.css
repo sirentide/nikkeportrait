@@ -75,7 +75,7 @@ button:hover {
 #searchInput {
     font-size: 1rem; /* Font size */
     padding: 8px; /* Padding */
-    width: 200px; /* Width */
+    width: 250px; /* Width */
     margin: 1rem auto; /* Center it horizontally */
     display: block; /* Make it a block element */
     border: 1px solid #ccc; /* Border around input */
