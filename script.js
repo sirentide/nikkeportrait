@@ -126,6 +126,7 @@ function toggleImageSelection(imgElement) {
             teamRow.appendChild(selectedImg); // Add to the grid
             added = true;
             break; // Stop after adding to the first available row
+            
         }
     }
 
@@ -135,6 +136,33 @@ function toggleImageSelection(imgElement) {
         imgElement.classList.add('selected'); // Mark the image as selected
     }
 }
+
+function clearSelection() {
+    const selectedImages = document.querySelectorAll('.selected');
+    const selectedContainer = document.getElementById('selectedContainer');
+    
+    selectedImages.forEach(image => {
+        // Remove the 'selected' class to deselect the image
+        image.classList.remove('selected');
+        
+        // Optionally, remove the image from any rows in the team grid
+        const teamRows = document.querySelectorAll('.team-images');
+        teamRows.forEach(row => {
+            Array.from(row.children).forEach(img => {
+                if (img.src === image.src) {
+                    row.removeChild(img); // Remove from team grid if it exists
+                }
+            });
+        });
+    });
+
+    document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+
+
+    // Optionally: Clear any other selections you might have in the container
+    selectedContainer.innerHTML = ''; // Clears the selected images container
+}
+
 
 // Function to show or hide all images
 let showAll = true; // Set to true to indicate that images are hidden by default
@@ -187,10 +215,4 @@ function toggleFilter(button) {
         content.style.display = "none"; // Hide the filter content
         button.innerHTML = "Filters ▼"; // Change button text to '▼'
     }
-}
-
-
-function clearSearch() {
-    document.getElementById('searchInput').value = ''; // Clear the search input
-    updateFilters(); // Update the filters after clearing
 }

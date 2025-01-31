@@ -101,7 +101,7 @@ html_template = """
     <div class="search-wrapper">
     <div class="search-bar">
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-        <button id="clearSearch" onclick="clearSearch()">Clear</button> <!-- Clear button -->
+        <button id="clearSelectionBtn">Clear Selection</button>
     </div>
 </div>
 
