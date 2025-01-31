@@ -7,13 +7,55 @@ body {
     color: #e0e0e0; /* Light text color */
 }
 
-/* Gallery Grid Styling */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Reset any possible unwanted margin or padding */
+body, .gallery {
+    margin: 0;
+    padding: 0;
+}
+
+/* Fix for .gallery */
 .gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Mobile-first: 1 column */
-    gap: 5px;
-    padding: 5px;
+    gap: 10px; /* Add some gap for spacing between items */
+    padding: 0;
     background-color: #1e1e1e; /* Darker gallery background */
+    overflow: hidden; /* Hide overflow that might cause horizontal scroll */
+}
+
+/* Ensure images within the gallery are responsive */
+.gallery img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures images fit within their container without stretching */
+    display: block; /* Remove inline-block space */
+}
+
+/* Media query for tablets (768px and up) */
+@media (min-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(50%, 1fr)); /* 2 columns for tablets */
+    }
+}
+
+/* Media query for desktop (1024px and up) */
+@media (min-width: 1024px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(25%, 1fr)); /* 4 columns for desktop */
+    }
+}
+
+/* Optional: For very large screens, like widescreen monitors */
+@media (min-width: 1440px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(20%, 1fr)); /* 5 columns for large screens */
+    }
 }
 
 .sort-controls{
