@@ -9,1283 +9,1099 @@
     <title>Nikkes Arena</title>
     <link rel="icon" href="image/favicon.ico" type="image/x-icon">
     <style>
-        body {
-            background-color: #000;  /* Black background */
-            color: #fff;  /* White text */
-            font-family: Arial, sans-serif;  /* Font style */
-        }
+        body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
         .gallery { display: flex; flex-wrap: wrap; gap: 10px; }
         .photo { display: none; flex-direction: column; align-items: center; }
         .photo img { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border-radius: 5px; }
-        .photo img.selected { border: 2px solid blue; }  /* Selection indicator */
+        .photo img.selected { border: 2px solid blue; }
         label { margin-right: 10px; color: #fff; }
         #selectedContainer { margin-top: 20px; }
-        h3, h4 { color: #fff; }  /* Header colors */
+        h3, h4 { color: #fff; }
         button {
-            background-color: #444;  /* Dark gray */
-            color: #fff;  /* White text */
-            border: none;  /* No border */
-            padding: 10px;  /* Padding */
-            cursor: pointer;  /* Pointer cursor */
-            border-radius: 5px;  /* Rounded corners */
-            transition: background-color 0.3s;  /* Smooth transition */
+            background-color: #444; color: #fff; border: none; padding: 10px;
+            cursor: pointer; border-radius: 5px; transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #666;  /* Lighter gray on hover */
-        }
-    </style>
+        button:hover { background-color: #666; }
+   </style>
 </head>
 <body>
-
-<div class="filter-buttons">
-    <div>
-        <h4>Type:</h4>
-        <div class="checkbox-group">
-            <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-            <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-            <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-            <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
-        </div>
-    </div>
-    <div>
-        <h4>Position:</h4>
-        <div class="checkbox-group">
-            <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
-            <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
-            <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
-        </div>
-    </div>
-    <div>
-        <h4>Faction:</h4>
-        <div class="checkbox-group">
-            <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-            <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-            <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-            <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-            <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
-        </div>
-    </div>
-    <div>
-        <h4>Rarity:</h4>
-        <div class="checkbox-group">
-            <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-            <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-            <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
-        </div>
-    </div>
-    <div>
-        <h4>Weapon Type:</h4>
-        <div class="checkbox-group">
-            <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-            <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-            <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-            <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-            <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-            <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
-        </div>
-    </div>
-</div>
-
-    
-<div class="sort-controls">
-    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
-    <button id="orderToggle" onclick="toggleSortOrder()">Highest</button>
-    <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
-</div>
-
+    <!-- Filter Buttons -->
     <div class="filter-buttons">
-    <!-- Existing filter sections -->
-    <h3>Search by Name:</h3>
-    <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
+        <div><h4>Type:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
+                <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
+                <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
+                <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+            </div>
+        </div>
+        <div><h4>Position:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
+                <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
+                <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
+            </div>
+        </div>
+        <div><h4>Faction:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
+                <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
+                <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
+                <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
+                <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+            </div>
+        </div>
+        <div><h4>Rarity:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
+                <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
+                <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+            </div>
+        </div>
+        <div><h4>Weapon Type:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
+                <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
+                <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
+                <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
+                <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
+                <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Controls -->
+    <div class="sort-controls">
+        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
+        <button id="orderToggle" onclick="toggleSortOrder()">Highest</button>
+        <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
+    </div>
+
+    <!-- Search Input -->
+    <div class="filter-buttons">
+        <h3>Search by Name:</h3>
+        <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
+    </div>
+
+    <!-- Gallery -->
     <div class="gallery">
-    </div>
-
-    
-    <div>
-    
-</div>
-
-<div class="button-container">
-<div>
-    <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
-    <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
-    <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
-</div>
-</div>
-
-
-
-    <div class="photo" data-number="105" data-name="Asuka Shikinami Langley" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
-        <img src="image/105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" alt="105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="108" data-name="soline" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
-        <img src="image/108_elysion_ssr_B3_atk_smg_soline.webp" alt="108_elysion_ssr_B3_atk_smg_soline.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="108" data-name="crow" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
-        <img src="image/108_missilis_ssr_b1_def_smg_crow.webp" alt="108_missilis_ssr_b1_def_smg_crow.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="108" data-name="quency" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
-        <img src="image/108_missilis_ssr_b2_sp_smg_quency.webp" alt="108_missilis_ssr_b2_sp_smg_quency.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="112" data-name="n102" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/112_missilis_ssr_b1_sp_rl_n102.webp" alt="112_missilis_ssr_b1_sp_rl_n102.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="112" data-name="yuni" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/112_missilis_ssr_b2_def_rl_yuni.webp" alt="112_missilis_ssr_b2_def_rl_yuni.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="112" data-name="ein" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
-        <img src="image/112_missilis_ssr_B3_atk_snr_ein.webp" alt="112_missilis_ssr_B3_atk_snr_ein.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="112" data-name="belorta" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/112_tetra_sr_b2_atk_rl_belorta.webp" alt="112_tetra_sr_b2_atk_rl_belorta.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="116" data-name="laplace" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/116_missilis_ssr_b3_atk_rl_laplace.webp" alt="116_missilis_ssr_b3_atk_rl_laplace.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="poli" data-type="b2" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_elysion_ssr_b2_def_sg_poli.webp" alt="120_elysion_ssr_b2_def_sg_poli.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="marciana" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_elysion_ssr_b2_sp_sg_marciana.webp" alt="120_elysion_ssr_b2_sp_sg_marciana.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="ether" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_missilis_ssr_b1_sp_sg_ether.webp" alt="120_missilis_ssr_b1_sp_sg_ether.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="guilty" data-type="b2" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_missilis_ssr_b2_atk_sg_guilty.webp" alt="120_missilis_ssr_b2_atk_sg_guilty.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="naga" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_missilis_ssr_b2_sp_sg_naga.webp" alt="120_missilis_ssr_b2_sp_sg_naga.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="isabel" data-type="b3" data-position="sg" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
-        <img src="image/120_pilgrim_ssr_B3_sg_atk_isabel.webp" alt="120_pilgrim_ssr_B3_sg_atk_isabel.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="mary" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_tetra_ssr_b1_sp_sg_mary.webp" alt="120_tetra_ssr_b1_sp_sg_mary.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="leona" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/120_tetra_ssr_b2_sp_sg_leona.webp" alt="120_tetra_ssr_b2_sp_sg_leona.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="120" data-name="neve" data-type="b3" data-position="sg" data-faction="tetra" data-rarity="ssr" data-weapon="atk">
-        <img src="image/120_tetra_ssr_b3_sg_atk_neve.webp" alt="120_tetra_ssr_b3_sg_atk_neve.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="125" data-name="Anis Sparkling Summer" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/125_tetra_ssr_B3_sp_sg_Anis Sparkling Summer.webp" alt="125_tetra_ssr_B3_sp_sg_Anis Sparkling Summer.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="126" data-name="grave" data-type="b2" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
-        <img src="image/126_pilgrim_ssr_B2_sp_ar_grave.webp" alt="126_pilgrim_ssr_B2_sp_ar_grave.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="128" data-name="Privaty Unkind Maid" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
-        <img src="image/128_elysion_ssr_b3_atk_sg_Privaty Unkind Maid.webp" alt="128_elysion_ssr_b3_atk_sg_Privaty Unkind Maid.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="130" data-name="Anis Sparkling Summer2" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/130_tetra_ssr_B3_sp_sg_Anis Sparkling Summer2.webp" alt="130_tetra_ssr_B3_sp_sg_Anis Sparkling Summer2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="132" data-name="mana" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
-        <img src="image/132_missilis_ssr_b3_atk_ar_mana.webp" alt="132_missilis_ssr_b3_atk_ar_mana.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="137" data-name="scarletblackshadow" data-type="b3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/137_pilgrim_ssr_B3_atk_rl_scarletblackshadow.webp" alt="137_pilgrim_ssr_B3_atk_rl_scarletblackshadow.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="140" data-name="ein" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
-        <img src="image/140_missilis_ssr_B3_atk_snr_ein.webp" alt="140_missilis_ssr_B3_atk_snr_ein.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="145" data-name="harran" data-type="b3" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
-        <img src="image/145_pilgrim_ssr_B3_snr_atk_harran.webp" alt="145_pilgrim_ssr_B3_snr_atk_harran.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="149" data-name="mana" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
-        <img src="image/149_missilis_ssr_b3_atk_ar_mana.webp" alt="149_missilis_ssr_b3_atk_ar_mana.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="157" data-name="scarlet" data-type="b3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
-        <img src="image/157_pilgrim_ssr_B3_atk_ar_scarlet.webp" alt="157_pilgrim_ssr_B3_atk_ar_scarlet.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="power" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_abnormal_ssr_b3_atk_rl_power.webp" alt="168_abnormal_ssr_b3_atk_rl_power.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="Anchor Innocent Maid" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_elysion_ssr_b2_sp_rl_Anchor Innocent Maid.webp" alt="168_elysion_ssr_b2_sp_rl_Anchor Innocent Maid.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="vesti" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_elysion_ssr_B3_atk_rl_vesti.webp" alt="168_elysion_ssr_B3_atk_rl_vesti.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="quiry" data-type="b3" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_elysion_ssr_B3_sp_rl_quiry.webp" alt="168_elysion_ssr_B3_sp_rl_quiry.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="tia" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_missilis_ssr_b1_def_rl_tia.webp" alt="168_missilis_ssr_b1_def_rl_tia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="Anne Miracle Fairy" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_missilis_ssr_b2_sp_rl_Anne Miracle Fairy.webp" alt="168_missilis_ssr_b2_sp_rl_Anne Miracle Fairy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="mica" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/168_tetra_sr_B1_sp_rl_mica.webp" alt="168_tetra_sr_B1_sp_rl_mica.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="noise" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_tetra_ssr_b1_sp_rl_noise.webp" alt="168_tetra_ssr_b1_sp_rl_noise.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="micax" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/168_tetra_ssr_B1_sp_smg_micax.webp" alt="168_tetra_ssr_B1_sp_smg_micax.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="bay" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_tetra_ssr_b2_def_rl_bay.webp" alt="168_tetra_ssr_b2_def_rl_bay.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="biscuit" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_tetra_ssr_b2_sp_rl_biscuit.webp" alt="168_tetra_ssr_b2_sp_rl_biscuit.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="168" data-name="biscuit2" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/168_tetra_ssr_b2_sp_rl_biscuit2.webp" alt="168_tetra_ssr_b2_sp_rl_biscuit2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="174" data-name="rapunzel" data-type="b1" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/174_pilgrim_ssr_b1_sp_rl_rapunzel.webp" alt="174_pilgrim_ssr_b1_sp_rl_rapunzel.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="18" data-name="Snow White Innocent Day" data-type="b3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
-        <img src="image/18_pilgrim_ssr_B3_atk_ar_Snow White Innocent Day.webp" alt="18_pilgrim_ssr_B3_atk_ar_Snow White Innocent Day.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="210" data-name="zwei" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
-        <img src="image/210_elysion_ssr_b1_sp_sg_zwei.webp" alt="210_elysion_ssr_b1_sp_sg_zwei.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="216" data-name="micax2" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/216_tetra_ssr_B1_sp_smg_micax2.webp" alt="216_tetra_ssr_B1_sp_smg_micax2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="230" data-name="pascal" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="snr">
-        <img src="image/230_abnormal_sr_b1_sp_snr_pascal.webp" alt="230_abnormal_sr_b1_sp_snr_pascal.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="234" data-name="a2" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
-        <img src="image/234_abnormal_ssr_b3_atk_rl_a2.webp" alt="234_abnormal_ssr_b3_atk_rl_a2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="252" data-name="nihilister" data-type="b2" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
-        <img src="image/252_pilgrim_ssr_b2_snr_atk_nihilister.webp" alt="252_pilgrim_ssr_b2_snr_atk_nihilister.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="261" data-name="laplace0" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/261_missilis_ssr_b3_atk_rl_laplace0.webp" alt="261_missilis_ssr_b3_atk_rl_laplace0.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="267" data-name="laplace1" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/267_missilis_ssr_b3_atk_rl_laplace1.webp" alt="267_missilis_ssr_b3_atk_rl_laplace1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="neon" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="sr" data-weapon="sg">
-        <img src="image/270_elysion_sr_b1_sp_sg_neon.webp" alt="270_elysion_sr_b1_sp_sg_neon.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="maiden" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_elysion_ssr_b3_atk_sg_maiden.webp" alt="270_elysion_ssr_b3_atk_sg_maiden.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="product23" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="r" data-weapon="sg">
-        <img src="image/270_missilis_r_b2_sp_sg_product23.webp" alt="270_missilis_r_b2_sp_sg_product23.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="pepper" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_missilis_ssr_b1_sp_sg_pepper.webp" alt="270_missilis_ssr_b1_sp_sg_pepper.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="laplace3" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/270_missilis_ssr_b3_atk_rl_laplace3.webp" alt="270_missilis_ssr_b3_atk_rl_laplace3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="drake" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_missilis_ssr_B3_atk_sg_drake.webp" alt="270_missilis_ssr_B3_atk_sg_drake.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="viper" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_tetra_ssr_b2_atk_sg_viper.webp" alt="270_tetra_ssr_b2_atk_sg_viper.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="noir" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_tetra_ssr_B3_atk_sg_noir.webp" alt="270_tetra_ssr_B3_atk_sg_noir.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="Soda Twinkling Bunny" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_tetra_ssr_B3_atk_sg_Soda Twinkling Bunny.webp" alt="270_tetra_ssr_B3_atk_sg_Soda Twinkling Bunny.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="270" data-name="sugar" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
-        <img src="image/270_tetra_ssr_B3_atk_sg_sugar.webp" alt="270_tetra_ssr_B3_atk_sg_sugar.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="273" data-name="maiden ice rose" data-type="b3" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
-        <img src="image/273_elysion_ssr_b3_def_rl_maiden ice rose.webp" alt="273_elysion_ssr_b3_def_rl_maiden ice rose.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="273" data-name="laplace7" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/273_missilis_ssr_b3_atk_rl_laplace7.webp" alt="273_missilis_ssr_b3_atk_rl_laplace7.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="360" data-name="noah" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/360_pilgrim_ssr_B2_def_rl_noah.webp" alt="360_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="368" data-name="noah" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/368_pilgrim_ssr_B2_def_rl_noah.webp" alt="368_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="rem" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_abnormal_ssr_b2_sp_mg_rem.webp" alt="36_abnormal_ssr_b2_sp_mg_rem.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="rei ayanami" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_abnormal_ssr_b3_atk_mg_rei ayanami.webp" alt="36_abnormal_ssr_b3_atk_mg_rei ayanami.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="emma" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b1_sp_mg_emma.webp" alt="36_elysion_ssr_b1_sp_mg_emma.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="diesel" data-type="b2" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b2_def_mg_diesel.webp" alt="36_elysion_ssr_b2_def_mg_diesel.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="Mast Romantic Maid" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b2_sp_mg_Mast Romantic Maid.webp" alt="36_elysion_ssr_b2_sp_mg_Mast Romantic Maid.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="guillotine" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b3_atk_mg_guillotine.webp" alt="36_elysion_ssr_b3_atk_mg_guillotine.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="Neon Blue Ocean" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b3_atk_mg_Neon Blue Ocean.webp" alt="36_elysion_ssr_b3_atk_mg_Neon Blue Ocean.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="red rapi rrh" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_elysion_ssr_b3_atk_mg_red rapi rrh.webp" alt="36_elysion_ssr_b3_atk_mg_red rapi rrh.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="product12" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="r" data-weapon="mg">
-        <img src="image/36_missilis_r_b3_atk_mg_product12.webp" alt="36_missilis_r_b3_atk_mg_product12.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="eleg" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_missilis_ssr_B2_sp_mg_eleg.webp" alt="36_missilis_ssr_B2_sp_mg_eleg.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="kilo" data-type="b3" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_missilis_ssr_b3_def_mg_kilo.webp" alt="36_missilis_ssr_b3_def_mg_kilo.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="crown" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_pilgrim_ssr_b2_def_mg_crown.webp" alt="36_pilgrim_ssr_b2_def_mg_crown.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="cinderella" data-type="b3" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/36_pilgrim_ssr_B3_def_rl_cinderella.webp" alt="36_pilgrim_ssr_B3_def_rl_cinderella.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="rosanna" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_tetra_ssr_b1_atk_mg_rosanna.webp" alt="36_tetra_ssr_b1_atk_mg_rosanna.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="soda" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_tetra_ssr_b1_sp_mg_soda.webp" alt="36_tetra_ssr_b1_sp_mg_soda.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="aria" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_tetra_ssr_b2_atk_mg_aria.webp" alt="36_tetra_ssr_b2_atk_mg_aria.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="36" data-name="Ludmilla Winter Owner" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
-        <img src="image/36_tetra_ssr_b3_atk_mg_Ludmilla Winter Owner.webp" alt="36_tetra_ssr_b3_atk_mg_Ludmilla Winter Owner.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="372" data-name="noah" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/372_pilgrim_ssr_B2_def_rl_noah.webp" alt="372_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="376" data-name="noah" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
-        <img src="image/376_pilgrim_ssr_B2_def_rl_noah.webp" alt="376_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="378" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
-        <img src="image/378_abnormal_ssr_b3_atk_rl_emilia.webp" alt="378_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="390" data-name="rumani" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/390_tetra_ssr_b1_def_rl_rumani.webp" alt="390_tetra_ssr_b1_def_rl_rumani.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="399" data-name="rumani1" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/399_tetra_ssr_b1_def_rl_rumani1.webp" alt="399_tetra_ssr_b1_def_rl_rumani1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="403" data-name="rumani2" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/403_tetra_ssr_b1_def_rl_rumani2.webp" alt="403_tetra_ssr_b1_def_rl_rumani2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="408" data-name="rumani3" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/408_tetra_ssr_b1_def_rl_rumani3.webp" alt="408_tetra_ssr_b1_def_rl_rumani3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="414" data-name="centi" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/414_missilis_ssr_B2_def_rl_centi.webp" alt="414_missilis_ssr_B2_def_rl_centi.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="423" data-name="centi1" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/423_missilis_ssr_B2_def_rl_centi1.webp" alt="423_missilis_ssr_B2_def_rl_centi1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="426" data-name="jackal" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/426_missilis_ssr_b1_def_rl_jackal.webp" alt="426_missilis_ssr_b1_def_rl_jackal.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="426" data-name="anis" data-type="b2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/426_tetra_sr_B2_def_rl_anis.webp" alt="426_tetra_sr_B2_def_rl_anis.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="428" data-name="centi2" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/428_missilis_ssr_B2_def_rl_centi2.webp" alt="428_missilis_ssr_B2_def_rl_centi2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="433" data-name="centi3" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/433_missilis_ssr_B2_def_rl_centi3.webp" alt="433_missilis_ssr_B2_def_rl_centi3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="435" data-name="jackal1" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/435_missilis_ssr_b1_def_rl_jackal1.webp" alt="435_missilis_ssr_b1_def_rl_jackal1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="435" data-name="anis1" data-type="b2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/435_tetra_sr_B2_def_rl_anis1.webp" alt="435_tetra_sr_B2_def_rl_anis1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="440" data-name="jackal2" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/440_missilis_ssr_b1_def_rl_jackal2.webp" alt="440_missilis_ssr_b1_def_rl_jackal2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="440" data-name="anis2" data-type="b2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/440_tetra_sr_B2_def_rl_anis2.webp" alt="440_tetra_sr_B2_def_rl_anis2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="445" data-name="jackal3" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
-        <img src="image/445_missilis_ssr_b1_def_rl_jackal3.webp" alt="445_missilis_ssr_b1_def_rl_jackal3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="445" data-name="anis7" data-type="b2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
-        <img src="image/445_tetra_sr_B2_def_rl_anis7.webp" alt="445_tetra_sr_B2_def_rl_anis7.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="504" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
-        <img src="image/504_abnormal_ssr_b3_atk_rl_emilia.webp" alt="504_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="Misato Katsuragi" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="smg">
-        <img src="image/54_abnormal_sr_b1_sp_smg_Misato Katsuragi.webp" alt="54_abnormal_sr_b1_sp_smg_Misato Katsuragi.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="makima" data-type="b2" data-position="def" data-faction="abnormal" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_abnormal_ssr_b2_def_smg_makima.webp" alt="54_abnormal_ssr_b2_def_smg_makima.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="miranda" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_elysion_ssr_b1_sp_smg_miranda.webp" alt="54_elysion_ssr_b1_sp_smg_miranda.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="signal" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_elysion_ssr_b2_atk_smg_signal.webp" alt="54_elysion_ssr_b2_atk_smg_signal.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="mast" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_elysion_ssr_b2_sp_smg_mast.webp" alt="54_elysion_ssr_b2_sp_smg_mast.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="d" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_elysion_ssr_b3_atk_smg_d.webp" alt="54_elysion_ssr_b3_atk_smg_d.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="liter" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_missilis_ssr_b1_sp_smg_liter.webp" alt="54_missilis_ssr_b1_sp_smg_liter.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="epinel" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_missilis_ssr_B3_atk_smg_epinel.webp" alt="54_missilis_ssr_B3_atk_smg_epinel.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="idollocean" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="r" data-weapon="smg">
-        <img src="image/54_tetra_r_b1_sp_smg_idollocean.webp" alt="54_tetra_r_b1_sp_smg_idollocean.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="volume" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b1_atk_smg_volume.webp" alt="54_tetra_ssr_b1_atk_smg_volume.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="rei" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b1_def_smg_rei.webp" alt="54_tetra_ssr_b1_def_smg_rei.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="Alice Wonderland Bunny" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b1_sp_smg_Alice Wonderland Bunny.webp" alt="54_tetra_ssr_b1_sp_smg_Alice Wonderland Bunny.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="nero" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b2_def_smg_nero.webp" alt="54_tetra_ssr_b2_def_smg_nero.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="clay" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b2_sp_smg_clay.webp" alt="54_tetra_ssr_b2_sp_smg_clay.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="54" data-name="novel" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/54_tetra_ssr_b2_sp_smg_novel.webp" alt="54_tetra_ssr_b2_sp_smg_novel.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="56" data-name="yan" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
-        <img src="image/56_tetra_ssr_b1_sp_rl_yan.webp" alt="56_tetra_ssr_b1_sp_rl_yan.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="56" data-name="alice" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/56_tetra_ssr_B3_atk_snr_alice.webp" alt="56_tetra_ssr_B3_atk_snr_alice.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="630" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
-        <img src="image/630_abnormal_ssr_b3_atk_rl_emilia.webp" alt="630_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="2b" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_abnormal_ssr_b3_atk_ar_2b.webp" alt="70_abnormal_ssr_b3_atk_ar_2b.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="soldereg" data-type="b3" data-position="sp" data-faction="elysion" data-rarity="r" data-weapon="ar">
-        <img src="image/70_elysion_r_b3_sp_ar_soldereg.webp" alt="70_elysion_r_b3_sp_ar_soldereg.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="rapi" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="sr" data-weapon="ar">
-        <img src="image/70_elysion_sr_B3_atk_ar_rapi.webp" alt="70_elysion_sr_B3_atk_ar_rapi.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="Helm Aquamarine" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_elysion_ssr_b2_atk_ar_Helm Aquamarine.webp" alt="70_elysion_ssr_b2_atk_ar_Helm Aquamarine.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="brid" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_elysion_ssr_b3_atk_ar_brid.webp" alt="70_elysion_ssr_b3_atk_ar_brid.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="guillotine winter slayer" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_elysion_ssr_b3_atk_ar_guillotine winter slayer.webp" alt="70_elysion_ssr_b3_atk_ar_guillotine winter slayer.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="privaty" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_elysion_ssr_b3_atk_ar_privaty.webp" alt="70_elysion_ssr_b3_atk_ar_privaty.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="tove" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_missilis_ssr_b1_sp_ar_tove.webp" alt="70_missilis_ssr_b1_sp_ar_tove.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="sin" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_missilis_ssr_b2_def_ar_sin.webp" alt="70_missilis_ssr_b2_def_ar_sin.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="julia" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_missilis_ssr_B3_atk_ar_julia.webp" alt="70_missilis_ssr_B3_atk_ar_julia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="Rupee Winter Shopper" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_tetra_ssr_b1_def_ar_Rupee Winter Shopper.webp" alt="70_tetra_ssr_b1_def_ar_Rupee Winter Shopper.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="blanc" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_tetra_ssr_B2_def_ar_blanc.webp" alt="70_tetra_ssr_B2_def_ar_blanc.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="folkwang" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_tetra_ssr_b2_def_ar_folkwang.webp" alt="70_tetra_ssr_b2_def_ar_folkwang.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="70" data-name="Rosanna Chic Ocean" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/70_tetra_ssr_b2_sp_ar_Rosanna Chic Ocean.webp" alt="70_tetra_ssr_b2_sp_ar_Rosanna Chic Ocean.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="72" data-name="modernia" data-type="b3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="mg">
-        <img src="image/72_pilgrim_ssr_B3_atk_mg_modernia.webp" alt="72_pilgrim_ssr_B3_atk_mg_modernia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="76" data-name="rapunzel pure grace" data-type="b1" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="sp">
-        <img src="image/76_pilgrim_ssr_B1_snr_sp_rapunzel pure grace.webp" alt="76_pilgrim_ssr_B1_snr_sp_rapunzel pure grace.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="79" data-name="Delta" data-type="b2" data-position="def" data-faction="elysion" data-rarity="sr" data-weapon="sr">
-        <img src="image/79_elysion_sr_B2_def_sr_Delta.webp" alt="79_elysion_sr_B2_def_sr_Delta.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="79" data-name="Quency Escape Queen" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
-        <img src="image/79_missilis_ssr_b3_atk_smg_Quency Escape Queen.webp" alt="79_missilis_ssr_b3_atk_smg_Quency Escape Queen.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="79" data-name="frima" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/79_tetra_ssr_b1_sp_snr_frima.webp" alt="79_tetra_ssr_b1_sp_snr_frima.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="79" data-name="Mary Bay Goddess" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/79_tetra_ssr_b1_sp_snr_Mary Bay Goddess.webp" alt="79_tetra_ssr_b1_sp_snr_Mary Bay Goddess.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="80" data-name="Sakura Bloom in Summer" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/80_tetra_ssr_b3_sp_ar_Sakura Bloom in Summer.webp" alt="80_tetra_ssr_b3_sp_ar_Sakura Bloom in Summer.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="81" data-name="admi" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
-        <img src="image/81_missilis_ssr_b2_sp_snr_admi.webp" alt="81_missilis_ssr_b2_sp_snr_admi.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="81" data-name="ludmilla" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
-        <img src="image/81_tetra_ssr_b1_sp_smg_ludmilla.webp" alt="81_tetra_ssr_b1_sp_smg_ludmilla.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="81" data-name="sakura" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/81_tetra_ssr_b1_sp_snr_sakura.webp" alt="81_tetra_ssr_b1_sp_snr_sakura.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="82" data-name="yulha" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/82_tetra_ssr_B3_atk_snr_yulha.webp" alt="82_tetra_ssr_B3_atk_snr_yulha.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="ram" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="snr">
-        <img src="image/84_abnormal_sr_b1_sp_snr_ram.webp" alt="84_abnormal_sr_b1_sp_snr_ram.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="Mari Makinami Illustrious" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_abnormal_ssr_b2_sp_snr_Mari Makinami Illustrious.webp" alt="84_abnormal_ssr_b2_sp_snr_Mari Makinami Illustrious.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="D Killer Wife" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_elysion_ssr_b1_sp_snr_D Killer Wife.webp" alt="84_elysion_ssr_b1_sp_snr_D Killer Wife.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="helm" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_elysion_ssr_b3_atk_snr_helm.webp" alt="84_elysion_ssr_b3_atk_snr_helm.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="maxwell" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_missilis_ssr_B3_atk_snr_maxwell.webp" alt="84_missilis_ssr_B3_atk_snr_maxwell.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="trony" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_missilis_ssr_B3_atk_snr_trony.webp" alt="84_missilis_ssr_B3_atk_snr_trony.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="redhood" data-type="a" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_pilgrim_ssr_a_atk_snr_redhood.webp" alt="84_pilgrim_ssr_a_atk_snr_redhood.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="dorothy" data-type="b1" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
-        <img src="image/84_pilgrim_ssr_b1_sp_ar_dorothy.webp" alt="84_pilgrim_ssr_b1_sp_ar_dorothy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="milk" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_tetra_ssr_b1_atk_snr_milk.webp" alt="84_tetra_ssr_b1_atk_snr_milk.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="cocoa" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_tetra_ssr_b1_sp_snr_cocoa.webp" alt="84_tetra_ssr_b1_sp_snr_cocoa.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="exia" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_tetra_ssr_b1_sp_snr_exia.webp" alt="84_tetra_ssr_b1_sp_snr_exia.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="rouge" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_tetra_ssr_b1_sp_snr_rouge.webp" alt="84_tetra_ssr_b1_sp_snr_rouge.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="84" data-name="dolla" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
-        <img src="image/84_tetra_ssr_b2_sp_snr_dolla.webp" alt="84_tetra_ssr_b2_sp_snr_dolla.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="himeno" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="snr">
-        <img src="image/87_abnormal_ssr_b2_sp_snr_himeno.webp" alt="87_abnormal_ssr_b2_sp_snr_himeno.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="eunhwa" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
-        <img src="image/87_elysion_ssr_b2_atk_snr_eunhwa.webp" alt="87_elysion_ssr_b2_atk_snr_eunhwa.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="phantom" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
-        <img src="image/87_elysion_ssr_b3_atk_ar_phantom.webp" alt="87_elysion_ssr_b3_atk_ar_phantom.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="mihara" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="sr" data-weapon="ar">
-        <img src="image/87_missilis_sr_b3_atk_ar_mihara.webp" alt="87_missilis_sr_b3_atk_ar_mihara.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="snow white" data-type="b3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
-        <img src="image/87_pilgrim_ssr_B3_atk_ar_snow white.webp" alt="87_pilgrim_ssr_B3_atk_ar_snow white.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="idollflower" data-type="b1" data-position="def" data-faction="tetra" data-rarity="r" data-weapon="rl">
-        <img src="image/87_tetra_r_b1_def_rl_idollflower.webp" alt="87_tetra_r_b1_def_rl_idollflower.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="idollsun" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="r" data-weapon="ar">
-        <img src="image/87_tetra_r_b3_sp_ar_idollsun.webp" alt="87_tetra_r_b3_sp_ar_idollsun.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="87" data-name="moran" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
-        <img src="image/87_tetra_ssr_B1_def_ar_moran.webp" alt="87_tetra_ssr_B1_def_ar_moran.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="win" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_win.webp" alt="999_abnormal_r_a_sp_ar_win.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="win2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_win2.webp" alt="999_abnormal_r_a_sp_ar_win2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="win3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_win3.webp" alt="999_abnormal_r_a_sp_ar_win3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="win4" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_win4.webp" alt="999_abnormal_r_a_sp_ar_win4.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="win5" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_win5.webp" alt="999_abnormal_r_a_sp_ar_win5.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2.5rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2.5rl.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2.5rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2.5rl2.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2.5rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2.5rl3.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2rl.webp" alt="999_abnormal_r_a_sp_ar_z2rl.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2rl2.webp" alt="999_abnormal_r_a_sp_ar_z2rl2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z2rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z2rl3.webp" alt="999_abnormal_r_a_sp_ar_z2rl3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z3.5rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z3.5rl.webp" alt="999_abnormal_r_a_sp_ar_z3.5rl.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z3.5rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z3.5rl2.webp" alt="999_abnormal_r_a_sp_ar_z3.5rl2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z3rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z3rl.webp" alt="999_abnormal_r_a_sp_ar_z3rl.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z3rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z3rl2.webp" alt="999_abnormal_r_a_sp_ar_z3rl2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z3rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z3rl3.webp" alt="999_abnormal_r_a_sp_ar_z3rl3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z4rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z4rl.webp" alt="999_abnormal_r_a_sp_ar_z4rl.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z4rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z4rl2.webp" alt="999_abnormal_r_a_sp_ar_z4rl2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="z4rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_z4rl3.webp" alt="999_abnormal_r_a_sp_ar_z4rl3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb1.webp" alt="999_abnormal_r_a_sp_ar_zb1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb1copy.webp" alt="999_abnormal_r_a_sp_ar_zb1copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb2.webp" alt="999_abnormal_r_a_sp_ar_zb2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb2copy.webp" alt="999_abnormal_r_a_sp_ar_zb2copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb3.webp" alt="999_abnormal_r_a_sp_ar_zb3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zb3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zb3copy.webp" alt="999_abnormal_r_a_sp_ar_zb3copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr1.webp" alt="999_abnormal_r_a_sp_ar_zr1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr1copy.webp" alt="999_abnormal_r_a_sp_ar_zr1copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr2.webp" alt="999_abnormal_r_a_sp_ar_zr2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr2copy.webp" alt="999_abnormal_r_a_sp_ar_zr2copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr3.webp" alt="999_abnormal_r_a_sp_ar_zr3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zr3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zr3copy.webp" alt="999_abnormal_r_a_sp_ar_zr3copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt1.webp" alt="999_abnormal_r_a_sp_ar_zt1.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt1copy.webp" alt="999_abnormal_r_a_sp_ar_zt1copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt2.webp" alt="999_abnormal_r_a_sp_ar_zt2.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt2copy.webp" alt="999_abnormal_r_a_sp_ar_zt2copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt3.webp" alt="999_abnormal_r_a_sp_ar_zt3.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-    <div class="photo" data-number="999" data-name="zt3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
-        <img src="image/999_abnormal_r_a_sp_ar_zt3copy.webp" alt="999_abnormal_r_a_sp_ar_zt3copy.webp" onclick="toggleImageSelection(this)">
-    </div>
-    
-</div>
-
-<div id="selectedContainer" class="gallery"></div>
-
-<script>
-function updateFilters() {
-    const photos = document.querySelectorAll('.photo');
-
-    // Extract the checked filters and search input
-    const selectedFilters = {
-        type: Array.from(document.querySelectorAll('input[type="checkbox"][value^="b"], input[type="checkbox"][value="a"]')).filter(chk => chk.checked).map(chk => chk.value),
-        position: Array.from(document.querySelectorAll('input[type="checkbox"][value="def"], input[type="checkbox"][value="sp"], input[type="checkbox"][value="atk"]')).filter(chk => chk.checked).map(chk => chk.value),
-        faction: Array.from(document.querySelectorAll('input[type="checkbox"][value="elysion"], input[type="checkbox"][value="missilis"], input[type="checkbox"][value="tetra"], input[type="checkbox"][value="abnormal"], input[type="checkbox"][value="pilgrim"]')).filter(chk => chk.checked).map(chk => chk.value),
-        rarity: Array.from(document.querySelectorAll('input[type="checkbox"][value="ssr"], input[type="checkbox"][value="sr"], input[type="checkbox"][value="r"]')).filter(chk => chk.checked).map(chk => chk.value),
-        weapon: Array.from(document.querySelectorAll('input[type="checkbox"][value="smg"], input[type="checkbox"][value="ar"], input[type="checkbox"][value="snr"], input[type="checkbox"][value="rl"], input[type="checkbox"][value="sg"], input[type="checkbox"][value="mg"]')).filter(chk => chk.checked).map(chk => chk.value),
-    };
-
-    const searchValue = document.getElementById('searchInput').value.toLowerCase();
-
-    photos.forEach(photo => {
-        const attributes = {
-            type: photo.getAttribute('data-type'),
-            position: photo.getAttribute('data-position'),
-            faction: photo.getAttribute('data-faction'),
-            rarity: photo.getAttribute('data-rarity'),
-            weapon: photo.getAttribute('data-weapon'),
-            name: photo.getAttribute('data-name').toLowerCase(),
-        };
-
-        const isMatch = Object.keys(selectedFilters).every(key => {
-            return selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key]);
-        }) && (searchValue === '' || attributes.name.includes(searchValue));
-
-        photo.style.display = isMatch ? 'flex' : 'none';
-    });
-}
-
-
-
-
-let placeholder = document.createElement('div');
-placeholder.style.height = "100px";  // Match the height of your images
-placeholder.style.backgroundColor = "rgba(0, 0, 255, 0.3)"; // Light blue color
-placeholder.style.margin = "5px 0"; // Spacing
-placeholder.style.display = "none"; // Initially hidden
-
-selectedContainer.appendChild(placeholder);
-
-selectedContainer.ondragover = function(event) {
-    event.preventDefault(); // Prevent default to allow drop
-};
-
-selectedContainer.ondrop = function(event) {
-    event.preventDefault();
-    placeholder.style.display = "none"; // Hide placeholder after drop
-
-    const draggedImgSrc = event.dataTransfer.getData("text/plain");
-    const draggedImg = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === draggedImgSrc);
-    const targetImg = event.target;
-
-    // Ensure we drop on a valid image
-    if (targetImg.tagName === "IMG" && draggedImg) {
-        const rect = targetImg.getBoundingClientRect();
-        const offset = event.clientY - rect.top;
-
-        if (offset < rect.height / 2) {
-            // Drop before the target image
-            selectedContainer.insertBefore(draggedImg.parentElement, targetImg.parentElement);
-        } else {
-            // Drop after the target image
-            const nextElement = targetImg.parentElement.nextElementSibling;
-            if (nextElement) {
-                selectedContainer.insertBefore(draggedImg.parentElement, nextElement);
-            } else {
-                selectedContainer.appendChild(draggedImg.parentElement);
-            }
-        }
-    }
-};
-
-// Show placeholder only when dragging over an image
-selectedContainer.onmousemove = function(event) {
-    const targetImg = document.elementFromPoint(event.clientX, event.clientY);
-    if (targetImg && targetImg.tagName === "IMG") {
-        const rect = targetImg.getBoundingClientRect();
-        const offset = event.clientY - rect.top;
-
-        placeholder.style.display = "block";
-        if (offset < rect.height / 2) {
-            selectedContainer.insertBefore(placeholder, targetImg.parentElement);
-        } else {
-            const nextElement = targetImg.parentElement.nextElementSibling;
-            if (nextElement) {
-                selectedContainer.insertBefore(placeholder, nextElement);
-            } else {
-                selectedContainer.appendChild(placeholder);
-            }
-        }
-    } else {
-        placeholder.style.display = "none"; // Hide if not over an image
-    }
-};
-
-// Clean up placeholder when dragging out
-selectedContainer.onmouseleave = function() {
-    placeholder.style.display = "none"; // Hide when mouse leaves the container
-};
-
-let sortOrder = 'name'; // Default sort order
-let sortDirection = 'asc'; // Default sort direction
-let currentSortCriteria = 'name'; // Default sort criteria
-let currentSortOrder = 'asc'; // Default sort order
-
-function toggleSortCriteria() {
-    // Toggle between 'name' and 'number'
-    if (currentSortCriteria === 'name') {
-        currentSortCriteria = 'number';
-        document.getElementById('sortToggle').innerText = 'Sort by Name'; //Sort by Name
-    } else {
-        currentSortCriteria = 'name';
-        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen'; //Sort by Burst Gen
-    }
-    sortImages(); // Call your sort function after toggling
-}
-
-function toggleSortOrder() {
-    // Toggle between 'asc' and 'desc'
-    if (currentSortOrder === 'asc') {
-        currentSortOrder = 'desc';
-        document.getElementById('orderToggle').innerText = 'Lowest'; //Lowest
-    } else {
-        currentSortOrder = 'asc';
-        document.getElementById('orderToggle').innerText = 'Highest'; //Highest
-    }
-    sortImages(); // Call your sort function after toggling
-}
-
-function toggleSortCriteria() {
-    // Toggle between 'name' and 'number'
-    if (currentSortCriteria === 'name') {
-        currentSortCriteria = 'number';
-        document.getElementById('sortToggle').innerText = 'Sort by Name';
-    } else {
-        currentSortCriteria = 'name';
-        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen';
-    }
-    sortImages(); // Call your sort function after toggling
-}
-
-function sortImages() {
-    const photosArray = Array.from(document.querySelectorAll('.photo'));
-
-    photosArray.sort((a, b) => {
-        let comparison = 0;
-        if (currentSortCriteria === 'name') {
-            const nameA = a.getAttribute('data-name').toLowerCase();
-            const nameB = b.getAttribute('data-name').toLowerCase();
-            comparison = nameA.localeCompare(nameB);
-        } else if (currentSortCriteria === 'number') {
-            const numberA = parseInt(a.getAttribute('data-number'), 10);
-            const numberB = parseInt(b.getAttribute('data-number'), 10);
-            comparison = numberA - numberB; // Sort by actual number
-        }
-
-        // Reverse comparison if descending
-        return currentSortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    const gallery = document.querySelector('.gallery');
-    gallery.innerHTML = ''; // Clear current images
-    photosArray.forEach(photo => gallery.appendChild(photo)); // Add sorted photos back
-}
-
-
-// Function to set the sort order
-function setSortOrder(order) {
-    sortOrder = order; // Set the sort order
-    sortImages(); // Sort images after setting order
-}
-
-// Function to set the sort direction
-function setSortDirection(direction) {
-    sortDirection = direction; // Set the sort direction
-    sortImages(); // Sort images after setting direction
-}
-
-
-function toggleImageSelection(imgElement) {
-    const selectedContainer = document.getElementById('selectedContainer');
-    const imgSrc = imgElement.src;
-
-    // Check if the image is already selected
-    if (imgElement.classList.contains('selected')) {
-        imgElement.classList.remove('selected');
-
-        // Remove the image from the selected container
-        const selectedImages = selectedContainer.querySelectorAll('img');
-        selectedImages.forEach(selectedImg => {
-            if (selectedImg.src === imgSrc) {
-                selectedContainer.removeChild(selectedImg.parentElement);
-            }
-        });
-    } else {
-        imgElement.classList.add('selected');
-
-        // Clone the image to display in the selected container
-        const selectedImg = document.createElement('img');
-        selectedImg.src = imgSrc;
-        selectedImg.style.width = "100px"; // Size in the selected container
-        selectedImg.style.height = "100px"; // Size in the selected container
-        selectedImg.draggable = true; // Make it draggable
-
-        // Add drag and drop functionality
-        selectedImg.ondragstart = function(event) {
-            event.dataTransfer.setData("text/plain", imgSrc);
-            event.dataTransfer.effectAllowed = "move";
-        };
-
-        selectedContainer.ondragover = function(event) {
-            event.preventDefault(); // Prevent default to allow drop
-        };
-
-        selectedContainer.ondrop = function(event) {
-            event.preventDefault();
-            const draggedImgSrc = event.dataTransfer.getData("text/plain");
-            const draggedImg = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === draggedImgSrc);
-
-            // Get the target element where the dragged image is dropped
-            const targetImg = event.target;
-
-            if (targetImg.tagName === "IMG" && draggedImg) {
-                // Insert before or after the target image
-                const rect = targetImg.getBoundingClientRect();
-                const offset = event.clientY - rect.top;
-
-                if (offset < rect.height / 2) {
-                    selectedContainer.insertBefore(draggedImg.parentElement, targetImg.parentElement);
-                } else {
-                    const nextElement = targetImg.parentElement.nextElementSibling;
-                    if (nextElement) {
-                        selectedContainer.insertBefore(draggedImg.parentElement, nextElement);
-                    } else {
-                        selectedContainer.appendChild(draggedImg.parentElement);
-                    }
-                }
-            }
-        };
-
-        // Add click event to remove from selection
-        selectedImg.onclick = function() {
-            imgElement.classList.remove('selected');  // Unselect the original image
-
-            // Remove this image from the selected container
-            selectedContainer.removeChild(selectedImg.parentElement);
-        };
-
-        const selectedItem = document.createElement('div');
-        selectedItem.appendChild(selectedImg);
-        selectedContainer.appendChild(selectedItem);
-    }
-}
-
-
-
-
-   // Function to show or hide all images
-let showAll = true; // Set to true to indicate that images are hidden by default
-
-// Function to toggle between showing and hiding all images
-function toggleShowHide() {
-    const photos = document.querySelectorAll('.photo');
-
-    // Toggle display based on the current state
-    if (showAll) {
-        photos.forEach(photo => {
-            photo.style.display = 'flex'; // Show all photos
-        });
-        showAll = false;
-    } else {
-        photos.forEach(photo => {
-            photo.style.display = 'none'; // Hide all photos
-        });
-        showAll = true;
-    }
-}
-
-
-
-// Function to hide all images
-function hideAll() {
-    const photos = document.querySelectorAll('.photo');
-    photos.forEach(photo => {
-        photo.style.display = 'none'; // Hide all photos
-    });
-    showAll = true; // Reset state so "Show All" can be clicked to show photos
-}
-
-// Function to reset filters and show all photos
-function resetFilters() {
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    updateFilters();
-    showAll = false; // Reset state so the "Show All" button will work correctly
-}
-
-// Hide all images on page load
-window.onload = function() {
-    hideAll(); // Call hideAll function to hide all images by default
-};
-
-function saveSelectedImages() {
-    const selectedImages = document.querySelectorAll('#selectedContainer img');
-    const imageArray = Array.from(selectedImages).map(img => img.src);
-
-    // Create a blob from the image array
-    const fileData = JSON.stringify(imageArray, null, 2); // Convert to JSON format
-    const blob = new Blob([fileData], { type: 'application/json' }); // Create a blob
-    const url = URL.createObjectURL(blob); // Create a URL for the blob
-
-    // Create a link element and trigger the download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'selected_images.json'; // Filename for the downloaded file
-    document.body.appendChild(a); // Append link to body
-    a.click(); // Trigger download
-    document.body.removeChild(a); // Remove link from body
-    URL.revokeObjectURL(url); // Free up memory
-}
-
-function loadSelectedImages(event) {
-    const file = event.target.files[0]; // Get the selected file
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imageArray = JSON.parse(e.target.result); // Parse the JSON file
-            const selectedContainer = document.getElementById('selectedContainer');
-            selectedContainer.innerHTML = ''; // Clear current selections
-
-            imageArray.forEach(src => {
-                // Create a new image element and add it to the selected container
-                const img = document.createElement('img');
-                img.src = src;
-                img.style.width = "100px"; // Size in the selected container
-                img.style.height = "100px"; // Size in the selected container
-                img.draggable = true; // Make it draggable
-
-                img.onclick = function() {
-                    // Remove from selection when clicked
-                    img.classList.remove('selected');
-                    selectedContainer.removeChild(img);
-                };
-
-                selectedContainer.appendChild(img); // Add the image to the selected container
-            });
-        };
-        reader.readAsText(file); // Read the file as text
-    }
-}
-
-
-    sortImages();
-</script>
-
-
-
-
+        
+        <div class="photo" data-number="105" data-name="Asuka Shikinami Langley" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
+            <img src="image/105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" alt="105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="108" data-name="soline" data-type="B3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
+            <img src="image/108_elysion_ssr_B3_atk_smg_soline.webp" alt="108_elysion_ssr_B3_atk_smg_soline.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="108" data-name="crow" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
+            <img src="image/108_missilis_ssr_b1_def_smg_crow.webp" alt="108_missilis_ssr_b1_def_smg_crow.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="108" data-name="quency" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
+            <img src="image/108_missilis_ssr_b2_sp_smg_quency.webp" alt="108_missilis_ssr_b2_sp_smg_quency.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="112" data-name="n102" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/112_missilis_ssr_b1_sp_rl_n102.webp" alt="112_missilis_ssr_b1_sp_rl_n102.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="112" data-name="yuni" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/112_missilis_ssr_b2_def_rl_yuni.webp" alt="112_missilis_ssr_b2_def_rl_yuni.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="112" data-name="ein" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
+            <img src="image/112_missilis_ssr_B3_atk_snr_ein.webp" alt="112_missilis_ssr_B3_atk_snr_ein.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="112" data-name="belorta" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/112_tetra_sr_b2_atk_rl_belorta.webp" alt="112_tetra_sr_b2_atk_rl_belorta.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="116" data-name="laplace" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/116_missilis_ssr_b3_atk_rl_laplace.webp" alt="116_missilis_ssr_b3_atk_rl_laplace.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="poli" data-type="b2" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_elysion_ssr_b2_def_sg_poli.webp" alt="120_elysion_ssr_b2_def_sg_poli.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="marciana" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_elysion_ssr_b2_sp_sg_marciana.webp" alt="120_elysion_ssr_b2_sp_sg_marciana.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="ether" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_missilis_ssr_b1_sp_sg_ether.webp" alt="120_missilis_ssr_b1_sp_sg_ether.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="guilty" data-type="b2" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_missilis_ssr_b2_atk_sg_guilty.webp" alt="120_missilis_ssr_b2_atk_sg_guilty.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="naga" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_missilis_ssr_b2_sp_sg_naga.webp" alt="120_missilis_ssr_b2_sp_sg_naga.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="isabel" data-type="B3" data-position="sg" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
+            <img src="image/120_pilgrim_ssr_B3_sg_atk_isabel.webp" alt="120_pilgrim_ssr_B3_sg_atk_isabel.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="mary" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_tetra_ssr_b1_sp_sg_mary.webp" alt="120_tetra_ssr_b1_sp_sg_mary.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="leona" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/120_tetra_ssr_b2_sp_sg_leona.webp" alt="120_tetra_ssr_b2_sp_sg_leona.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="120" data-name="neve" data-type="b3" data-position="sg" data-faction="tetra" data-rarity="ssr" data-weapon="atk">
+            <img src="image/120_tetra_ssr_b3_sg_atk_neve.webp" alt="120_tetra_ssr_b3_sg_atk_neve.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="125" data-name="Anis Sparkling Summer" data-type="B3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/125_tetra_ssr_B3_sp_sg_Anis Sparkling Summer.webp" alt="125_tetra_ssr_B3_sp_sg_Anis Sparkling Summer.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="126" data-name="grave" data-type="B2" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
+            <img src="image/126_pilgrim_ssr_B2_sp_ar_grave.webp" alt="126_pilgrim_ssr_B2_sp_ar_grave.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="128" data-name="Privaty Unkind Maid" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
+            <img src="image/128_elysion_ssr_b3_atk_sg_Privaty Unkind Maid.webp" alt="128_elysion_ssr_b3_atk_sg_Privaty Unkind Maid.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="130" data-name="Anis Sparkling Summer2" data-type="B3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/130_tetra_ssr_B3_sp_sg_Anis Sparkling Summer2.webp" alt="130_tetra_ssr_B3_sp_sg_Anis Sparkling Summer2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="132" data-name="mana" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
+            <img src="image/132_missilis_ssr_b3_atk_ar_mana.webp" alt="132_missilis_ssr_b3_atk_ar_mana.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="137" data-name="scarletblackshadow" data-type="B3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/137_pilgrim_ssr_B3_atk_rl_scarletblackshadow.webp" alt="137_pilgrim_ssr_B3_atk_rl_scarletblackshadow.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="140" data-name="ein" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
+            <img src="image/140_missilis_ssr_B3_atk_snr_ein.webp" alt="140_missilis_ssr_B3_atk_snr_ein.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="145" data-name="harran" data-type="B3" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
+            <img src="image/145_pilgrim_ssr_B3_snr_atk_harran.webp" alt="145_pilgrim_ssr_B3_snr_atk_harran.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="149" data-name="mana" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
+            <img src="image/149_missilis_ssr_b3_atk_ar_mana.webp" alt="149_missilis_ssr_b3_atk_ar_mana.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="157" data-name="scarlet" data-type="B3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
+            <img src="image/157_pilgrim_ssr_B3_atk_ar_scarlet.webp" alt="157_pilgrim_ssr_B3_atk_ar_scarlet.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="power" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_abnormal_ssr_b3_atk_rl_power.webp" alt="168_abnormal_ssr_b3_atk_rl_power.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="Anchor Innocent Maid" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_elysion_ssr_b2_sp_rl_Anchor Innocent Maid.webp" alt="168_elysion_ssr_b2_sp_rl_Anchor Innocent Maid.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="vesti" data-type="B3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_elysion_ssr_B3_atk_rl_vesti.webp" alt="168_elysion_ssr_B3_atk_rl_vesti.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="quiry" data-type="B3" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_elysion_ssr_B3_sp_rl_quiry.webp" alt="168_elysion_ssr_B3_sp_rl_quiry.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="tia" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_missilis_ssr_b1_def_rl_tia.webp" alt="168_missilis_ssr_b1_def_rl_tia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="Anne Miracle Fairy" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_missilis_ssr_b2_sp_rl_Anne Miracle Fairy.webp" alt="168_missilis_ssr_b2_sp_rl_Anne Miracle Fairy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="mica" data-type="B1" data-position="sp" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/168_tetra_sr_B1_sp_rl_mica.webp" alt="168_tetra_sr_B1_sp_rl_mica.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="noise" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_tetra_ssr_b1_sp_rl_noise.webp" alt="168_tetra_ssr_b1_sp_rl_noise.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="micax" data-type="B1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/168_tetra_ssr_B1_sp_smg_micax.webp" alt="168_tetra_ssr_B1_sp_smg_micax.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="bay" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_tetra_ssr_b2_def_rl_bay.webp" alt="168_tetra_ssr_b2_def_rl_bay.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="biscuit" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_tetra_ssr_b2_sp_rl_biscuit.webp" alt="168_tetra_ssr_b2_sp_rl_biscuit.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="168" data-name="biscuit2" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/168_tetra_ssr_b2_sp_rl_biscuit2.webp" alt="168_tetra_ssr_b2_sp_rl_biscuit2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="174" data-name="rapunzel" data-type="b1" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/174_pilgrim_ssr_b1_sp_rl_rapunzel.webp" alt="174_pilgrim_ssr_b1_sp_rl_rapunzel.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="18" data-name="Snow White Innocent Day" data-type="B3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
+            <img src="image/18_pilgrim_ssr_B3_atk_ar_Snow White Innocent Day.webp" alt="18_pilgrim_ssr_B3_atk_ar_Snow White Innocent Day.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="210" data-name="zwei" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
+            <img src="image/210_elysion_ssr_b1_sp_sg_zwei.webp" alt="210_elysion_ssr_b1_sp_sg_zwei.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="216" data-name="micax2" data-type="B1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/216_tetra_ssr_B1_sp_smg_micax2.webp" alt="216_tetra_ssr_B1_sp_smg_micax2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="230" data-name="pascal" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="snr">
+            <img src="image/230_abnormal_sr_b1_sp_snr_pascal.webp" alt="230_abnormal_sr_b1_sp_snr_pascal.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="234" data-name="a2" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
+            <img src="image/234_abnormal_ssr_b3_atk_rl_a2.webp" alt="234_abnormal_ssr_b3_atk_rl_a2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="252" data-name="nihilister" data-type="b2" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="atk">
+            <img src="image/252_pilgrim_ssr_b2_snr_atk_nihilister.webp" alt="252_pilgrim_ssr_b2_snr_atk_nihilister.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="261" data-name="laplace0" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/261_missilis_ssr_b3_atk_rl_laplace0.webp" alt="261_missilis_ssr_b3_atk_rl_laplace0.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="267" data-name="laplace1" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/267_missilis_ssr_b3_atk_rl_laplace1.webp" alt="267_missilis_ssr_b3_atk_rl_laplace1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="neon" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="sr" data-weapon="sg">
+            <img src="image/270_elysion_sr_b1_sp_sg_neon.webp" alt="270_elysion_sr_b1_sp_sg_neon.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="maiden" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_elysion_ssr_b3_atk_sg_maiden.webp" alt="270_elysion_ssr_b3_atk_sg_maiden.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="product23" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="r" data-weapon="sg">
+            <img src="image/270_missilis_r_b2_sp_sg_product23.webp" alt="270_missilis_r_b2_sp_sg_product23.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="pepper" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_missilis_ssr_b1_sp_sg_pepper.webp" alt="270_missilis_ssr_b1_sp_sg_pepper.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="laplace3" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/270_missilis_ssr_b3_atk_rl_laplace3.webp" alt="270_missilis_ssr_b3_atk_rl_laplace3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="drake" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_missilis_ssr_B3_atk_sg_drake.webp" alt="270_missilis_ssr_B3_atk_sg_drake.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="viper" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_tetra_ssr_b2_atk_sg_viper.webp" alt="270_tetra_ssr_b2_atk_sg_viper.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="noir" data-type="B3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_tetra_ssr_B3_atk_sg_noir.webp" alt="270_tetra_ssr_B3_atk_sg_noir.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="Soda Twinkling Bunny" data-type="B3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_tetra_ssr_B3_atk_sg_Soda Twinkling Bunny.webp" alt="270_tetra_ssr_B3_atk_sg_Soda Twinkling Bunny.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="270" data-name="sugar" data-type="B3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="sg">
+            <img src="image/270_tetra_ssr_B3_atk_sg_sugar.webp" alt="270_tetra_ssr_B3_atk_sg_sugar.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="273" data-name="maiden ice rose" data-type="b3" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="rl">
+            <img src="image/273_elysion_ssr_b3_def_rl_maiden ice rose.webp" alt="273_elysion_ssr_b3_def_rl_maiden ice rose.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="273" data-name="laplace7" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/273_missilis_ssr_b3_atk_rl_laplace7.webp" alt="273_missilis_ssr_b3_atk_rl_laplace7.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="360" data-name="noah" data-type="B2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/360_pilgrim_ssr_B2_def_rl_noah.webp" alt="360_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="368" data-name="noah" data-type="B2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/368_pilgrim_ssr_B2_def_rl_noah.webp" alt="368_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="rem" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_abnormal_ssr_b2_sp_mg_rem.webp" alt="36_abnormal_ssr_b2_sp_mg_rem.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="rei ayanami" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_abnormal_ssr_b3_atk_mg_rei ayanami.webp" alt="36_abnormal_ssr_b3_atk_mg_rei ayanami.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="emma" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b1_sp_mg_emma.webp" alt="36_elysion_ssr_b1_sp_mg_emma.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="diesel" data-type="b2" data-position="def" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b2_def_mg_diesel.webp" alt="36_elysion_ssr_b2_def_mg_diesel.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="Mast Romantic Maid" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b2_sp_mg_Mast Romantic Maid.webp" alt="36_elysion_ssr_b2_sp_mg_Mast Romantic Maid.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="guillotine" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b3_atk_mg_guillotine.webp" alt="36_elysion_ssr_b3_atk_mg_guillotine.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="Neon Blue Ocean" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b3_atk_mg_Neon Blue Ocean.webp" alt="36_elysion_ssr_b3_atk_mg_Neon Blue Ocean.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="red rapi rrh" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_elysion_ssr_b3_atk_mg_red rapi rrh.webp" alt="36_elysion_ssr_b3_atk_mg_red rapi rrh.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="product12" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="r" data-weapon="mg">
+            <img src="image/36_missilis_r_b3_atk_mg_product12.webp" alt="36_missilis_r_b3_atk_mg_product12.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="eleg" data-type="B2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_missilis_ssr_B2_sp_mg_eleg.webp" alt="36_missilis_ssr_B2_sp_mg_eleg.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="kilo" data-type="b3" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_missilis_ssr_b3_def_mg_kilo.webp" alt="36_missilis_ssr_b3_def_mg_kilo.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="crown" data-type="b2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_pilgrim_ssr_b2_def_mg_crown.webp" alt="36_pilgrim_ssr_b2_def_mg_crown.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="cinderella" data-type="B3" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/36_pilgrim_ssr_B3_def_rl_cinderella.webp" alt="36_pilgrim_ssr_B3_def_rl_cinderella.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="rosanna" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_tetra_ssr_b1_atk_mg_rosanna.webp" alt="36_tetra_ssr_b1_atk_mg_rosanna.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="soda" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_tetra_ssr_b1_sp_mg_soda.webp" alt="36_tetra_ssr_b1_sp_mg_soda.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="aria" data-type="b2" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_tetra_ssr_b2_atk_mg_aria.webp" alt="36_tetra_ssr_b2_atk_mg_aria.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="36" data-name="Ludmilla Winter Owner" data-type="b3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="mg">
+            <img src="image/36_tetra_ssr_b3_atk_mg_Ludmilla Winter Owner.webp" alt="36_tetra_ssr_b3_atk_mg_Ludmilla Winter Owner.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="372" data-name="noah" data-type="B2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/372_pilgrim_ssr_B2_def_rl_noah.webp" alt="372_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="376" data-name="noah" data-type="B2" data-position="def" data-faction="pilgrim" data-rarity="ssr" data-weapon="rl">
+            <img src="image/376_pilgrim_ssr_B2_def_rl_noah.webp" alt="376_pilgrim_ssr_B2_def_rl_noah.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="378" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
+            <img src="image/378_abnormal_ssr_b3_atk_rl_emilia.webp" alt="378_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="390" data-name="rumani" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/390_tetra_ssr_b1_def_rl_rumani.webp" alt="390_tetra_ssr_b1_def_rl_rumani.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="399" data-name="rumani1" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/399_tetra_ssr_b1_def_rl_rumani1.webp" alt="399_tetra_ssr_b1_def_rl_rumani1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="403" data-name="rumani2" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/403_tetra_ssr_b1_def_rl_rumani2.webp" alt="403_tetra_ssr_b1_def_rl_rumani2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="408" data-name="rumani3" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/408_tetra_ssr_b1_def_rl_rumani3.webp" alt="408_tetra_ssr_b1_def_rl_rumani3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="414" data-name="centi" data-type="B2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/414_missilis_ssr_B2_def_rl_centi.webp" alt="414_missilis_ssr_B2_def_rl_centi.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="423" data-name="centi1" data-type="B2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/423_missilis_ssr_B2_def_rl_centi1.webp" alt="423_missilis_ssr_B2_def_rl_centi1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="426" data-name="jackal" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/426_missilis_ssr_b1_def_rl_jackal.webp" alt="426_missilis_ssr_b1_def_rl_jackal.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="426" data-name="anis" data-type="B2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/426_tetra_sr_B2_def_rl_anis.webp" alt="426_tetra_sr_B2_def_rl_anis.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="428" data-name="centi2" data-type="B2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/428_missilis_ssr_B2_def_rl_centi2.webp" alt="428_missilis_ssr_B2_def_rl_centi2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="433" data-name="centi3" data-type="B2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/433_missilis_ssr_B2_def_rl_centi3.webp" alt="433_missilis_ssr_B2_def_rl_centi3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="435" data-name="jackal1" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/435_missilis_ssr_b1_def_rl_jackal1.webp" alt="435_missilis_ssr_b1_def_rl_jackal1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="435" data-name="anis1" data-type="B2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/435_tetra_sr_B2_def_rl_anis1.webp" alt="435_tetra_sr_B2_def_rl_anis1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="440" data-name="jackal2" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/440_missilis_ssr_b1_def_rl_jackal2.webp" alt="440_missilis_ssr_b1_def_rl_jackal2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="440" data-name="anis2" data-type="B2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/440_tetra_sr_B2_def_rl_anis2.webp" alt="440_tetra_sr_B2_def_rl_anis2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="445" data-name="jackal3" data-type="b1" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="rl">
+            <img src="image/445_missilis_ssr_b1_def_rl_jackal3.webp" alt="445_missilis_ssr_b1_def_rl_jackal3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="445" data-name="anis7" data-type="B2" data-position="def" data-faction="tetra" data-rarity="sr" data-weapon="rl">
+            <img src="image/445_tetra_sr_B2_def_rl_anis7.webp" alt="445_tetra_sr_B2_def_rl_anis7.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="504" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
+            <img src="image/504_abnormal_ssr_b3_atk_rl_emilia.webp" alt="504_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="Misato Katsuragi" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="smg">
+            <img src="image/54_abnormal_sr_b1_sp_smg_Misato Katsuragi.webp" alt="54_abnormal_sr_b1_sp_smg_Misato Katsuragi.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="makima" data-type="b2" data-position="def" data-faction="abnormal" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_abnormal_ssr_b2_def_smg_makima.webp" alt="54_abnormal_ssr_b2_def_smg_makima.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="miranda" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_elysion_ssr_b1_sp_smg_miranda.webp" alt="54_elysion_ssr_b1_sp_smg_miranda.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="signal" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_elysion_ssr_b2_atk_smg_signal.webp" alt="54_elysion_ssr_b2_atk_smg_signal.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="mast" data-type="b2" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_elysion_ssr_b2_sp_smg_mast.webp" alt="54_elysion_ssr_b2_sp_smg_mast.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="d" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_elysion_ssr_b3_atk_smg_d.webp" alt="54_elysion_ssr_b3_atk_smg_d.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="liter" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_missilis_ssr_b1_sp_smg_liter.webp" alt="54_missilis_ssr_b1_sp_smg_liter.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="epinel" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_missilis_ssr_B3_atk_smg_epinel.webp" alt="54_missilis_ssr_B3_atk_smg_epinel.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="idollocean" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="r" data-weapon="smg">
+            <img src="image/54_tetra_r_b1_sp_smg_idollocean.webp" alt="54_tetra_r_b1_sp_smg_idollocean.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="volume" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b1_atk_smg_volume.webp" alt="54_tetra_ssr_b1_atk_smg_volume.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="rei" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b1_def_smg_rei.webp" alt="54_tetra_ssr_b1_def_smg_rei.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="Alice Wonderland Bunny" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b1_sp_smg_Alice Wonderland Bunny.webp" alt="54_tetra_ssr_b1_sp_smg_Alice Wonderland Bunny.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="nero" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b2_def_smg_nero.webp" alt="54_tetra_ssr_b2_def_smg_nero.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="clay" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b2_sp_smg_clay.webp" alt="54_tetra_ssr_b2_sp_smg_clay.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="54" data-name="novel" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/54_tetra_ssr_b2_sp_smg_novel.webp" alt="54_tetra_ssr_b2_sp_smg_novel.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="56" data-name="yan" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="rl">
+            <img src="image/56_tetra_ssr_b1_sp_rl_yan.webp" alt="56_tetra_ssr_b1_sp_rl_yan.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="56" data-name="alice" data-type="B3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/56_tetra_ssr_B3_atk_snr_alice.webp" alt="56_tetra_ssr_B3_atk_snr_alice.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="630" data-name="emilia" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="rl">
+            <img src="image/630_abnormal_ssr_b3_atk_rl_emilia.webp" alt="630_abnormal_ssr_b3_atk_rl_emilia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="2b" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_abnormal_ssr_b3_atk_ar_2b.webp" alt="70_abnormal_ssr_b3_atk_ar_2b.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="soldereg" data-type="b3" data-position="sp" data-faction="elysion" data-rarity="r" data-weapon="ar">
+            <img src="image/70_elysion_r_b3_sp_ar_soldereg.webp" alt="70_elysion_r_b3_sp_ar_soldereg.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="rapi" data-type="B3" data-position="atk" data-faction="elysion" data-rarity="sr" data-weapon="ar">
+            <img src="image/70_elysion_sr_B3_atk_ar_rapi.webp" alt="70_elysion_sr_B3_atk_ar_rapi.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="Helm Aquamarine" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_elysion_ssr_b2_atk_ar_Helm Aquamarine.webp" alt="70_elysion_ssr_b2_atk_ar_Helm Aquamarine.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="brid" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_elysion_ssr_b3_atk_ar_brid.webp" alt="70_elysion_ssr_b3_atk_ar_brid.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="guillotine winter slayer" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_elysion_ssr_b3_atk_ar_guillotine winter slayer.webp" alt="70_elysion_ssr_b3_atk_ar_guillotine winter slayer.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="privaty" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_elysion_ssr_b3_atk_ar_privaty.webp" alt="70_elysion_ssr_b3_atk_ar_privaty.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="tove" data-type="b1" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_missilis_ssr_b1_sp_ar_tove.webp" alt="70_missilis_ssr_b1_sp_ar_tove.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="sin" data-type="b2" data-position="def" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_missilis_ssr_b2_def_ar_sin.webp" alt="70_missilis_ssr_b2_def_ar_sin.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="julia" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_missilis_ssr_B3_atk_ar_julia.webp" alt="70_missilis_ssr_B3_atk_ar_julia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="Rupee Winter Shopper" data-type="b1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_tetra_ssr_b1_def_ar_Rupee Winter Shopper.webp" alt="70_tetra_ssr_b1_def_ar_Rupee Winter Shopper.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="blanc" data-type="B2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_tetra_ssr_B2_def_ar_blanc.webp" alt="70_tetra_ssr_B2_def_ar_blanc.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="folkwang" data-type="b2" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_tetra_ssr_b2_def_ar_folkwang.webp" alt="70_tetra_ssr_b2_def_ar_folkwang.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="70" data-name="Rosanna Chic Ocean" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/70_tetra_ssr_b2_sp_ar_Rosanna Chic Ocean.webp" alt="70_tetra_ssr_b2_sp_ar_Rosanna Chic Ocean.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="72" data-name="modernia" data-type="B3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="mg">
+            <img src="image/72_pilgrim_ssr_B3_atk_mg_modernia.webp" alt="72_pilgrim_ssr_B3_atk_mg_modernia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="76" data-name="rapunzel pure grace" data-type="B1" data-position="snr" data-faction="pilgrim" data-rarity="ssr" data-weapon="sp">
+            <img src="image/76_pilgrim_ssr_B1_snr_sp_rapunzel pure grace.webp" alt="76_pilgrim_ssr_B1_snr_sp_rapunzel pure grace.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="79" data-name="Delta" data-type="B2" data-position="def" data-faction="elysion" data-rarity="sr" data-weapon="sr">
+            <img src="image/79_elysion_sr_B2_def_sr_Delta.webp" alt="79_elysion_sr_B2_def_sr_Delta.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="79" data-name="Quency Escape Queen" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="smg">
+            <img src="image/79_missilis_ssr_b3_atk_smg_Quency Escape Queen.webp" alt="79_missilis_ssr_b3_atk_smg_Quency Escape Queen.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="79" data-name="frima" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/79_tetra_ssr_b1_sp_snr_frima.webp" alt="79_tetra_ssr_b1_sp_snr_frima.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="79" data-name="Mary Bay Goddess" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/79_tetra_ssr_b1_sp_snr_Mary Bay Goddess.webp" alt="79_tetra_ssr_b1_sp_snr_Mary Bay Goddess.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="80" data-name="Sakura Bloom in Summer" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/80_tetra_ssr_b3_sp_ar_Sakura Bloom in Summer.webp" alt="80_tetra_ssr_b3_sp_ar_Sakura Bloom in Summer.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="81" data-name="admi" data-type="b2" data-position="sp" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
+            <img src="image/81_missilis_ssr_b2_sp_snr_admi.webp" alt="81_missilis_ssr_b2_sp_snr_admi.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="81" data-name="ludmilla" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="smg">
+            <img src="image/81_tetra_ssr_b1_sp_smg_ludmilla.webp" alt="81_tetra_ssr_b1_sp_smg_ludmilla.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="81" data-name="sakura" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/81_tetra_ssr_b1_sp_snr_sakura.webp" alt="81_tetra_ssr_b1_sp_snr_sakura.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="82" data-name="yulha" data-type="B3" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/82_tetra_ssr_B3_atk_snr_yulha.webp" alt="82_tetra_ssr_B3_atk_snr_yulha.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="ram" data-type="b1" data-position="sp" data-faction="abnormal" data-rarity="sr" data-weapon="snr">
+            <img src="image/84_abnormal_sr_b1_sp_snr_ram.webp" alt="84_abnormal_sr_b1_sp_snr_ram.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="Mari Makinami Illustrious" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_abnormal_ssr_b2_sp_snr_Mari Makinami Illustrious.webp" alt="84_abnormal_ssr_b2_sp_snr_Mari Makinami Illustrious.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="D Killer Wife" data-type="b1" data-position="sp" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_elysion_ssr_b1_sp_snr_D Killer Wife.webp" alt="84_elysion_ssr_b1_sp_snr_D Killer Wife.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="helm" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_elysion_ssr_b3_atk_snr_helm.webp" alt="84_elysion_ssr_b3_atk_snr_helm.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="maxwell" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_missilis_ssr_B3_atk_snr_maxwell.webp" alt="84_missilis_ssr_B3_atk_snr_maxwell.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="trony" data-type="B3" data-position="atk" data-faction="missilis" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_missilis_ssr_B3_atk_snr_trony.webp" alt="84_missilis_ssr_B3_atk_snr_trony.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="redhood" data-type="a" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_pilgrim_ssr_a_atk_snr_redhood.webp" alt="84_pilgrim_ssr_a_atk_snr_redhood.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="dorothy" data-type="b1" data-position="sp" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
+            <img src="image/84_pilgrim_ssr_b1_sp_ar_dorothy.webp" alt="84_pilgrim_ssr_b1_sp_ar_dorothy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="milk" data-type="b1" data-position="atk" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_tetra_ssr_b1_atk_snr_milk.webp" alt="84_tetra_ssr_b1_atk_snr_milk.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="cocoa" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_tetra_ssr_b1_sp_snr_cocoa.webp" alt="84_tetra_ssr_b1_sp_snr_cocoa.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="exia" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_tetra_ssr_b1_sp_snr_exia.webp" alt="84_tetra_ssr_b1_sp_snr_exia.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="rouge" data-type="b1" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_tetra_ssr_b1_sp_snr_rouge.webp" alt="84_tetra_ssr_b1_sp_snr_rouge.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="84" data-name="dolla" data-type="b2" data-position="sp" data-faction="tetra" data-rarity="ssr" data-weapon="snr">
+            <img src="image/84_tetra_ssr_b2_sp_snr_dolla.webp" alt="84_tetra_ssr_b2_sp_snr_dolla.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="himeno" data-type="b2" data-position="sp" data-faction="abnormal" data-rarity="ssr" data-weapon="snr">
+            <img src="image/87_abnormal_ssr_b2_sp_snr_himeno.webp" alt="87_abnormal_ssr_b2_sp_snr_himeno.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="eunhwa" data-type="b2" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="snr">
+            <img src="image/87_elysion_ssr_b2_atk_snr_eunhwa.webp" alt="87_elysion_ssr_b2_atk_snr_eunhwa.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="phantom" data-type="b3" data-position="atk" data-faction="elysion" data-rarity="ssr" data-weapon="ar">
+            <img src="image/87_elysion_ssr_b3_atk_ar_phantom.webp" alt="87_elysion_ssr_b3_atk_ar_phantom.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="mihara" data-type="b3" data-position="atk" data-faction="missilis" data-rarity="sr" data-weapon="ar">
+            <img src="image/87_missilis_sr_b3_atk_ar_mihara.webp" alt="87_missilis_sr_b3_atk_ar_mihara.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="snow white" data-type="B3" data-position="atk" data-faction="pilgrim" data-rarity="ssr" data-weapon="ar">
+            <img src="image/87_pilgrim_ssr_B3_atk_ar_snow white.webp" alt="87_pilgrim_ssr_B3_atk_ar_snow white.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="idollflower" data-type="b1" data-position="def" data-faction="tetra" data-rarity="r" data-weapon="rl">
+            <img src="image/87_tetra_r_b1_def_rl_idollflower.webp" alt="87_tetra_r_b1_def_rl_idollflower.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="idollsun" data-type="b3" data-position="sp" data-faction="tetra" data-rarity="r" data-weapon="ar">
+            <img src="image/87_tetra_r_b3_sp_ar_idollsun.webp" alt="87_tetra_r_b3_sp_ar_idollsun.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="87" data-name="moran" data-type="B1" data-position="def" data-faction="tetra" data-rarity="ssr" data-weapon="ar">
+            <img src="image/87_tetra_ssr_B1_def_ar_moran.webp" alt="87_tetra_ssr_B1_def_ar_moran.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="win" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_win.webp" alt="999_abnormal_r_a_sp_ar_win.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="win2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_win2.webp" alt="999_abnormal_r_a_sp_ar_win2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="win3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_win3.webp" alt="999_abnormal_r_a_sp_ar_win3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="win4" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_win4.webp" alt="999_abnormal_r_a_sp_ar_win4.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="win5" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_win5.webp" alt="999_abnormal_r_a_sp_ar_win5.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2.5rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2.5rl.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2.5rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2.5rl2.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2.5rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2.5rl3.webp" alt="999_abnormal_r_a_sp_ar_z2.5rl3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2rl.webp" alt="999_abnormal_r_a_sp_ar_z2rl.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2rl2.webp" alt="999_abnormal_r_a_sp_ar_z2rl2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z2rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z2rl3.webp" alt="999_abnormal_r_a_sp_ar_z2rl3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z3.5rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z3.5rl.webp" alt="999_abnormal_r_a_sp_ar_z3.5rl.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z3.5rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z3.5rl2.webp" alt="999_abnormal_r_a_sp_ar_z3.5rl2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z3rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z3rl.webp" alt="999_abnormal_r_a_sp_ar_z3rl.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z3rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z3rl2.webp" alt="999_abnormal_r_a_sp_ar_z3rl2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z3rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z3rl3.webp" alt="999_abnormal_r_a_sp_ar_z3rl3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z4rl" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z4rl.webp" alt="999_abnormal_r_a_sp_ar_z4rl.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z4rl2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z4rl2.webp" alt="999_abnormal_r_a_sp_ar_z4rl2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="z4rl3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_z4rl3.webp" alt="999_abnormal_r_a_sp_ar_z4rl3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb1.webp" alt="999_abnormal_r_a_sp_ar_zb1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb1copy.webp" alt="999_abnormal_r_a_sp_ar_zb1copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb2.webp" alt="999_abnormal_r_a_sp_ar_zb2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb2copy.webp" alt="999_abnormal_r_a_sp_ar_zb2copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb3.webp" alt="999_abnormal_r_a_sp_ar_zb3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zb3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zb3copy.webp" alt="999_abnormal_r_a_sp_ar_zb3copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr1.webp" alt="999_abnormal_r_a_sp_ar_zr1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr1copy.webp" alt="999_abnormal_r_a_sp_ar_zr1copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr2.webp" alt="999_abnormal_r_a_sp_ar_zr2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr2copy.webp" alt="999_abnormal_r_a_sp_ar_zr2copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr3.webp" alt="999_abnormal_r_a_sp_ar_zr3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zr3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zr3copy.webp" alt="999_abnormal_r_a_sp_ar_zr3copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt1" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt1.webp" alt="999_abnormal_r_a_sp_ar_zt1.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt1copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt1copy.webp" alt="999_abnormal_r_a_sp_ar_zt1copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt2" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt2.webp" alt="999_abnormal_r_a_sp_ar_zt2.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt2copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt2copy.webp" alt="999_abnormal_r_a_sp_ar_zt2copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt3" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt3.webp" alt="999_abnormal_r_a_sp_ar_zt3.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+
+        <div class="photo" data-number="999" data-name="zt3copy" data-type="a" data-position="sp" data-faction="abnormal" data-rarity="r" data-weapon="ar">
+            <img src="image/999_abnormal_r_a_sp_ar_zt3copy.webp" alt="999_abnormal_r_a_sp_ar_zt3copy.webp" onclick="toggleImageSelection(this)">
+        </div>
+        
+    </div>
+
+    <!-- Selected Images Container -->
+    <div id="selectedContainer" class="gallery"></div>
+
+    <!-- Save/Load Buttons -->
+    <div class="button-container">
+        <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
+        <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
+        <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
