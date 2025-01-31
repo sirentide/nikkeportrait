@@ -21,10 +21,7 @@ html_template = """
     <link rel="icon" href="image/favicon.ico" type="image/x-icon">
     <style>
         body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
-        .gallery { display: flex; flex-wrap: wrap; gap: 10px; }
-        .photo { display: none; flex-direction: column; align-items: center; }
-        .photo img { width: 50px; height: 50px; object-fit: cover; cursor: pointer; border-radius: 5px; }
-        .photo img.selected { border: 2px solid blue; }
+        .gallery { display: flex; flex-wrap: wrap; gap: 0px; }
         label { margin-right: 10px; color: #fff; }
         #selectedContainer { margin-top: 20px; }
         h3, h4 { color: #fff; }

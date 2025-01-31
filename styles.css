@@ -243,3 +243,31 @@ body {
         background-color: #0056b3; /* Darker blue on hover */
     }
 }
+
+
+.photo {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.photo img {
+    width: 100px; /* Default width for desktop */
+    height: 100px; /* Default height for desktop */
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Selected image border */
+.photo img.selected {
+    border: 2px solid blue;
+}
+
+/* Media query for mobile devices (max-width: 768px) */
+@media (max-width: 768px) {
+    .photo img {
+        width: 50px; /* Reduced width for mobile */
+        height: 50px; /* Reduced height for mobile */
+    }
+}

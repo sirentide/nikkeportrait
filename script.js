@@ -114,21 +114,28 @@ function toggleImageSelection(imgElement) {
         if (teamRow.children.length < 5) { // Check if the row has less than 5 images
             const selectedImg = document.createElement('img');
             selectedImg.src = imgSrc;
-            selectedImg.style.width = '50px'; // Match the CSS size
-            selectedImg.style.height = '50px';
-
+    
+            // Adjust the image size based on screen width
+            if (window.innerWidth <= 768) {
+                selectedImg.style.width = '50px'; // Mobile size
+                selectedImg.style.height = '50px';
+            } else {
+                selectedImg.style.width = '100px'; // Desktop size
+                selectedImg.style.height = '100px';
+            }
+    
             // Add click event to remove from selection
             selectedImg.onclick = function () {
                 teamRow.removeChild(selectedImg); // Remove from the grid
                 imgElement.classList.remove('selected'); // Unselect the original image
             };
-
+    
             teamRow.appendChild(selectedImg); // Add to the grid
             added = true;
             break; // Stop after adding to the first available row
-            
         }
     }
+    
 
     if (!added) {
         alert('All teams are full!'); // Notify the user if all rows are full
