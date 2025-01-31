@@ -12,7 +12,7 @@
         body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
         .gallery { display: flex; flex-wrap: wrap; gap: 10px; }
         .photo { display: none; flex-direction: column; align-items: center; }
-        .photo img { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border-radius: 5px; }
+        .photo img { width: 50px; height: 50px; object-fit: cover; cursor: pointer; border-radius: 5px; }
         .photo img.selected { border: 2px solid blue; }
         label { margin-right: 10px; color: #fff; }
         #selectedContainer { margin-top: 20px; }
@@ -87,37 +87,47 @@
 
     <!-- Search Input -->
     <div class="filter-buttons">
-        <h3>Search by Name:</h3>
+    <h3>Search by Name:</h3>
+    <div class="search-wrapper">
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-    </div>
-
-    <div id="selectedContainer">
-    <!-- Team 1 -->
-    <div class="team-row">
-        <div class="team-label">T1</div>
-        <div class="team-images" data-team="1"></div>
-    </div>
-    <!-- Team 2 -->
-    <div class="team-row">
-        <div class="team-label">T2</div>
-        <div class="team-images" data-team="2"></div>
-    </div>
-    <!-- Team 3 -->
-    <div class="team-row">
-        <div class="team-label">T3</div>
-        <div class="team-images" data-team="3"></div>
-    </div>
-    <!-- Team 4 -->
-    <div class="team-row">
-        <div class="team-label">T4</div>
-        <div class="team-images" data-team="4"></div>
-    </div>
-    <!-- Team 5 -->
-    <div class="team-row">
-        <div class="team-label">T5</div>
-        <div class="team-images" data-team="5"></div>
+        <button id="clearSearch" onclick="clearSearch()">Clear</button> <!-- Clear button -->
     </div>
 </div>
+
+
+    <div id="selectedContainer">
+        <!-- Team 1 -->
+        <div class="team-row" data-team="1">
+            <div class="team-label">T1</div>
+            <div class="team-images" data-team="1">
+            </div>
+        </div>
+        <!-- Team 2 -->
+        <div class="team-row" data-team="2">
+            <div class="team-label">T2</div>
+            <div class="team-images" data-team="2">
+            </div>
+        </div>
+        <!-- Team 3 -->
+        <div class="team-row" data-team="3">
+            <div class="team-label">T3</div>
+            <div class="team-images" data-team="3">
+            </div>
+        </div>
+        <!-- Team 4 -->
+        <div class="team-row" data-team="4">
+            <div class="team-label">T4</div>
+            <div class="team-images" data-team="4">
+            </div>
+        </div>
+        <!-- Team 5 -->
+        <div class="team-row" data-team="5">
+            <div class="team-label">T5</div>
+            <div class="team-images" data-team="5">
+            </div>
+        </div>
+    </div>
+
 
 
     <!-- Gallery -->
@@ -948,5 +958,26 @@
     <div id="selectedContainer" class="gallery"></div>
 
     <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+     <script>
+        // Initialize Sortable.js on each team-images container with group option
+        document.querySelectorAll('.team-images').forEach((teamContainer) => {
+            new Sortable(teamContainer, {
+                animation: 150,  // Smooth animation
+                ghostClass: 'sortable-ghost',  // Class for the dragged item
+                group: {
+                    name: 'shared',  // The group name must be the same for all teams to allow movement
+                    pull: true,  // Allow pulling items from this list
+                    put: true   // Allow putting items into this list
+                },
+                onEnd: function(evt) {
+                    console.log(`Image moved from team ${evt.from.getAttribute('data-team')} to team ${evt.to.getAttribute('data-team')}`);
+                    // You can perform other actions after the drag event
+                }
+            });
+        });
+    </script>
+
+
 </body>
 </html>

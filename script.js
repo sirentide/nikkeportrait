@@ -190,3 +190,7 @@ function toggleFilter(button) {
 }
 
 
+function clearSearch() {
+    document.getElementById('searchInput').value = ''; // Clear the search input
+    updateFilters(); // Update the filters after clearing
+}
