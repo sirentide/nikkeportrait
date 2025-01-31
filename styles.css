@@ -3,7 +3,6 @@ body {
     background-color: #000000; /* Black background for entire body */
     color: #FFFFFF; /* White text for readability */
     padding: 20px; /* Padding around the body */
-    font-size: 16px; /* Base font size for better readability */
 }
 
 /* Centering the filter buttons */
@@ -24,12 +23,15 @@ body {
     margin-bottom: 5px; /* Space between filter groups */
 }
 
+
+
+
 /* Heading styles */
 h4 {
     margin-right: 1.5rem; /* Space between title and checkboxes */
     align-items: center; /* Center items vertically */
     white-space: nowrap; /* Prevent wrapping */
-    font-size: 1.1rem; /* Slightly larger for visibility */
+    font-size: 0.9rem; /* Slightly larger for visibility */
     width: 80px; /* Fixed width for consistent alignment */
 }
 
@@ -43,20 +45,18 @@ label {
     display: flex;
     align-items: center; /* Center checkbox and label text vertically */
     color: #FFFFFF; /* White color for labels */
-    margin-bottom: 5px; /* Add space between checkbox labels */
 }
+
 
 /* Checkbox input */
 label input {
     margin-right: 15px; /* Space between checkbox and text */
-    width: 20px; /* Larger checkboxes for mobile */
-    height: 20px;
 }
 
 /* Button styles */
 button {
     width: 200px; /* Consistent button width */
-    height: 48px; /* Minimum height for tap targets */
+    height: 35px; /* Standard height */
     font-size: 1rem; /* Font size */
     margin-top: 1rem; /* Space above */
     background-color: #444444; /* Dark gray background for buttons */
@@ -65,7 +65,6 @@ button {
     border-radius: 5px; /* Rounded corners */
     cursor: pointer; /* Pointer cursor on hover */
     transition: background-color 0.3s; /* Smooth transition */
-    padding: 12px 20px; /* Increase padding for better touchability */
 }
 
 button:hover {
@@ -138,87 +137,4 @@ button:hover {
 /* Load button hover effect */
 #loadButton:hover {
     background-color: #45a049; /* Darker green on hover */
-}
-
-/* Gallery layout */
-.gallery {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Space between images */
-    justify-content: center; /* Center-align images */
-}
-
-.photo img {
-    width: 100px; /* Default image size */
-    height: 100px;
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor for interaction */
-}
-
-/* Mobile-friendly adjustments */
-@media (max-width: 768px) {
-    body {
-        padding: 10px; /* Reduce padding for smaller screens */
-    }
-
-    .filter-buttons {
-        padding: 10px; /* Reduce padding */
-        align-items: flex-start; /* Align filters to the left */
-    }
-
-    .filter-buttons > div {
-        flex-direction: column; /* Stack filter groups vertically */
-        align-items: flex-start; /* Align items to the left */
-    }
-
-    h4 {
-        margin-bottom: 5px; /* Add space below headings */
-        width: auto; /* Allow headings to take full width */
-    }
-
-    .checkbox-group {
-        flex-direction: column; /* Stack checkboxes vertically */
-    }
-
-    label {
-        margin-bottom: 5px; /* Add space between checkbox labels */
-    }
-
-    button {
-        width: 100%; /* Full-width buttons for easier tapping */
-        margin-top: 10px; /* Reduce space above buttons */
-    }
-
-    #searchInput {
-        width: 100%; /* Full-width search input */
-        margin: 10px 0; /* Adjust margin */
-    }
-
-    .sort-controls {
-        flex-direction: column; /* Stack sort buttons vertically */
-    }
-
-    .sort-controls button {
-        width: 100%; /* Full-width buttons */
-        margin: 5px 0; /* Add space between buttons */
-    }
-
-    .button-container {
-        flex-direction: column; /* Stack buttons vertically */
-    }
-
-    #loadButton {
-        width: 100%; /* Full-width load button */
-        margin: 5px 0; /* Add space between buttons */
-    }
-
-    .photo img {
-        width: 80px; /* Smaller images for mobile */
-        height: 80px;
-    }
-}
-
-/* Smooth scrolling */
-html {
-    scroll-behavior: smooth;
 }
