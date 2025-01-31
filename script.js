@@ -95,7 +95,6 @@ function sortImages() {
 }
 
 // Function to toggle image selection
-// Function to toggle image selection
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
