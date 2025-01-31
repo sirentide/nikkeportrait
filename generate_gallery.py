@@ -143,8 +143,6 @@ html_template = """
         {gallery_items}
     </div>
 
-    <!-- Selected Images Container -->
-    <div id="selectedContainer" class="gallery"></div>
 
     <script src="script.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>

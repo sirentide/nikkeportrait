@@ -57,6 +57,7 @@ function toggleSortCriteria() {
     sortImages(); // Call your sort function after toggling
 }
 
+
 function toggleSortOrder() {
     // Toggle between 'asc' and 'desc'
     if (currentSortOrder === 'asc') {
@@ -116,18 +117,25 @@ function toggleImageSelection(imgElement) {
             selectedImg.src = imgSrc;
     
             // Adjust the image size based on screen width
-            if (window.innerWidth <= 768) {
-                selectedImg.style.width = '50px'; // Mobile size
-                selectedImg.style.height = '50px';
-            } else {
-                selectedImg.style.width = '100px'; // Desktop size
-                selectedImg.style.height = '100px';
+            function adjustImageSize() {
+                if (window.innerWidth <= 768) {
+                    selectedImg.style.width = '50px'; // Mobile size
+                    selectedImg.style.height = '50px';
+                } else {
+                    selectedImg.style.width = '100px'; // Desktop size
+                    selectedImg.style.height = '100px';
+                }
             }
-    
+            adjustImageSize(); // Initial size adjustment
+
+            // Handle dynamic resizing
+            window.addEventListener('resize', adjustImageSize);
+
             // Add click event to remove from selection
             selectedImg.onclick = function () {
                 teamRow.removeChild(selectedImg); // Remove from the grid
                 imgElement.classList.remove('selected'); // Unselect the original image
+                window.removeEventListener('resize', adjustImageSize); // Cleanup on removal
             };
     
             teamRow.appendChild(selectedImg); // Add to the grid
@@ -135,7 +143,6 @@ function toggleImageSelection(imgElement) {
             break; // Stop after adding to the first available row
         }
     }
-    
 
     if (!added) {
         alert('All teams are full!'); // Notify the user if all rows are full
@@ -143,6 +150,13 @@ function toggleImageSelection(imgElement) {
         imgElement.classList.add('selected'); // Mark the image as selected
     }
 }
+
+document.body.addEventListener('click', function(event) {
+    if (event.target && event.target.id === 'clearSelectionBtn') {
+        clearSelection(); // Call the function when the clear selection button is clicked
+    }
+});
+
 
 function clearSelection() {
     const selectedImages = document.querySelectorAll('.selected');
@@ -227,3 +241,4 @@ function toggleFilter(button) {
         button.innerHTML = "Filters ▼"; // Change button text to '▼'
     }
 }
+
