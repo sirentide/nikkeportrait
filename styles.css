@@ -1,9 +1,9 @@
 /* General Body Styling */
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #121212; /* Dark background */
+    margin: 0.5rem;
+    padding: 0.5rem;
+    background-color: #000000; /* Dark background */
     color: #e0e0e0; /* Light text color */
 }
 
@@ -11,9 +11,18 @@ body {
 .gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Mobile-first: 1 column */
-    gap: 10px;
-    padding: 10px;
+    gap: 5px;
+    padding: 5px;
     background-color: #1e1e1e; /* Darker gallery background */
+}
+
+.sort-controls{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    gap: 5px;
+    border-radius: 2px;
 }
 
 /* Photo Card Styling */
@@ -21,8 +30,8 @@ body {
     display: none; /* Initially hide all images */
     background-color: #333; /* Darker photo background */
     border: 1px solid #444; /* Lighter border for contrast */
-    padding: 15px;
-    border-radius: 8px;
+    padding: 2px;
+    border-radius: 2px;
     text-align: center;
 }
 
@@ -35,69 +44,20 @@ body {
 
 /* Filter Section Styling */
 .filter-section {
-    padding: 10px;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    padding: 10px; /* Increased padding for better spacing */
     background-color: #333; /* Darker filter section background */
-    color: #e0e0e0; /* Lighter text in filter */
-    border-radius: 8px;
-    margin: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.filter-buttons {
-    margin-bottom: 10px;
-}
-
-.collapse-btn {
-    background-color: #007BFF;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-}
-
-.collapse-btn:hover {
-    background-color: #0056b3;
-}
-
-/* Collapsible Content */
-.filter-content {
-    display: none; /* Hidden by default */
-    margin-top: 10px;
-}
-
-/* Make sure the filter box appears when expanded */
-.filter-content.visible {
-    display: block;
-}
-
-/* Mobile Styling: Adjusting Grid and Filter Layout for Smaller Screens */
-@media (max-width: 600px) {
-    .gallery {
-        grid-template-columns: 1fr; /* One column for mobile */
-    }
-
-    /* Collapse all filter content by default */
-    .filter-content {
-        display: none;
-    }
-}
-
-/* Desktop Styling: Adjusting Grid Layout for Larger Screens */
-@media (min-width: 601px) {
-    .gallery {
-        grid-template-columns: repeat(3, 1fr); /* Three columns for desktop */
-    }
-
-    .filter-content {
-        display: block; /* Keep the filters expanded on desktop */
-    }
+    color: #e0e0e0; /* Lighter text for better contrast */
+    border-radius: 8px; /* Rounded corners for a more polished look */
+    margin: 10px 0; /* Add vertical margin for separation from other sections */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for depth */
 }
 
 /* Search input styling */
 .search-wrapper {
     display: flex;
+    justify-content: center;
     align-items: center;
 }
 
@@ -129,23 +89,157 @@ body {
     background-color: #0056b3;
 }
 
+/* Centering the Filter Section */
+.filter-section {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    padding: 10px; /* Increased padding for better spacing */
+    background-color: #333; /* Darker filter section background */
+    color: #e0e0e0; /* Lighter text for better contrast */
+    border-radius: 8px; /* Rounded corners for a more polished look */
+    margin: 10px auto; /* Center horizontally with auto margin */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for depth */
+    width: 100%; /* Take full width */
+    max-width: 600px; /* Set a max width for the filter section */
+    height: auto; /* Allow it to adjust to content */
+}
 
-/* Mobile Styling: Adjusting Grid and Filter Layout */
+/* Centering the content within the filter section */
+.filter-section h3,
+.filter-section .filter-box,
+.filter-section .checkbox-group,
+.filter-section .collapse-btn {
+    text-align: center; /* Align text to the center */
+}
+
+/* Filter Box Styling */
+.filter-box {
+    margin-bottom: 15px; /* Add space between each filter box */
+}
+
+.filter-box h4 {
+    font-size: 1.1em;
+    margin-bottom: 8px; /* Space between the filter title and checkboxes */
+}
+
+/* Checkbox Group Styling */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; /* Space between checkboxes */
+    justify-content: center; /* Center checkboxes */
+}
+
+/* Individual Checkbox Styling */
+.checkbox-group label {
+    font-size: 1em;
+    cursor: pointer; /* Indicate that it's clickable */
+    transition: color 0.2s ease-in-out; /* Smooth transition for hover/focus effects */
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 5px; /* Space between the checkbox and label */
+}
+
+/* Hover & Focus States for Labels */
+.checkbox-group label:hover, .checkbox-group label:focus {
+    color: #007BFF; /* Highlight on hover or focus */
+}
+
+/* Filter Buttons Styling */
+.collapse-btn {
+    background-color: #007BFF; /* Bright color for the filter toggle button */
+    color: white;
+    padding: 12px;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width to make it easier to click */
+    text-align: center;
+    font-size: 1.1em;
+    border-radius: 8px; /* Rounded corners */
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+}
+
+/* Hover effect for collapse button */
+.collapse-btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Filter Content Styling */
+.filter-content {
+    display: none; /* Initially hidden */
+    margin-top: 10px;
+}
+
+.filter-content.visible {
+    display: block; /* Show when toggled */
+}
+
+/* Mobile Styling */
 @media (max-width: 600px) {
-    .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Flexible image size */
-    }
-
-    .filter-content {
-        display: none; /* Hide filters on mobile */
-    }
-
     .filter-section {
-        width: 100%; /* Make filter section full width */
+        padding: 8px; /* Adjust padding for mobile screens */
+        margin: 0 auto; /* Center horizontally */
+    }
+
+    .checkbox-group {
+        gap: 5px; /* Smaller gap between checkboxes */
     }
 
     .collapse-btn {
-        width: 100%;
-        text-align: left;
+        font-size: 1em; /* Smaller font size for mobile */
+    }
+}
+
+/* Desktop Styling */
+@media (min-width: 601px) {
+    .filter-section {
+        flex-direction: column; /* Keep the vertical stacking */
+        justify-content: center; /* Center the content */
+    }
+
+    .checkbox-group {
+        gap: 12px; /* More space between checkboxes */
+    }
+
+    .collapse-btn {
+        width: auto; /* Button size back to normal for desktops */
+        font-size: 1.2em; /* Larger font size */
+    }
+}
+
+/* Mobile Specific Styling */
+@media (max-width: 600px) {
+    .search-bar {
+        position: fixed; /* Fix the position at the bottom */
+        bottom: 0; /* Stick to the bottom of the screen */
+        left: 0; /* Align to the left side */
+        width: 100%; /* Full width of the screen */
+        background-color: #333; /* Dark background for contrast */
+        padding: 10px; /* Add some padding for spacing */
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+        z-index: 9999; /* Ensure it stays above other content */
+    }
+
+    /* Optional: Style for input or button inside the search bar */
+    .search-bar input {
+        width: 80%; /* Adjust input width */
+        padding: 8px; /* Padding for the input field */
+        border-radius: 8px; /* Rounded corners */
+        border: 1px solid #ccc; /* Light border */
+    }
+
+    .search-bar button {
+        background-color: #007BFF; /* Button color */
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .search-bar button:hover {
+        background-color: #0056b3; /* Darker blue on hover */
     }
 }

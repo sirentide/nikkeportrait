@@ -52,9 +52,9 @@ html_template = """
         <div class="filter-box">
             <h4>Class:</h4>
             <div class="checkbox-group">
-                <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
-                <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
-                <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
+                <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
+                <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
+                <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
             </div>
         </div>
         <div class="filter-box">
@@ -97,9 +97,9 @@ html_template = """
     </div>
 
     <!-- Search Input -->
-    <div class="filter-buttons">
-    <h3>Search by Name:</h3>
+
     <div class="search-wrapper">
+    <div class="search-bar">
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
         <button id="clearSearch" onclick="clearSearch()">Clear</button> <!-- Clear button -->
     </div>
