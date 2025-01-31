@@ -39,9 +39,9 @@ html_template = """
 
 <div class="filter-section">
     <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
-    <div class="filter-content">
+    <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
         <div class="filter-box">
-            <h4>Type:</h4>
+            <h4>Burst:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
                 <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
@@ -50,7 +50,7 @@ html_template = """
             </div>
         </div>
         <div class="filter-box">
-            <h4>Position:</h4>
+            <h4>Class:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
                 <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
@@ -58,7 +58,7 @@ html_template = """
             </div>
         </div>
         <div class="filter-box">
-            <h4>Faction:</h4>
+            <h4>Industry:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
                 <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>

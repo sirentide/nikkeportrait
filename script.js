@@ -196,13 +196,14 @@ document.addEventListener('touchend', function (e) {
 });
 
 function toggleFilter(button) {
-    let content = button.nextElementSibling;
-    if (content.style.display === "none" || content.style.display === "") {
-        content.style.display = "block";
-        button.textContent = "Filters ▲";
+    var content = button.nextElementSibling; // Get the filter-content div
+    if (content.style.display === "none") {
+        content.style.display = "block"; // Show the filter content
+        button.innerHTML = "Filters ▲"; // Change button text to '▲'
     } else {
-        content.style.display = "none";
-        button.textContent = "Filters ▼";
+        content.style.display = "none"; // Hide the filter content
+        button.innerHTML = "Filters ▼"; // Change button text to '▼'
     }
 }
+
 

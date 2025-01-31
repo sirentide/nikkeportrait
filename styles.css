@@ -243,14 +243,18 @@ button:hover {
 }
 
 
-.image-gallery {
+/* Desktop layout (default) */
+.gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-  }
-  @media (min-width: 1024px) {
-    .image-gallery {
-      grid-template-columns: repeat(4, 1fr); /* 4 columns on larger screens */
+    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
+    gap: 16px;
+}
+
+/* Mobile layout (when screen width is 768px or less) */
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr); /* 2 items per row */
     }
-  }
-  
+}
+
+
