@@ -42,8 +42,8 @@ function updateFilters() {
 }
 
 // Sort functionality
-let currentSortCriteria = 'name'; // Default sort criteria
-let currentSortOrder = 'asc'; // Default sort order
+let currentSortCriteria = 'number'; // Default sort criteria
+let currentSortOrder = 'desc'; // Default sort order
 
 function toggleSortCriteria() {
     // Toggle between 'name' and 'number'
