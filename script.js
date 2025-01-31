@@ -41,75 +41,6 @@ function updateFilters() {
     });
 }
 
-// Drag-and-drop functionality for selected images
-let placeholder = document.createElement('div');
-placeholder.style.height = '100px'; // Match the height of your images
-placeholder.style.backgroundColor = 'rgba(0, 0, 255, 0.3)'; // Light blue color
-placeholder.style.margin = '5px 0'; // Spacing
-placeholder.style.display = 'none'; // Initially hidden
-
-document.getElementById('selectedContainer').appendChild(placeholder);
-
-document.getElementById('selectedContainer').ondragover = function (event) {
-    event.preventDefault(); // Prevent default to allow drop
-};
-
-document.getElementById('selectedContainer').ondrop = function (event) {
-    event.preventDefault();
-    placeholder.style.display = 'none'; // Hide placeholder after drop
-
-    const draggedImgSrc = event.dataTransfer.getData('text/plain');
-    const draggedImg = Array.from(document.getElementById('selectedContainer').querySelectorAll('img')).find(img => img.src === draggedImgSrc);
-    const targetImg = event.target;
-
-    // Ensure we drop on a valid image
-    if (targetImg.tagName === 'IMG' && draggedImg) {
-        const rect = targetImg.getBoundingClientRect();
-        const offset = event.clientY - rect.top;
-
-        if (offset < rect.height / 2) {
-            // Drop before the target image
-            document.getElementById('selectedContainer').insertBefore(draggedImg.parentElement, targetImg.parentElement);
-        } else {
-            // Drop after the target image
-            const nextElement = targetImg.parentElement.nextElementSibling;
-            if (nextElement) {
-                document.getElementById('selectedContainer').insertBefore(draggedImg.parentElement, nextElement);
-            } else {
-                document.getElementById('selectedContainer').appendChild(draggedImg.parentElement);
-            }
-        }
-    }
-};
-
-// Show placeholder only when dragging over an image
-document.getElementById('selectedContainer').onmousemove = function (event) {
-    const targetImg = document.elementFromPoint(event.clientX, event.clientY);
-    if (targetImg && targetImg.tagName === 'IMG') {
-        const rect = targetImg.getBoundingClientRect();
-        const offset = event.clientY - rect.top;
-
-        placeholder.style.display = 'block';
-        if (offset < rect.height / 2) {
-            document.getElementById('selectedContainer').insertBefore(placeholder, targetImg.parentElement);
-        } else {
-            const nextElement = targetImg.parentElement.nextElementSibling;
-            if (nextElement) {
-                document.getElementById('selectedContainer').insertBefore(placeholder, nextElement);
-            } else {
-                document.getElementById('selectedContainer').appendChild(placeholder);
-            }
-        }
-    } else {
-        placeholder.style.display = 'none'; // Hide if not over an image
-    }
-};
-
-// Clean up placeholder when dragging out
-document.getElementById('selectedContainer').onmouseleave = function () {
-    placeholder.style.display = 'none'; // Hide when mouse leaves the container
-};
-
 // Sort functionality
 let currentSortCriteria = 'name'; // Default sort criteria
 let currentSortOrder = 'asc'; // Default sort order
@@ -167,42 +98,41 @@ function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
 
-    // Check if the image is already selected
-    if (imgElement.classList.contains('selected')) {
-        imgElement.classList.remove('selected');
+    // Check if the image is already in the grid
+    const existingImage = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === imgSrc);
 
-        // Remove the image from the selected container
-        const selectedImages = selectedContainer.querySelectorAll('img');
-        selectedImages.forEach(selectedImg => {
-            if (selectedImg.src === imgSrc) {
-                selectedContainer.removeChild(selectedImg.parentElement);
-            }
-        });
+    if (existingImage) {
+        // If the image is already in the grid, do nothing
+        return;
+    }
+
+    // Find the first available slot in the grid
+    const teamRows = document.querySelectorAll('.team-images');
+    let added = false;
+
+    for (const teamRow of teamRows) {
+        if (teamRow.children.length < 5) { // Check if the row has less than 5 images
+            const selectedImg = document.createElement('img');
+            selectedImg.src = imgSrc;
+            selectedImg.style.width = '50px'; // Match the CSS size
+            selectedImg.style.height = '50px';
+
+            // Add click event to remove from selection
+            selectedImg.onclick = function () {
+                teamRow.removeChild(selectedImg); // Remove from the grid
+                imgElement.classList.remove('selected'); // Unselect the original image
+            };
+
+            teamRow.appendChild(selectedImg); // Add to the grid
+            added = true;
+            break; // Stop after adding to the first available row
+        }
+    }
+
+    if (!added) {
+        alert('All teams are full!'); // Notify the user if all rows are full
     } else {
-        imgElement.classList.add('selected');
-
-        // Clone the image to display in the selected container
-        const selectedImg = document.createElement('img');
-        selectedImg.src = imgSrc;
-        selectedImg.style.width = '100px'; // Size in the selected container
-        selectedImg.style.height = '100px'; // Size in the selected container
-        selectedImg.draggable = true; // Make it draggable
-
-        // Add drag and drop functionality
-        selectedImg.ondragstart = function (event) {
-            event.dataTransfer.setData('text/plain', imgSrc);
-            event.dataTransfer.effectAllowed = 'move';
-        };
-
-        // Add click event to remove from selection
-        selectedImg.onclick = function () {
-            imgElement.classList.remove('selected'); // Unselect the original image
-            selectedContainer.removeChild(selectedImg.parentElement); // Remove from selected container
-        };
-
-        const selectedItem = document.createElement('div');
-        selectedItem.appendChild(selectedImg);
-        selectedContainer.appendChild(selectedItem);
+        imgElement.classList.add('selected'); // Mark the image as selected
     }
 }
 
@@ -249,69 +179,30 @@ window.onload = function () {
     hideAll(); // Call hideAll function to hide all images by default
 };
 
-// Function to save selected images to a JSON file
-function saveSelectedImages() {
-    const selectedImages = document.querySelectorAll('#selectedContainer img');
-    const imageArray = Array.from(selectedImages).map(img => img.src);
-
-    // Create a blob from the image array
-    const fileData = JSON.stringify(imageArray, null, 2); // Convert to JSON format
-    const blob = new Blob([fileData], { type: 'application/json' }); // Create a blob
-    const url = URL.createObjectURL(blob); // Create a URL for the blob
-
-    // Create a link element and trigger the download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'selected_images.json'; // Filename for the downloaded file
-    document.body.appendChild(a); // Append link to body
-    a.click(); // Trigger download
-    document.body.removeChild(a); // Remove link from body
-    URL.revokeObjectURL(url); // Free up memory
-}
-
-// Function to load selected images from a JSON file
-function loadSelectedImages(event) {
-    const file = event.target.files[0]; // Get the selected file
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imageArray = JSON.parse(e.target.result); // Parse the JSON file
-            const selectedContainer = document.getElementById('selectedContainer');
-            selectedContainer.innerHTML = ''; // Clear current selections
-
-            imageArray.forEach(src => {
-                // Create a new image element and add it to the selected container
-                const img = document.createElement('img');
-                img.src = src;
-                img.style.width = '100px'; // Size in the selected container
-                img.style.height = '100px'; // Size in the selected container
-                img.draggable = true; // Make it draggable
-
-                img.onclick = function () {
-                    // Remove from selection when clicked
-                    img.classList.remove('selected');
-                    selectedContainer.removeChild(img);
-                };
-
-                selectedContainer.appendChild(img); // Add the image to the selected container
-            });
-        };
-        reader.readAsText(file); // Read the file as text
-    }
-}
-
 // Initial sort of images
 sortImages();
 
-// Disable right-click and long-press for images
-const images = document.querySelectorAll('.photo img');
-images.forEach(img => {
-    img.addEventListener('contextmenu', function (e) {
-        e.preventDefault(); // Prevent the default context menu
-    });
+// Disable long-press on touch devices
+let touchTimer;
 
-    img.addEventListener('touchstart', function (e) {
-        e.preventDefault(); // Prevent the default touch behavior
-    }, { passive: false });
+document.addEventListener('touchstart', function (e) {
+    touchTimer = setTimeout(() => {
+        e.preventDefault(); // Prevent the default touch behavior only for long presses
+    }, 500); // 500ms delay for long press
+}, { passive: false });
+
+document.addEventListener('touchend', function (e) {
+    clearTimeout(touchTimer); // Clear the timer if the touch ends quickly
 });
+
+function toggleFilter(button) {
+    let content = button.nextElementSibling;
+    if (content.style.display === "none" || content.style.display === "") {
+        content.style.display = "block";
+        button.textContent = "Filters ▲";
+    } else {
+        content.style.display = "none";
+        button.textContent = "Filters ▼";
+    }
+}
+

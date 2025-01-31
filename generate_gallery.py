@@ -36,9 +36,12 @@ html_template = """
    </style>
 </head>
 <body>
-    <!-- Filter Buttons -->
-    <div class="filter-buttons">
-        <div><h4>Type:</h4>
+
+<div class="filter-section">
+    <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
+    <div class="filter-content">
+        <div class="filter-box">
+            <h4>Type:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
                 <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
@@ -46,14 +49,16 @@ html_template = """
                 <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
             </div>
         </div>
-        <div><h4>Position:</h4>
+        <div class="filter-box">
+            <h4>Position:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="def" onchange="updateFilters()"> DEF</label>
                 <label><input type="checkbox" value="sp" onchange="updateFilters()"> SP</label>
                 <label><input type="checkbox" value="atk" onchange="updateFilters()"> ATK</label>
             </div>
         </div>
-        <div><h4>Faction:</h4>
+        <div class="filter-box">
+            <h4>Faction:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
                 <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
@@ -62,14 +67,16 @@ html_template = """
                 <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
             </div>
         </div>
-        <div><h4>Rarity:</h4>
+        <div class="filter-box">
+            <h4>Rarity:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
                 <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
                 <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
             </div>
         </div>
-        <div><h4>Weapon Type:</h4>
+        <div class="filter-box">
+            <h4>Weapon Type:</h4>
             <div class="checkbox-group">
                 <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
                 <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
@@ -80,6 +87,10 @@ html_template = """
             </div>
         </div>
     </div>
+</div>
+
+
+
 
     <!-- Sort Controls -->
     <div class="sort-controls">
@@ -94,6 +105,35 @@ html_template = """
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
     </div>
 
+    <div id="selectedContainer">
+    <!-- Team 1 -->
+    <div class="team-row">
+        <div class="team-label">T1</div>
+        <div class="team-images" data-team="1"></div>
+    </div>
+    <!-- Team 2 -->
+    <div class="team-row">
+        <div class="team-label">T2</div>
+        <div class="team-images" data-team="2"></div>
+    </div>
+    <!-- Team 3 -->
+    <div class="team-row">
+        <div class="team-label">T3</div>
+        <div class="team-images" data-team="3"></div>
+    </div>
+    <!-- Team 4 -->
+    <div class="team-row">
+        <div class="team-label">T4</div>
+        <div class="team-images" data-team="4"></div>
+    </div>
+    <!-- Team 5 -->
+    <div class="team-row">
+        <div class="team-label">T5</div>
+        <div class="team-images" data-team="5"></div>
+    </div>
+</div>
+
+
     <!-- Gallery -->
     <div class="gallery">
         {gallery_items}
@@ -101,13 +141,6 @@ html_template = """
 
     <!-- Selected Images Container -->
     <div id="selectedContainer" class="gallery"></div>
-
-    <!-- Save/Load Buttons -->
-    <div class="button-container">
-        <input type="file" id="loadFileInput" accept=".json" onchange="loadSelectedImages(event)">
-        <button id="saveButton" onclick="saveSelectedImages()">Save Selected Images</button>
-        <button id="loadButton" onclick="document.getElementById('loadFileInput').click();">Load Selected Images</button>
-    </div>
 
     <script src="script.js"></script>
 </body>

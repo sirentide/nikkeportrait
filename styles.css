@@ -1,26 +1,80 @@
+/* Default light mode */
 body {
-    font-family: Arial, sans-serif; /* Clean font for readability */
-    background-color: #000000; /* Black background for entire body */
-    color: #FFFFFF; /* White text for readability */
-    padding: 20px; /* Padding around the body */
+    background-color: white;
+    color: black;
 }
 
-/* Centering the filter buttons */
-.filter-buttons {
-    display: flex;
-    flex-direction: column; /* Stack filter groups vertically */
-    align-items: center; /* Center horizontally */
-    margin: 10px auto; /* Center the entire filter section */
-    padding: 15px; /* Add padding */
-    background-color: #000000; /* Black background for filter buttons */
-    border-radius: 5px; /* Rounded corners */
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212; /* Dark background */
+        color: white; /* Light text color */
+    }
+
+    /* You can also add other styles for specific elements if needed */
+    .filter-box {
+        background-color: #333; /* Dark background for filter box */
+        color: white; /* Light text color for filter box */
+    }
 }
 
-/* Container for filter groups */
-.filter-buttons > div {
+.type-box {
     display: flex;
-    align-items: center; /* Center items vertically */
-    margin-bottom: 5px; /* Space between filter groups */
+    align-items: center;
+    gap: 10px;
+    border: 2px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 300px;
+    flex-wrap: wrap; /* Ensures responsiveness */
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.filter-section {
+    border: 2px solid #000000;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px; /* Adjust as needed */
+    margin: 10px auto;
+}
+
+.filter-box {
+    background-color: #000000;
+    border: 1px solid #ffffff;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.filter-box h4 {
+    margin-bottom: 10px;
+}
+
+.checkbox-group {
+    margin-left: 10px;
+}
+
+
+.collapse-btn {
+    width: 100%;
+    text-align: left;
+    background: #000000;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.filter-content {
+    padding: 10px;
+    display: block; /* Change to "none" if you want it collapsed by default */
 }
 
 
@@ -36,17 +90,22 @@ h4 {
 }
 
 .checkbox-group {
-    display: flex; /* Flexbox for alignment */
-    flex-wrap: wrap; /* Allow wrapping to the next line */
-}
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 768px) {
+    .checkbox-group {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  }
+  
 
 /* Label styles */
 label {
-    display: flex;
-    align-items: center; /* Center checkbox and label text vertically */
-    color: #FFFFFF; /* White color for labels */
+    display: block;
 }
-
 
 /* Checkbox input */
 label input {
@@ -55,17 +114,12 @@ label input {
 
 /* Button styles */
 button {
-    width: 200px; /* Consistent button width */
-    height: 35px; /* Standard height */
-    font-size: 1rem; /* Font size */
-    margin-top: 1rem; /* Space above */
-    background-color: #444444; /* Dark gray background for buttons */
-    border: none; /* No border */
-    color: white; /* White text */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s; /* Smooth transition */
-}
+    width: 100%;
+    max-width: 250px;
+    height: 45px;
+    border-radius: 8px;
+  }
+  
 
 button:hover {
     background-color: #666666; /* Change to lighter gray on hover */
@@ -138,3 +192,65 @@ button:hover {
 #loadButton:hover {
     background-color: #45a049; /* Darker green on hover */
 }
+
+#selectedContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the grid horizontally */
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%; /* Ensure it takes full width */
+    max-width: 500px; /* Limit maximum width for better scaling */
+    margin-left: auto;
+    margin-right: auto; /* Center the container */
+}
+
+.team-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%; /* Ensure rows take full width */
+}
+
+.team-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    width: 40px; /* Fixed width for labels */
+    text-align: center;
+}
+
+.team-images {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    flex: 1; /* Allow images to take remaining space */
+}
+
+.team-images img {
+    width: 50px; /* Adjust size as needed */
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .team-images img {
+        width: 40px; /* Smaller images on smaller screens */
+        height: 40px;
+    }
+}
+
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  @media (min-width: 1024px) {
+    .image-gallery {
+      grid-template-columns: repeat(4, 1fr); /* 4 columns on larger screens */
+    }
+  }
+  
