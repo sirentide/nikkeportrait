@@ -95,19 +95,35 @@ function sortImages() {
 }
 
 // Function to toggle image selection
+// Function to toggle image selection
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
 
-    // Check if the image is already in the grid
-    const existingImage = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === imgSrc);
-
-    if (existingImage) {
-        // If the image is already in the grid, do nothing
-        return;
+    // Check if the image is already in the selected container
+    const existingSelectedImage = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === imgSrc);
+    
+    if (existingSelectedImage) {
+        // If the image is already in the selected container, remove it
+        const teamRows = document.querySelectorAll('.team-images');
+        
+        // Remove the image from the selected container
+        existingSelectedImage.remove();
+        
+        // Remove the image from the team grid
+        teamRows.forEach(teamRow => {
+            Array.from(teamRow.children).forEach(img => {
+                if (img.src === imgSrc) {
+                    teamRow.removeChild(img); // Remove from team grid
+                }
+            });
+        });
+        
+        imgElement.classList.remove('selected'); // Unselect the original image
+        return; // Exit the function, as the image has been removed
     }
 
-    // Find the first available slot in the grid
+    // If the image is not in the selected container, add it to the grid
     const teamRows = document.querySelectorAll('.team-images');
     let added = false;
 
@@ -115,7 +131,7 @@ function toggleImageSelection(imgElement) {
         if (teamRow.children.length < 5) { // Check if the row has less than 5 images
             const selectedImg = document.createElement('img');
             selectedImg.src = imgSrc;
-    
+
             // Adjust the image size based on screen width
             function adjustImageSize() {
                 if (window.innerWidth <= 768) {
@@ -137,7 +153,7 @@ function toggleImageSelection(imgElement) {
                 imgElement.classList.remove('selected'); // Unselect the original image
                 window.removeEventListener('resize', adjustImageSize); // Cleanup on removal
             };
-    
+
             teamRow.appendChild(selectedImg); // Add to the grid
             added = true;
             break; // Stop after adding to the first available row
@@ -150,6 +166,7 @@ function toggleImageSelection(imgElement) {
         imgElement.classList.add('selected'); // Mark the image as selected
     }
 }
+
 
 document.body.addEventListener('click', function(event) {
     if (event.target && event.target.id === 'clearSelectionBtn') {
