@@ -147,12 +147,13 @@ function toggleImageSelection(imgElement) {
 function clearSelection() {
     const selectedImages = document.querySelectorAll('.selected');
     const selectedContainer = document.getElementById('selectedContainer');
-    
+
+    // Loop through each selected image
     selectedImages.forEach(image => {
         // Remove the 'selected' class to deselect the image
         image.classList.remove('selected');
-        
-        // Optionally, remove the image from any rows in the team grid
+
+        // Remove the image from any rows in the team grid
         const teamRows = document.querySelectorAll('.team-images');
         teamRows.forEach(row => {
             Array.from(row.children).forEach(img => {
@@ -163,13 +164,16 @@ function clearSelection() {
         });
     });
 
-    document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
-
-
-    // Optionally: Clear any other selections you might have in the container
-    selectedContainer.innerHTML = ''; // Clears the selected images container
+    // Instead of clearing the whole container, just remove the images from the grid
+    // This will ensure that the images can be re-selected if needed
+    const selectedImagesInContainer = Array.from(selectedContainer.querySelectorAll('img'));
+    selectedImagesInContainer.forEach(img => {
+        selectedContainer.removeChild(img); // Remove image from selected container
+    });
 }
 
+
+document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
 
 // Function to show or hide all images
 let showAll = true; // Set to true to indicate that images are hidden by default
