@@ -156,28 +156,11 @@ function toggleShowHide() {
     }
 }
 
-// Function to hide all images
-function hideAll() {
-    const photos = document.querySelectorAll('.photo');
-    photos.forEach(photo => {
-        photo.style.display = 'none'; // Hide all photos
-    });
-    showAll = true; // Reset state so "Show All" can be clicked to show photos
-}
-
-// Function to reset filters and show all photos
-function resetFilters() {
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    updateFilters();
-    showAll = false; // Reset state so the "Show All" button will work correctly
-}
-
 // Hide all images on page load
 window.onload = function () {
-    hideAll(); // Call hideAll function to hide all images by default
+    toggleShowHide(); // Call toggleShowHide function to hide all images by default
 };
+
 
 // Initial sort of images
 sortImages();

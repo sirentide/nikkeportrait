@@ -89,9 +89,6 @@ html_template = """
     </div>
 </div>
 
-
-
-
     <!-- Sort Controls -->
     <div class="sort-controls">
         <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
