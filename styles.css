@@ -301,3 +301,12 @@ body, .gallery {
         height: 50px; /* Reduced height for mobile */
     }
 }
+
+
+img {
+    -webkit-touch-callout: none; /* Prevents save image on long press */
+    -webkit-user-select: none; /* Prevents selecting */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

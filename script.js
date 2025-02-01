@@ -299,3 +299,15 @@ function toggleFilter(button) {
     }
 }
 
+document.addEventListener("contextmenu", function(event) {
+    if (event.target.tagName === "IMG") {
+        event.preventDefault();
+    }
+});
+
+// Prevent long-press save on mobile (but allow taps for toggle)
+document.addEventListener("touchstart", function(event) {
+    if (event.target.tagName === "IMG") {
+        event.target.setAttribute("draggable", "false"); // Disable dragging
+    }
+});

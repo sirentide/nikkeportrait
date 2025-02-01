@@ -870,6 +870,8 @@
             new Sortable(teamContainer, {
                 animation: 150,  // Smooth animation
                 ghostClass: 'sortable-ghost',  // Class for the dragged item
+                delay: 300, // Require 300ms hold before dragging
+                delayOnTouchOnly: true, // Apply delay only on touch devices
                 group: {
                     name: 'shared',  // The group name must be the same for all teams to allow movement
                     pull: true,  // Allow pulling items from this list
