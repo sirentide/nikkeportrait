@@ -160,6 +160,7 @@ html_template = """
                 onEnd: function(evt) {
                     console.log(`Image moved from team ${evt.from.getAttribute('data-team')} to team ${evt.to.getAttribute('data-team')}`);
                     // You can perform other actions after the drag event
+                    updateTeamScore();
                 }
             });
         });
