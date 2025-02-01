@@ -22,7 +22,7 @@ body, .gallery {
 /* Fix for .gallery */
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Mobile-first: 1 column */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 10px; /* Add some gap for spacing between items */
     padding: 0;
     background-color: #1e1e1e; /* Darker gallery background */
@@ -100,17 +100,18 @@ body, .gallery {
 /* Centering the Filter Section */
 .filter-section {
     display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    padding: 10px; /* Increased padding for better spacing */
-    background-color: #333; /* Darker filter section background */
-    color: #e0e0e0; /* Lighter text for better contrast */
-    border-radius: 8px; /* Rounded corners for a more polished look */
-    margin: 10px auto; /* Center horizontally with auto margin */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for depth */
-    width: 100%; /* Take full width */
-    max-width: 600px; /* Set a max width for the filter section */
-    height: auto; /* Allow it to adjust to content */
+    flex-direction: column;
+    padding: 10px;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 8px;
+    margin: 10px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    height: auto;
 }
+
 
 /* Centering the content within the filter section */
 .filter-section h3,
@@ -258,9 +259,10 @@ body, .gallery {
 @media (max-width: 768px) {
     .search-bar {
         width: 100%;
-        gap: 5x; /* Reduce the space between input and button */
-        justify-content: space-between; /* Spread out the input and button */
+        gap: 5px; /* Corrected from 5x to 5px */
+        justify-content: space-between;
     }
+    
 
     #searchInput {
         flex-grow: 1; /* Make the input field take up remaining space */

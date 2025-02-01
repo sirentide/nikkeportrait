@@ -94,10 +94,32 @@ function sortImages() {
     photosArray.forEach(photo => gallery.appendChild(photo)); // Add sorted photos back
 }
 
+
+
 // Function to toggle image selection
 function toggleImageSelection(imgElement) {
     const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
+
+    const isSelected = imgElement.classList.contains('selected');
+    const score = parseInt(imgSrc.split('/').pop().split('_')[0], 10) / 10;
+
+    if (isSelected) {
+        // Remove image from selected team row
+        teamRows.forEach(teamRow => {
+            const imagesInTeam = teamRow.querySelectorAll('img');
+            imagesInTeam.forEach(img => {
+                if (img.src === imgSrc) {
+                    teamRow.removeChild(img); // Remove from team row
+                }
+            });
+        });
+        imgElement.classList.remove('selected'); // Unselect the original image
+        updateTeamScore(); // Update the team scores
+        return;
+    }
+
+
 
     // Check if the image is already in the selected container
     const existingSelectedImage = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === imgSrc);
@@ -151,6 +173,7 @@ function toggleImageSelection(imgElement) {
                 teamRow.removeChild(selectedImg); // Remove from the grid
                 imgElement.classList.remove('selected'); // Unselect the original image
                 window.removeEventListener('resize', adjustImageSize); // Cleanup on removal
+                updateTeamScore(); // Update the team scores
             };
 
             teamRow.appendChild(selectedImg); // Add to the grid
@@ -164,8 +187,25 @@ function toggleImageSelection(imgElement) {
     } else {
         imgElement.classList.add('selected'); // Mark the image as selected
     }
+    updateTeamScore(); // Update the team scores
 }
 
+function updateTeamScore() {
+    const teamRows = document.querySelectorAll('.team-row');
+    teamRows.forEach(teamRow => {
+        const teamScoreElement = teamRow.querySelector('.team-score');
+        const teamImages = teamRow.querySelectorAll('img');
+        let totalScore = 0;
+
+        teamImages.forEach(img => {
+            const imgSrc = img.src;
+            const score = parseInt(imgSrc.split('/').pop().split('_')[0], 10) / 10;
+            totalScore += score;
+        });
+
+        teamScoreElement.textContent = totalScore.toFixed(1); // Display the total score
+    });
+}
 
 document.body.addEventListener('click', function(event) {
     if (event.target && event.target.id === 'clearSelectionBtn') {
@@ -189,6 +229,7 @@ function clearSelection() {
             Array.from(row.children).forEach(img => {
                 if (img.src === image.src) {
                     row.removeChild(img); // Remove from team grid if it exists
+                    updateTeamScore(); // Update the team scores
                 }
             });
         });

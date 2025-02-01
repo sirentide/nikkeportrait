@@ -106,31 +106,31 @@ html_template = """
     <div id="selectedContainer">
         <!-- Team 1 -->
         <div class="team-row" data-team="1">
-            <div class="team-label">T1</div>
+            <div class="team-label">T1</div> <div class="team-score">0.0</div>
             <div class="team-images" data-team="1">
             </div>
         </div>
         <!-- Team 2 -->
         <div class="team-row" data-team="2">
-            <div class="team-label">T2</div>
+            <div class="team-label">T2</div> <div class="team-score">0.0</div>
             <div class="team-images" data-team="2">
             </div>
         </div>
         <!-- Team 3 -->
         <div class="team-row" data-team="3">
-            <div class="team-label">T3</div>
+            <div class="team-label">T3</div> <div class="team-score">0.0</div>
             <div class="team-images" data-team="3">
             </div>
         </div>
         <!-- Team 4 -->
         <div class="team-row" data-team="4">
-            <div class="team-label">T4</div>
+            <div class="team-label">T4</div> <div class="team-score">0.0</div>
             <div class="team-images" data-team="4">
             </div>
         </div>
         <!-- Team 5 -->
         <div class="team-row" data-team="5">
-            <div class="team-label">T5</div>
+            <div class="team-label">T5</div> <div class="team-score">0.0</div>
             <div class="team-images" data-team="5">
             </div>
         </div>
