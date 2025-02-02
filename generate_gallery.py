@@ -175,6 +175,9 @@ html_template = """
     html2canvas(document.getElementById("selectedContainer"), {
         useCORS: true,
         allowTaint: true,
+        backgroundColor: "#000", // Set the background to black
+        width: 750,  // Set custom width
+        height: 900, // Set custom height
     }).then(function(canvas) {
         console.log("Canvas rendered successfully.");
         
@@ -190,6 +193,7 @@ html_template = """
         console.error("html2canvas failed:", error);
     });
 }
+
     </script>
 
 
