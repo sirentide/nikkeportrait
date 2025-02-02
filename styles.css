@@ -347,44 +347,45 @@ img {
 
 .team-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: center;  /* Ensures vertical alignment */
+    justify-content: space-between; /* Keeps them on the same row */
     background: #333;  
     padding: 10px 15px;
     border-radius: 6px; 
-    gap: 10px; /* Keeps space between elements */
+    gap: 10px; /* Space between label and score */
 }
 
 /* Team label */
 .team-label {
     font-weight: bold;
     color: #fff;
-    flex: 1; /* Takes available space */
+    flex: 1; /* Fills available space */
+    display: flex;
+    align-items: center;  /* Ensures vertical alignment */
     text-align: left;
 }
 
 /* Team score */
 .team-score {
     color: #f39c12;  
-    font-size: 1.1em;  
+    font-size: .6em;  
     font-weight: bold;
     min-width: 50px; 
+    display: flex;
+    align-items: center; /* Centers it vertically */
     text-align: right;
 }
 
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     .team-row {
+        flex-direction: row; /* Keeps label & score horizontal */
         padding: 8px 12px;
-        gap: 5px; /* Reduce space between label & score */
+        gap: 5px; 
     }
 
-    .team-label {
-        font-size: 1em; /* Slightly smaller for mobile */
-    }
-
-    .team-score {
-        font-size: 0.8em; 
-        min-width: auto;
+    .team-label, .team-score {
+        font-size: .8em;  
     }
 }
+
