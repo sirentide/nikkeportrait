@@ -892,23 +892,23 @@
      <script>
         // Initialize Sortable.js on each team-images container with group option
         document.querySelectorAll('.team-images').forEach((teamContainer) => {
-            new Sortable(teamContainer, {
-                animation: 150,  // Smooth animation
-                ghostClass: 'sortable-ghost',  // Class for the dragged item
-                delay: 300, // Require 300ms hold before dragging
-                delayOnTouchOnly: true, // Apply delay only on touch devices
-                group: {
-                    name: 'shared',  // The group name must be the same for all teams to allow movement
-                    pull: true,  // Allow pulling items from this list
-                    put: true   // Allow putting items into this list
-                },
-                onEnd: function(evt) {
-                    console.log(`Image moved from team ${evt.from.getAttribute('data-team')} to team ${evt.to.getAttribute('data-team')}`);
-                    // You can perform other actions after the drag event
-                    updateTeamScore();
-                }
-            });
-        });
+    new Sortable(teamContainer, {
+        animation: 150,  // Smooth animation
+        ghostClass: 'sortable-ghost',  // Class for the dragged item
+        delay: 300, // Require 300ms hold before dragging
+        delayOnTouchOnly: true, // Apply delay only on touch devices
+        group: {
+            name: 'shared',  // The group name must be the same for all teams to allow movement
+            pull: true,  // Allow pulling items from this list
+            put: true   // Allow putting items into this list
+        },
+        onEnd: function(evt) {
+            console.log(`Image moved from team ${evt.from.getAttribute('data-team')} to team ${evt.to.getAttribute('data-team')}`);
+            // You can perform other actions after the drag event
+            updateTeamScore();
+        }
+    });
+});
     </script>
 
 
