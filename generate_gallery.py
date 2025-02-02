@@ -176,8 +176,7 @@ html_template = """
         useCORS: true,
         allowTaint: true,
         backgroundColor: "#000", // Set the background to black
-        width: 750,  // Set custom width
-        height: 900, // Set custom height
+        width: 600,  // Set custom width
     }).then(function(canvas) {
         console.log("Canvas rendered successfully.");
         
