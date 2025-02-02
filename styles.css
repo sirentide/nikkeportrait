@@ -337,7 +337,7 @@ img {
 @media (max-width: 600px) {
     #selectedContainer {
         width: 95%;  /* Use more screen space */
-        max-width: 355px;  /* Reduce max width */
+        max-width: 365px;  /* Reduce max width */
         margin: 10px auto;  /* Smaller margin */
         padding: 8px;  /* Reduce inner spacing */
         gap: 6px;  /* Reduce space between teams */
