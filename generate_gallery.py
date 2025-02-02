@@ -102,6 +102,8 @@ html_template = """
     </div>
 </div>
 
+<button id="exportBtn" onclick="exportSelectedContainerAsPNG()">Export as PNG</button>
+
 
     <div id="selectedContainer">
         <!-- Team 1 -->
@@ -136,16 +138,14 @@ html_template = """
         </div>
     </div>
 
-
-
     <!-- Gallery -->
     <div class="gallery">
         {gallery_items}
     </div>
 
-
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="script.js"></script>
      <script>
         // Initialize Sortable.js on each team-images container with group option
         document.querySelectorAll('.team-images').forEach((teamContainer) => {
@@ -166,6 +166,30 @@ html_template = """
         }
     });
 });
+    </script>
+    <script>
+    function exportSelectedContainerAsPNG() {
+    console.log("Exporting container...");
+
+    // Use html2canvas to capture the container
+    html2canvas(document.getElementById("selectedContainer"), {
+        useCORS: true,
+        allowTaint: true,
+    }).then(function(canvas) {
+        console.log("Canvas rendered successfully.");
+        
+        // Convert canvas to PNG blob and trigger download
+        canvas.toBlob(function(blob) {
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = "selectedContainer.png";  // Name the file
+            link.click();
+            console.log("Download triggered.");
+        }, 'image/png');
+    }).catch(function(error) {
+        console.error("html2canvas failed:", error);
+    });
+}
     </script>
 
 
