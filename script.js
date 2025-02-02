@@ -163,11 +163,6 @@ function toggleShowHide() {
 // Hide all images on page load
 window.onload = toggleShowHide;
 
-// Disable long-press on touch devices
-document.addEventListener('touchstart', function (e) {
-    setTimeout(() => e.preventDefault(), 500);
-}, { passive: false });
-
 // Toggle filter visibility
 function toggleFilter(button) {
     const content = button.nextElementSibling;
@@ -177,19 +172,20 @@ function toggleFilter(button) {
 
 // Disable right-click on images but allow dragging
 document.querySelectorAll('img').forEach(img => {
+    // Prevent right-click context menu
     img.addEventListener('contextmenu', function (e) {
         e.preventDefault(); // Prevent the right-click context menu
     });
 
     // Disable long-press (touch and hold) on images for mobile devices but allow dragging
     img.addEventListener('touchstart', function (e) {
-        e.preventDefault(); // Prevent the default long-press behavior
-
-        // Allow the drag event to be triggered normally
-        // We will not prevent touchstart for dragging
+        // Prevent long-press behavior, but allow dragging
         if (e.target.draggable) {
-            return;
+            return; // Allow drag event if the image is draggable
         }
+
+        e.preventDefault(); // Prevent default long press menu if not dragging
     }, { passive: false });
 });
+
 
