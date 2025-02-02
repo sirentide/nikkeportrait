@@ -88,8 +88,8 @@ html_template = """
 
     <!-- Sort Controls -->
     <div class="sort-controls">
-        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Burst Gen</button>
-        <button id="orderToggle" onclick="toggleSortOrder()">Highest</button>
+        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
+        <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
         <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
     </div>
 
