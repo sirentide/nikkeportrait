@@ -45,7 +45,7 @@ sortImages()
 // Toggle sort criteria
 function toggleSortCriteria() {
     currentSortCriteria = currentSortCriteria === 'name' ? 'number' : 'name';
-    document.getElementById('sortToggle').innerText = currentSortCriteria === 'name' ? 'Sort by Name' : 'Sort by Burst Gen';
+    document.getElementById('sortToggle').innerText = currentSortCriteria === 'name' ? 'Sort by Burst Gen' : 'Sort by Name';
     sortImages();
 }
 
@@ -86,6 +86,7 @@ function toggleImageSelection(imgElement) {
     }
 
     updateTeamScore();
+    applyProtectionToGalleryAndSelected()
 }
 
 // Remove image from selection
@@ -170,20 +171,22 @@ function toggleFilter(button) {
     button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
-
-// Disable right-click context menu on desktop
-document.addEventListener('contextmenu', (event) => {
-    event.preventDefault();
-});
-
-// Disable long press to save images on mobile
-document.addEventListener('touchstart', (event) => {
-    let touchStart = event.timeStamp;
-
-    event.target.addEventListener('touchend', (e) => {
-        const touchEnd = e.timeStamp;
-        if (touchEnd - touchStart > 500) {
-            e.preventDefault(); // Prevent long press
-        }
+function disableImageSaveProtection(imgElement) {
+    imgElement.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
     });
-});
+    imgElement.setAttribute('draggable', 'false'); // Disable drag
+}
+
+function applyProtectionToGalleryAndSelected() {
+    document.querySelectorAll('.gallery img, #selectedContainer img').forEach(img => {
+        disableImageSaveProtection(img);
+    });
+}
+
+function enableImageInteractionInTeam(imgElement) {
+    imgElement.removeEventListener('contextmenu', (event) => {
+        event.preventDefault();
+    });
+    imgElement.removeAttribute('draggable');
+}
