@@ -114,44 +114,24 @@ function addImageToSelection(imgElement, imgSrc) {
         if (teamRow.children.length < 5) {
             const selectedImg = document.createElement('img');
             selectedImg.src = imgSrc;
+            adjustImageSize(selectedImg);
+            selectedImg.onclick = () => removeImageFromSelection(selectedImg, imgSrc);
 
-            // Adjust the image size based on screen width
-            function adjustImageSize() {
-                if (window.innerWidth <= 768) {
-                    selectedImg.style.width = '50px'; // Mobile size
-                    selectedImg.style.height = '50px';
-                } else {
-                    selectedImg.style.width = '100px'; // Desktop size
-                    selectedImg.style.height = '100px';
-                }
-            }
-            adjustImageSize(); // Initial size adjustment
-
-            // Handle dynamic resizing
-            window.addEventListener('resize', adjustImageSize);
-
-            // Add click event to remove from selection
-            selectedImg.onclick = function () {
-                teamRow.removeChild(selectedImg); // Remove from the grid
-                imgElement.classList.remove('selected'); // Unselect the original image
-                window.removeEventListener('resize', adjustImageSize); // Cleanup on removal
-                updateTeamScore(); // Update the team scores
-            };
-
-            teamRow.appendChild(selectedImg); // Add to the grid
-            added = true;
-            break; // Stop after adding to the first available row
+            teamRow.appendChild(selectedImg);
+            imgElement.classList.add('selected');
+            break;
         }
     }
-
-    if (!added) {
-        alert('All teams are full!'); // Notify the user if all rows are full
-    } else {
-        imgElement.classList.add('selected'); // Mark the image as selected
-    }
-    updateTeamScore(); // Update the team scores
 }
 
+// Adjust image size based on screen width
+function adjustImageSize(imgElement) {
+    const width = window.innerWidth <= 768 ? 50 : 100;
+    imgElement.style.width = `${width}px`;
+    imgElement.style.height = `${width}px`;
+}
+
+// Update team scores
 function updateTeamScore() {
     document.querySelectorAll('.team-row').forEach(teamRow => {
         const teamScoreElement = teamRow.querySelector('.team-score');
@@ -185,18 +165,22 @@ function toggleShowHide() {
 // Hide all images on page load
 window.onload = toggleShowHide;
 
+<<<<<<< HEAD
+=======
+// Disable long-press on touch devices
+document.addEventListener('touchstart', function (e) {
+    setTimeout(() => e.preventDefault(), 500);
+}, { passive: false });
+
+>>>>>>> 299ff1b (clean some function, notify)
 // Toggle filter visibility
 function toggleFilter(button) {
-    var content = button.nextElementSibling; // Get the filter-content div
-    if (content.style.display === "none") {
-        content.style.display = "block"; // Show the filter content
-        button.innerHTML = "Filters ▲"; // Change button text to '▲'
-    } else {
-        content.style.display = "none"; // Hide the filter content
-        button.innerHTML = "Filters ▼"; // Change button text to '▼'
-    }
+    const content = button.nextElementSibling;
+    content.style.display = content.style.display === "none" ? "block" : "none";
+    button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 document.addEventListener("contextmenu", function(event) {
     if (event.target.tagName === "IMG") {
@@ -216,4 +200,22 @@ document.querySelectorAll('img').forEach(img => {
         e.preventDefault(); // This prevents the right-click menu or long press menu
     });
 >>>>>>> 88d1bd2 (fix dragging)
+=======
+// Disable right-click on images but allow dragging
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('contextmenu', function (e) {
+        e.preventDefault(); // Prevent the right-click context menu
+    });
+
+    // Disable long-press (touch and hold) on images for mobile devices but allow dragging
+    img.addEventListener('touchstart', function (e) {
+        e.preventDefault(); // Prevent the default long-press behavior
+
+        // Allow the drag event to be triggered normally
+        // We will not prevent touchstart for dragging
+        if (e.target.draggable) {
+            return;
+        }
+    }, { passive: false });
+>>>>>>> 299ff1b (clean some function, notify)
 });
