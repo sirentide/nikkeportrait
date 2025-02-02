@@ -189,6 +189,13 @@ function toggleImageSelection(imgElement) {
     }
     updateTeamScore(); // Update the team scores
 }
+// Attach event listener to gallery images
+document.querySelectorAll('.photo').forEach(photo => {
+    photo.addEventListener('click', function () {
+        toggleImageSelection(this);
+    });
+});
+
 
 function updateTeamScore() {
     const teamRows = document.querySelectorAll('.team-row');
@@ -299,15 +306,3 @@ function toggleFilter(button) {
     }
 }
 
-document.addEventListener("contextmenu", function(event) {
-    if (event.target.tagName === "IMG") {
-        event.preventDefault();
-    }
-});
-
-// Prevent long-press save on mobile (but allow taps for toggle)
-document.addEventListener("touchstart", function(event) {
-    if (event.target.tagName === "IMG") {
-        event.target.setAttribute("draggable", "false"); // Disable dragging
-    }
-});
