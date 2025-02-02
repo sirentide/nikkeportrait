@@ -163,6 +163,11 @@ function toggleShowHide() {
 // Hide all images on page load
 window.onload = toggleShowHide;
 
+// Disable long-press on touch devices
+document.addEventListener('touchstart', function (e) {
+    setTimeout(() => e.preventDefault(), 500);
+}, { passive: false });
+
 // Toggle filter visibility
 function toggleFilter(button) {
     const content = button.nextElementSibling;
