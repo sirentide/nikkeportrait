@@ -352,44 +352,39 @@ img {
     background: #333;  
     padding: 10px 15px;
     border-radius: 6px; 
-    gap: 20px; /* Space between label and score */
+    gap: 10px; /* Keeps space between elements */
 }
 
-/* Team label (right-aligned) */
+/* Team label */
 .team-label {
     font-weight: bold;
     color: #fff;
-    flex-grow: 1; /* Expands to fill space */
-    text-align: right;
+    flex: 1; /* Takes available space */
+    text-align: left;
 }
 
-/* Team score (left-aligned) */
+/* Team score */
 .team-score {
     color: #f39c12;  
     font-size: 1.1em;  
     font-weight: bold;
-    flex-grow: 0;  
-    text-align: left;
-    min-width: 50px;
+    min-width: 50px; 
+    text-align: right;
 }
 
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     .team-row {
-        flex-direction: column; /* Stack elements */
-        align-items: center; /* Center align */
-        text-align: center; /* Ensure proper alignment */
-        gap: 5px; /* Reduce space between elements */
-        padding: 8px 12px;  
+        padding: 8px 12px;
+        gap: 5px; /* Reduce space between label & score */
     }
 
-    .team-label, .team-score {
-        width: 100%; /* Full width for alignment */
-        text-align: center; /* Center text */
+    .team-label {
+        font-size: 1em; /* Slightly smaller for mobile */
     }
 
     .team-score {
-        font-size: 1em; 
-        min-width: auto; /* Allow flexibility */
+        font-size: 0.8em; 
+        min-width: auto;
     }
 }
