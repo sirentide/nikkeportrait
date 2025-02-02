@@ -172,13 +172,39 @@ document.addEventListener('touchstart', function (e) {
 
 // Toggle filter visibility
 function toggleFilter(button) {
-    var content = button.nextElementSibling; // Get the filter-content div
-    if (content.style.display === "none") {
-        content.style.display = "block"; // Show the filter content
-        button.innerHTML = "Filters ▲"; // Change button text to '▲'
-    } else {
-        content.style.display = "none"; // Hide the filter content
-        button.innerHTML = "Filters ▼"; // Change button text to '▼'
-    }
+    const content = button.nextElementSibling;
+    content.style.display = content.style.display === "none" ? "block" : "none";
+    button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
+<<<<<<< HEAD
+// Disable right-click on images but allow dragging
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('contextmenu', function (e) {
+        e.preventDefault(); // Prevent the right-click context menu
+    });
+
+    // Disable long-press (touch and hold) on images for mobile devices but allow dragging
+    img.addEventListener('touchstart', function (e) {
+        e.preventDefault(); // Prevent the default long-press behavior
+
+        // Allow the drag event to be triggered normally
+        // We will not prevent touchstart for dragging
+        if (e.target.draggable) {
+            return;
+        }
+    }, { passive: false });
+=======
+document.addEventListener("contextmenu", function(event) {
+    if (event.target.tagName === "IMG") {
+        event.preventDefault();
+    }
+});
+
+// Prevent long-press save on mobile (but allow taps for toggle)
+document.addEventListener("touchstart", function(event) {
+    if (event.target.tagName === "IMG") {
+        event.target.setAttribute("draggable", "false"); // Disable dragging
+    }
+>>>>>>> 79c0ffa019d7528a4e752f8188949a40da3f7812
+});
