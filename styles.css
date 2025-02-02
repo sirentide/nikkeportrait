@@ -359,7 +359,7 @@ img {
 .team-label {
     font-weight: bold;
     color: #fff;
-    flex: 1; /* Fills available space */
+    flex: 1.1; /* Fills available space */
     display: flex;
     align-items: center;  /* Ensures vertical alignment */
     text-align: left;
@@ -368,7 +368,7 @@ img {
 /* Team score */
 .team-score {
     color: #f39c12;  
-    font-size: .6em;  
+    font-size: 1em;  
     font-weight: bold;
     min-width: 50px; 
     display: flex;
