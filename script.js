@@ -1,301 +1,196 @@
+// Utility functions
+const getCheckedValues = (values) => 
+    Array.from(document.querySelectorAll(`input[type="checkbox"][value^="${values.join('"], input[type="checkbox"][value="')}"]`))
+        .filter(chk => chk.checked)
+        .map(chk => chk.value);
+
+const getPhotoAttributes = (photo) => ({
+    type: photo.getAttribute('data-type'),
+    position: photo.getAttribute('data-position'),
+    faction: photo.getAttribute('data-faction'),
+    rarity: photo.getAttribute('data-rarity'),
+    weapon: photo.getAttribute('data-weapon'),
+    name: photo.getAttribute('data-name').toLowerCase(),
+});
+
+const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) =>
+    Object.keys(selectedFilters).every(key =>
+        selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key])
+    ) && (searchValue === '' || attributes.name.includes(searchValue));
+
 // Function to update filters based on selected checkboxes and search input
 function updateFilters() {
     const photos = document.querySelectorAll('.photo');
-
-    // Extract the checked filters and search input
     const selectedFilters = {
-        type: Array.from(document.querySelectorAll('input[type="checkbox"][value^="b"], input[type="checkbox"][value="a"]'))
-            .filter(chk => chk.checked)
-            .map(chk => chk.value),
-        position: Array.from(document.querySelectorAll('input[type="checkbox"][value="def"], input[type="checkbox"][value="sp"], input[type="checkbox"][value="atk"]'))
-            .filter(chk => chk.checked)
-            .map(chk => chk.value),
-        faction: Array.from(document.querySelectorAll('input[type="checkbox"][value="elysion"], input[type="checkbox"][value="missilis"], input[type="checkbox"][value="tetra"], input[type="checkbox"][value="abnormal"], input[type="checkbox"][value="pilgrim"]'))
-            .filter(chk => chk.checked)
-            .map(chk => chk.value),
-        rarity: Array.from(document.querySelectorAll('input[type="checkbox"][value="ssr"], input[type="checkbox"][value="sr"], input[type="checkbox"][value="r"]'))
-            .filter(chk => chk.checked)
-            .map(chk => chk.value),
-        weapon: Array.from(document.querySelectorAll('input[type="checkbox"][value="smg"], input[type="checkbox"][value="ar"], input[type="checkbox"][value="snr"], input[type="checkbox"][value="rl"], input[type="checkbox"][value="sg"], input[type="checkbox"][value="mg"]'))
-            .filter(chk => chk.checked)
-            .map(chk => chk.value),
+        type: getCheckedValues(['b1', 'b2', 'b3', 'a']),
+        position: getCheckedValues(['def', 'sp', 'atk']),
+        faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']),
+        rarity: getCheckedValues(['ssr', 'sr', 'r']),
+        weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']),
     };
 
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
-
     photos.forEach(photo => {
-        const attributes = {
-            type: photo.getAttribute('data-type'),
-            position: photo.getAttribute('data-position'),
-            faction: photo.getAttribute('data-faction'),
-            rarity: photo.getAttribute('data-rarity'),
-            weapon: photo.getAttribute('data-weapon'),
-            name: photo.getAttribute('data-name').toLowerCase(),
-        };
-
-        const isMatch = Object.keys(selectedFilters).every(key => {
-            return selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key]);
-        }) && (searchValue === '' || attributes.name.includes(searchValue));
-
+        const attributes = getPhotoAttributes(photo);
+        const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
         photo.style.display = isMatch ? 'flex' : 'none';
     });
 }
 
 // Sort functionality
-let currentSortCriteria = 'number'; // Default sort criteria
-let currentSortOrder = 'desc'; // Default sort order
+let currentSortCriteria = 'number'; // Default to sorting by name
+let currentSortOrder = 'desc'; // Default to ascending order
+sortImages();
 
+
+// Toggle sort criteria
 function toggleSortCriteria() {
-    // Toggle between 'name' and 'number'
-    if (currentSortCriteria === 'name') {
-        currentSortCriteria = 'number';
-        document.getElementById('sortToggle').innerText = 'Sort by Name';
-    } else {
-        currentSortCriteria = 'name';
-        document.getElementById('sortToggle').innerText = 'Sort by Burst Gen';
-    }
-    sortImages(); // Call your sort function after toggling
+    currentSortCriteria = currentSortCriteria === 'name' ? 'number' : 'name';
+    document.getElementById('sortToggle').innerText = currentSortCriteria === 'name' ? 'Sort by Burst Gen' : 'Sort by Name';
+    sortImages();
 }
 
-
+// Toggle sort order
 function toggleSortOrder() {
-    // Toggle between 'asc' and 'desc'
-    if (currentSortOrder === 'asc') {
-        currentSortOrder = 'desc';
-        document.getElementById('orderToggle').innerText = 'Lowest';
-    } else {
-        currentSortOrder = 'asc';
-        document.getElementById('orderToggle').innerText = 'Highest';
-    }
-    sortImages(); // Call your sort function after toggling
+    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+    document.getElementById('orderToggle').innerText = currentSortOrder === 'asc' ? 'Highest' : 'Lowest';
+    sortImages();
 }
 
+// Function to sort images
 function sortImages() {
     const photosArray = Array.from(document.querySelectorAll('.photo'));
-
     photosArray.sort((a, b) => {
-        let comparison = 0;
-        if (currentSortCriteria === 'name') {
-            const nameA = a.getAttribute('data-name').toLowerCase();
-            const nameB = b.getAttribute('data-name').toLowerCase();
-            comparison = nameA.localeCompare(nameB);
-        } else if (currentSortCriteria === 'number') {
-            const numberA = parseInt(a.getAttribute('data-number'), 10);
-            const numberB = parseInt(b.getAttribute('data-number'), 10);
-            comparison = numberA - numberB; // Sort by actual number
-        }
+        const comparison = currentSortCriteria === 'name' 
+            ? a.getAttribute('data-name').localeCompare(b.getAttribute('data-name')) 
+            : parseInt(a.getAttribute('data-number')) - parseInt(b.getAttribute('data-number'));
 
-        // Reverse comparison if descending
         return currentSortOrder === 'asc' ? comparison : -comparison;
     });
 
     const gallery = document.querySelector('.gallery');
-    gallery.innerHTML = ''; // Clear current images
-    photosArray.forEach(photo => gallery.appendChild(photo)); // Add sorted photos back
+    gallery.innerHTML = ''; 
+    photosArray.forEach(photo => gallery.appendChild(photo));
 }
 
-
-
-// Function to toggle image selection
+// Image selection functionality
 function toggleImageSelection(imgElement) {
-    const selectedContainer = document.getElementById('selectedContainer');
     const imgSrc = imgElement.src;
-
+    const selectedContainer = document.getElementById('selectedContainer');
     const isSelected = imgElement.classList.contains('selected');
     const score = parseInt(imgSrc.split('/').pop().split('_')[0], 10) / 10;
 
     if (isSelected) {
-        // Remove image from selected team row
-        teamRows.forEach(teamRow => {
-            const imagesInTeam = teamRow.querySelectorAll('img');
-            imagesInTeam.forEach(img => {
-                if (img.src === imgSrc) {
-                    teamRow.removeChild(img); // Remove from team row
-                }
-            });
-        });
-        imgElement.classList.remove('selected'); // Unselect the original image
-        updateTeamScore(); // Update the team scores
-        return;
+        removeImageFromSelection(imgElement, imgSrc);
+    } else {
+        addImageToSelection(imgElement, imgSrc);
     }
 
+    updateTeamScore();
+}
 
+// Remove image from selection
+function removeImageFromSelection(imgElement, imgSrc) {
+    const selectedContainer = document.getElementById('selectedContainer');
+    selectedContainer.querySelectorAll('img').forEach(img => {
+        if (img.src === imgSrc) img.remove();
+    });
 
-    // Check if the image is already in the selected container
-    const existingSelectedImage = Array.from(selectedContainer.querySelectorAll('img')).find(img => img.src === imgSrc);
-    
-    if (existingSelectedImage) {
-        // If the image is already in the selected container, remove it
-        const teamRows = document.querySelectorAll('.team-images');
-        
-        // Remove the image from the selected container
-        existingSelectedImage.remove();
-        
-        // Remove the image from the team grid
-        teamRows.forEach(teamRow => {
-            Array.from(teamRow.children).forEach(img => {
-                if (img.src === imgSrc) {
-                    teamRow.removeChild(img); // Remove from team grid
-                }
-            });
+    document.querySelectorAll('.team-images').forEach(teamRow => {
+        teamRow.querySelectorAll('img').forEach(img => {
+            if (img.src === imgSrc) teamRow.removeChild(img);
         });
-        
-        imgElement.classList.remove('selected'); // Unselect the original image
-        return; // Exit the function, as the image has been removed
-    }
+    });
 
-    // If the image is not in the selected container, add it to the grid
+    imgElement.classList.remove('selected');
+
+    updateTeamScore();
+}
+
+// Add image to selection
+function addImageToSelection(imgElement, imgSrc) {
     const teamRows = document.querySelectorAll('.team-images');
-    let added = false;
-
     for (const teamRow of teamRows) {
-        if (teamRow.children.length < 5) { // Check if the row has less than 5 images
+        if (teamRow.children.length < 5) {
             const selectedImg = document.createElement('img');
             selectedImg.src = imgSrc;
+            adjustImageSize(selectedImg);
+            selectedImg.onclick = () => removeImageFromSelection(selectedImg, imgSrc);
 
-            // Adjust the image size based on screen width
-            function adjustImageSize() {
-                if (window.innerWidth <= 768) {
-                    selectedImg.style.width = '50px'; // Mobile size
-                    selectedImg.style.height = '50px';
-                } else {
-                    selectedImg.style.width = '100px'; // Desktop size
-                    selectedImg.style.height = '100px';
-                }
-            }
-            adjustImageSize(); // Initial size adjustment
-
-            // Handle dynamic resizing
-            window.addEventListener('resize', adjustImageSize);
-
-            // Add click event to remove from selection
-            selectedImg.onclick = function () {
-                teamRow.removeChild(selectedImg); // Remove from the grid
-                imgElement.classList.remove('selected'); // Unselect the original image
-                window.removeEventListener('resize', adjustImageSize); // Cleanup on removal
-                updateTeamScore(); // Update the team scores
-            };
-
-            teamRow.appendChild(selectedImg); // Add to the grid
-            added = true;
-            break; // Stop after adding to the first available row
+            teamRow.appendChild(selectedImg);
+            imgElement.classList.add('selected');
+            break;
         }
     }
-
-    if (!added) {
-        alert('All teams are full!'); // Notify the user if all rows are full
-    } else {
-        imgElement.classList.add('selected'); // Mark the image as selected
-    }
-    updateTeamScore(); // Update the team scores
 }
 
+// Adjust image size based on screen width
+function adjustImageSize(imgElement) {
+    const width = window.innerWidth <= 768 ? 50 : 100;
+    imgElement.style.width = `${width}px`;
+    imgElement.style.height = `${width}px`;
+}
+
+// Update team scores
 function updateTeamScore() {
-    const teamRows = document.querySelectorAll('.team-row');
-    teamRows.forEach(teamRow => {
+    document.querySelectorAll('.team-row').forEach(teamRow => {
         const teamScoreElement = teamRow.querySelector('.team-score');
-        const teamImages = teamRow.querySelectorAll('img');
-        let totalScore = 0;
+        const totalScore = Array.from(teamRow.querySelectorAll('img'))
+            .reduce((total, img) => total + parseInt(img.src.split('/').pop().split('_')[0], 10) / 10, 0);
 
-        teamImages.forEach(img => {
-            const imgSrc = img.src;
-            const score = parseInt(imgSrc.split('/').pop().split('_')[0], 10) / 10;
-            totalScore += score;
-        });
-
-        teamScoreElement.textContent = totalScore.toFixed(1); // Display the total score
+        teamScoreElement.textContent = totalScore.toFixed(1);
     });
 }
 
-document.body.addEventListener('click', function(event) {
-    if (event.target && event.target.id === 'clearSelectionBtn') {
-        clearSelection(); // Call the function when the clear selection button is clicked
-    }
-});
-
-
+// Clear image selection
 function clearSelection() {
-    const selectedImages = document.querySelectorAll('.selected');
-    const selectedContainer = document.getElementById('selectedContainer');
-
-    // Loop through each selected image
-    selectedImages.forEach(image => {
-        // Remove the 'selected' class to deselect the image
+    document.querySelectorAll('.selected').forEach(image => {
         image.classList.remove('selected');
-
-        // Remove the image from any rows in the team grid
-        const teamRows = document.querySelectorAll('.team-images');
-        teamRows.forEach(row => {
-            Array.from(row.children).forEach(img => {
-                if (img.src === image.src) {
-                    row.removeChild(img); // Remove from team grid if it exists
-                    updateTeamScore(); // Update the team scores
-                }
-            });
-        });
-    });
-
-    // Instead of clearing the whole container, just remove the images from the grid
-    // This will ensure that the images can be re-selected if needed
-    const selectedImagesInContainer = Array.from(selectedContainer.querySelectorAll('img'));
-    selectedImagesInContainer.forEach(img => {
-        selectedContainer.removeChild(img); // Remove image from selected container
+        removeImageFromSelection(image, image.src);
     });
 }
 
-
+// Event listener for clear selection
 document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
 
-// Function to show or hide all images
-let showAll = true; // Set to true to indicate that images are hidden by default
-
+// Toggle show/hide for all images
+let showAll = true;
 function toggleShowHide() {
-    const photos = document.querySelectorAll('.photo');
-
-    // Toggle display based on the current state
-    if (showAll) {
-        photos.forEach(photo => {
-            photo.style.display = 'flex'; // Show all photos
-        });
-        showAll = false;
-    } else {
-        photos.forEach(photo => {
-            photo.style.display = 'none'; // Hide all photos
-        });
-        showAll = true;
-    }
+    document.querySelectorAll('.photo').forEach(photo => {
+        photo.style.display = showAll ? 'flex' : 'none';
+    });
+    showAll = !showAll;
 }
 
 // Hide all images on page load
-window.onload = function () {
-    toggleShowHide(); // Call toggleShowHide function to hide all images by default
-};
-
-
-// Initial sort of images
-sortImages();
+window.onload = toggleShowHide;
 
 // Disable long-press on touch devices
-let touchTimer;
-
 document.addEventListener('touchstart', function (e) {
-    touchTimer = setTimeout(() => {
-        e.preventDefault(); // Prevent the default touch behavior only for long presses
-    }, 500); // 500ms delay for long press
+    setTimeout(() => e.preventDefault(), 500);
 }, { passive: false });
 
-document.addEventListener('touchend', function (e) {
-    clearTimeout(touchTimer); // Clear the timer if the touch ends quickly
-});
-
+// Toggle filter visibility
 function toggleFilter(button) {
-    var content = button.nextElementSibling; // Get the filter-content div
-    if (content.style.display === "none") {
-        content.style.display = "block"; // Show the filter content
-        button.innerHTML = "Filters ▲"; // Change button text to '▲'
-    } else {
-        content.style.display = "none"; // Hide the filter content
-        button.innerHTML = "Filters ▼"; // Change button text to '▼'
-    }
+    const content = button.nextElementSibling;
+    content.style.display = content.style.display === "none" ? "block" : "none";
+    button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
+// Disable right-click on images but allow dragging
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('contextmenu', function (e) {
+        e.preventDefault(); // Prevent the right-click context menu
+    });
+
+    // Disable long-press (touch and hold) on images for mobile devices but allow dragging
+    img.addEventListener('touchstart', function (e) {
+        e.preventDefault(); // Prevent the default long-press behavior
+
+        // Allow the drag event to be triggered normally
+        // We will not prevent touchstart for dragging
+        if (e.target.draggable) {
+            return;
+        }
+    }, { passive: false });
+});
