@@ -163,14 +163,28 @@ function toggleShowHide() {
 // Hide all images on page load
 window.onload = toggleShowHide;
 
-// Disable long-press on touch devices
-document.addEventListener('touchstart', function (e) {
-    setTimeout(() => e.preventDefault(), 500);
-}, { passive: false });
-
 // Toggle filter visibility
 function toggleFilter(button) {
     const content = button.nextElementSibling;
     content.style.display = content.style.display === "none" ? "block" : "none";
     button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
+
+// Disable right-click on images but allow dragging
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('contextmenu', function (e) {
+        e.preventDefault(); // Prevent the right-click context menu
+    });
+
+    // Disable long-press (touch and hold) on images for mobile devices but allow dragging
+    img.addEventListener('touchstart', function (e) {
+        e.preventDefault(); // Prevent the default long-press behavior
+
+        // Allow the drag event to be triggered normally
+        // We will not prevent touchstart for dragging
+        if (e.target.draggable) {
+            return;
+        }
+    }, { passive: false });
+});
+
