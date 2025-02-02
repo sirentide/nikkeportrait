@@ -325,10 +325,10 @@ img {
 #selectedContainer { 
     width: 90%;  /* Takes up most of the screen width */
     max-width: 675px;  /* Limits width on larger screens */
-    margin: 20px auto;  /* Centers the container */
-    padding: 10px;  /* Adds inner spacing */
+    margin: 5px auto;  /* Centers the container */
+    padding: 5px;  /* Adds inner spacing */
     background-color: #222; /* Dark background */
-    border-radius: 8px; 
+    border-radius: 0px; 
     display: flex;
     flex-direction: column; /* Stack teams vertically */
     gap: 10px; /* Adds space between teams */
@@ -337,10 +337,10 @@ img {
 @media (max-width: 600px) {
     #selectedContainer {
         width: 100%;  /* Use more screen space */
-        max-width: 370px;  /* Reduce max width */
-        margin: 10px auto;  /* Smaller margin */
-        padding: 8px;  /* Reduce inner spacing */
-        gap: 6px;  /* Reduce space between teams */
+        max-width: 380px;  /* Reduce max width */
+        margin: 5px auto;  /* Smaller margin */
+        padding: 2px;  /* Reduce inner spacing */
+        gap: 2px;  /* Reduce space between teams */
     }
 }
 
@@ -351,7 +351,7 @@ img {
     justify-content: space-between; /* Keeps them on the same row */
     background: #333;  
     padding: 10px 15px;
-    border-radius: 6px; 
+    border-radius: 0px; 
     gap: 5px; /* Space between label and score */
 }
 
@@ -376,16 +376,18 @@ img {
     text-align: right;
 }
 
-/* Mobile Adjustments */
 @media (max-width: 600px) {
     .team-row {
-        flex-direction: row; /* Keeps label & score horizontal */
-        padding: 8px 12px;
-        gap: 0px; 
+        flex-direction: row; /* Keep it horizontal */
+        align-items: flex-start; /* Align items to the top */
+    }
+
+    .team-info {
+        flex-direction: column; /* Stack label & score vertically */
+        align-items: flex-start;
     }
 
     .team-label, .team-score {
-        font-size: .6em;  
+        font-size: 0.8em;
     }
 }
-
