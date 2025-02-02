@@ -376,17 +376,20 @@ img {
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     .team-row {
-        padding: 8px 12px;  /* Reduce padding */
-        gap: 5px; /* Reduce gap for smaller screens */
+        flex-direction: column; /* Stack elements */
+        align-items: center; /* Center align */
+        text-align: center; /* Ensure proper alignment */
+        gap: 5px; /* Reduce space between elements */
+        padding: 8px 12px;  
     }
 
-    .team-label {
-        font-size: 1em; /* Slightly smaller text */
+    .team-label, .team-score {
+        width: 100%; /* Full width for alignment */
+        text-align: center; /* Center text */
     }
 
     .team-score {
-        font-size: 0.8em; /* Adjust size for mobile */
-        min-width: 20px; /* Ensure it stays readable */
+        font-size: 1em; 
+        min-width: auto; /* Allow flexibility */
     }
 }
-
