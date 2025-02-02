@@ -18,6 +18,26 @@ const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) =>
         selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key])
     ) && (searchValue === '' || attributes.name.includes(searchValue));
 
+// Utility functions
+const getCheckedValues = (values) => 
+    Array.from(document.querySelectorAll(`input[type="checkbox"][value^="${values.join('"], input[type="checkbox"][value="')}"]`))
+        .filter(chk => chk.checked)
+        .map(chk => chk.value);
+
+const getPhotoAttributes = (photo) => ({
+    type: photo.getAttribute('data-type'),
+    position: photo.getAttribute('data-position'),
+    faction: photo.getAttribute('data-faction'),
+    rarity: photo.getAttribute('data-rarity'),
+    weapon: photo.getAttribute('data-weapon'),
+    name: photo.getAttribute('data-name').toLowerCase(),
+});
+
+const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) =>
+    Object.keys(selectedFilters).every(key =>
+        selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key])
+    ) && (searchValue === '' || attributes.name.includes(searchValue));
+
 // Function to update filters based on selected checkboxes and search input
 function updateFilters() {
     const photos = document.querySelectorAll('.photo');
@@ -27,10 +47,17 @@ function updateFilters() {
         faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']),
         rarity: getCheckedValues(['ssr', 'sr', 'r']),
         weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']),
+        type: getCheckedValues(['b1', 'b2', 'b3', 'a']),
+        position: getCheckedValues(['def', 'sp', 'atk']),
+        faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']),
+        rarity: getCheckedValues(['ssr', 'sr', 'r']),
+        weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']),
     };
 
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
     photos.forEach(photo => {
+        const attributes = getPhotoAttributes(photo);
+        const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
         const attributes = getPhotoAttributes(photo);
         const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
         photo.style.display = isMatch ? 'flex' : 'none';
@@ -44,7 +71,19 @@ sortImages();
 
 
 // Toggle sort criteria
+let currentSortCriteria = 'number'; // Default to sorting by name
+let currentSortOrder = 'desc'; // Default to ascending order
+sortImages();
+
+
+// Toggle sort criteria
 function toggleSortCriteria() {
+    currentSortCriteria = currentSortCriteria === 'name' ? 'number' : 'name';
+    document.getElementById('sortToggle').innerText = currentSortCriteria === 'name' ? 'Sort by Burst Gen' : 'Sort by Name';
+    sortImages();
+}
+
+// Toggle sort order
     currentSortCriteria = currentSortCriteria === 'name' ? 'number' : 'name';
     document.getElementById('sortToggle').innerText = currentSortCriteria === 'name' ? 'Sort by Burst Gen' : 'Sort by Name';
     sortImages();
@@ -58,9 +97,19 @@ function toggleSortOrder() {
 }
 
 // Function to sort images
+    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+    document.getElementById('orderToggle').innerText = currentSortOrder === 'asc' ? 'Highest' : 'Lowest';
+    sortImages();
+}
+
+// Function to sort images
 function sortImages() {
     const photosArray = Array.from(document.querySelectorAll('.photo'));
     photosArray.sort((a, b) => {
+        const comparison = currentSortCriteria === 'name' 
+            ? a.getAttribute('data-name').localeCompare(b.getAttribute('data-name')) 
+            : parseInt(a.getAttribute('data-number')) - parseInt(b.getAttribute('data-number'));
+
         const comparison = currentSortCriteria === 'name' 
             ? a.getAttribute('data-name').localeCompare(b.getAttribute('data-name')) 
             : parseInt(a.getAttribute('data-number')) - parseInt(b.getAttribute('data-number'));
@@ -71,10 +120,14 @@ function sortImages() {
     const gallery = document.querySelector('.gallery');
     gallery.innerHTML = ''; 
     photosArray.forEach(photo => gallery.appendChild(photo));
+    gallery.innerHTML = ''; 
+    photosArray.forEach(photo => gallery.appendChild(photo));
 }
 
 // Image selection functionality
+// Image selection functionality
 function toggleImageSelection(imgElement) {
+    const imgSrc = imgElement.src;
     const imgSrc = imgElement.src;
     const selectedContainer = document.getElementById('selectedContainer');
     const isSelected = imgElement.classList.contains('selected');
@@ -106,11 +159,39 @@ function removeImageFromSelection(imgElement, imgSrc) {
 
     updateTeamScore();
 }
+        removeImageFromSelection(imgElement, imgSrc);
+    } else {
+        addImageToSelection(imgElement, imgSrc);
+    }
 
+    updateTeamScore();
+}
+
+// Remove image from selection
+function removeImageFromSelection(imgElement, imgSrc) {
+    const selectedContainer = document.getElementById('selectedContainer');
+    selectedContainer.querySelectorAll('img').forEach(img => {
+        if (img.src === imgSrc) img.remove();
+    });
+
+    document.querySelectorAll('.team-images').forEach(teamRow => {
+        teamRow.querySelectorAll('img').forEach(img => {
+            if (img.src === imgSrc) teamRow.removeChild(img);
+        });
+    });
+
+    imgElement.classList.remove('selected');
+
+    updateTeamScore();
+}
+
+// Add image to selection
+function addImageToSelection(imgElement, imgSrc) {
 // Add image to selection
 function addImageToSelection(imgElement, imgSrc) {
     const teamRows = document.querySelectorAll('.team-images');
     for (const teamRow of teamRows) {
+        if (teamRow.children.length < 5) {
         if (teamRow.children.length < 5) {
             const selectedImg = document.createElement('img');
             selectedImg.src = imgSrc;
@@ -132,20 +213,49 @@ function adjustImageSize(imgElement) {
 }
 
 // Update team scores
+            adjustImageSize(selectedImg);
+            selectedImg.onclick = () => removeImageFromSelection(selectedImg, imgSrc);
+
+            teamRow.appendChild(selectedImg);
+            imgElement.classList.add('selected');
+            break;
+        }
+    }
+}
+
+// Adjust image size based on screen width
+function adjustImageSize(imgElement) {
+    const width = window.innerWidth <= 768 ? 50 : 100;
+    imgElement.style.width = `${width}px`;
+    imgElement.style.height = `${width}px`;
+}
+
+// Update team scores
 function updateTeamScore() {
+    document.querySelectorAll('.team-row').forEach(teamRow => {
     document.querySelectorAll('.team-row').forEach(teamRow => {
         const teamScoreElement = teamRow.querySelector('.team-score');
         const totalScore = Array.from(teamRow.querySelectorAll('img'))
             .reduce((total, img) => total + parseInt(img.src.split('/').pop().split('_')[0], 10) / 10, 0);
+        const totalScore = Array.from(teamRow.querySelectorAll('img'))
+            .reduce((total, img) => total + parseInt(img.src.split('/').pop().split('_')[0], 10) / 10, 0);
 
+        teamScoreElement.textContent = totalScore.toFixed(1);
         teamScoreElement.textContent = totalScore.toFixed(1);
     });
 }
 
 // Clear image selection
+// Clear image selection
 function clearSelection() {
     document.querySelectorAll('.selected').forEach(image => {
+    document.querySelectorAll('.selected').forEach(image => {
         image.classList.remove('selected');
+        removeImageFromSelection(image, image.src);
+    });
+}
+
+// Event listener for clear selection
         removeImageFromSelection(image, image.src);
     });
 }
@@ -155,7 +265,13 @@ document.getElementById('clearSelectionBtn').addEventListener('click', clearSele
 
 // Toggle show/hide for all images
 let showAll = true;
+// Toggle show/hide for all images
+let showAll = true;
 function toggleShowHide() {
+    document.querySelectorAll('.photo').forEach(photo => {
+        photo.style.display = showAll ? 'flex' : 'none';
+    });
+    showAll = !showAll;
     document.querySelectorAll('.photo').forEach(photo => {
         photo.style.display = showAll ? 'flex' : 'none';
     });
@@ -169,6 +285,7 @@ window.onload = toggleShowHide;
 =======
 // Disable long-press on touch devices
 document.addEventListener('touchstart', function (e) {
+    setTimeout(() => e.preventDefault(), 500);
     setTimeout(() => e.preventDefault(), 500);
 }, { passive: false });
 
