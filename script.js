@@ -170,22 +170,20 @@ function toggleFilter(button) {
     button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
-// Disable right-click on images but allow dragging
-document.querySelectorAll('img').forEach(img => {
-    // Prevent right-click context menu
-    img.addEventListener('contextmenu', function (e) {
-        e.preventDefault(); // Prevent the right-click context menu
-    });
 
-    // Disable long-press (touch and hold) on images for mobile devices but allow dragging
-    img.addEventListener('touchstart', function (e) {
-        // Prevent long-press behavior, but allow dragging
-        if (e.target.draggable) {
-            return; // Allow drag event if the image is draggable
-        }
-
-        e.preventDefault(); // Prevent default long press menu if not dragging
-    }, { passive: false });
+// Disable right-click context menu on desktop
+document.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
 });
 
+// Disable long press to save images on mobile
+document.addEventListener('touchstart', (event) => {
+    let touchStart = event.timeStamp;
 
+    event.target.addEventListener('touchend', (e) => {
+        const touchEnd = e.timeStamp;
+        if (touchEnd - touchStart > 500) {
+            e.preventDefault(); // Prevent long press
+        }
+    });
+});
