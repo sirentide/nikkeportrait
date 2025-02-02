@@ -336,8 +336,8 @@ img {
 
 @media (max-width: 600px) {
     #selectedContainer {
-        width: 95%;  /* Use more screen space */
-        max-width: 365px;  /* Reduce max width */
+        width: 100%;  /* Use more screen space */
+        max-width: 370px;  /* Reduce max width */
         margin: 10px auto;  /* Smaller margin */
         padding: 8px;  /* Reduce inner spacing */
         gap: 6px;  /* Reduce space between teams */
@@ -352,7 +352,7 @@ img {
     background: #333;  
     padding: 10px 15px;
     border-radius: 6px; 
-    gap: 10px; /* Space between label and score */
+    gap: 5px; /* Space between label and score */
 }
 
 /* Team label */
@@ -370,7 +370,7 @@ img {
     color: #f39c12;  
     font-size: 1em;  
     font-weight: bold;
-    min-width: 50px; 
+    min-width: 20px; 
     display: flex;
     align-items: center; /* Centers it vertically */
     text-align: right;
@@ -381,7 +381,7 @@ img {
     .team-row {
         flex-direction: row; /* Keeps label & score horizontal */
         padding: 8px 12px;
-        gap: 5px; 
+        gap: 0px; 
     }
 
     .team-label, .team-score {
