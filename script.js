@@ -177,7 +177,6 @@ function toggleFilter(button) {
     button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
 }
 
-<<<<<<< HEAD
 // Disable right-click on images but allow dragging
 document.querySelectorAll('img').forEach(img => {
     img.addEventListener('contextmenu', function (e) {
@@ -194,17 +193,4 @@ document.querySelectorAll('img').forEach(img => {
             return;
         }
     }, { passive: false });
-=======
-document.addEventListener("contextmenu", function(event) {
-    if (event.target.tagName === "IMG") {
-        event.preventDefault();
-    }
-});
-
-// Prevent long-press save on mobile (but allow taps for toggle)
-document.addEventListener("touchstart", function(event) {
-    if (event.target.tagName === "IMG") {
-        event.target.setAttribute("draggable", "false"); // Disable dragging
-    }
->>>>>>> 79c0ffa019d7528a4e752f8188949a40da3f7812
 });
