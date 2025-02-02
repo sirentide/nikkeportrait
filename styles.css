@@ -323,8 +323,8 @@ img {
 
 /* Main container styling */
 #selectedContainer { 
-    width: 47%;  /* Takes up most of the screen width */
-    max-width: 900px;  /* Limits width on larger screens */
+    width: 90%;  /* Takes up most of the screen width */
+    max-width: 675px;  /* Limits width on larger screens */
     margin: 20px auto;  /* Centers the container */
     padding: 10px;  /* Adds inner spacing */
     background-color: #222; /* Dark background */
@@ -334,33 +334,59 @@ img {
     gap: 10px; /* Adds space between teams */
 }
 
+@media (max-width: 600px) {
+    #selectedContainer {
+        width: 95%;  /* Use more screen space */
+        max-width: 355px;  /* Reduce max width */
+        margin: 10px auto;  /* Smaller margin */
+        padding: 8px;  /* Reduce inner spacing */
+        gap: 6px;  /* Reduce space between teams */
+    }
+}
 
-/* Team row styling */
+
 .team-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #333;  /* Darker background for contrast */
+    background: #333;  
     padding: 10px 15px;
-    border-radius: 6px; /* Rounded corners */
-    gap: 20px; /* Added space between score and label */
+    border-radius: 6px; 
+    gap: 20px; /* Space between label and score */
 }
 
 /* Team label (right-aligned) */
 .team-label {
     font-weight: bold;
     color: #fff;
-    flex-grow: 1; /* Expands to take up more space */
+    flex-grow: 1; /* Expands to fill space */
     text-align: right;
 }
 
 /* Team score (left-aligned) */
 .team-score {
-    color: #f39c12;  /* Gold color for score */
-    font-size: 1.1em; /* Slightly larger text */
+    color: #f39c12;  
+    font-size: 1.1em;  
     font-weight: bold;
-    flex-grow: 0; /* Prevents it from expanding too much */
+    flex-grow: 0;  
     text-align: left;
-    min-width: 50px; /* Ensures it has space */
+    min-width: 50px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+    .team-row {
+        padding: 8px 12px;  /* Reduce padding */
+        gap: 5px; /* Reduce gap for smaller screens */
+    }
+
+    .team-label {
+        font-size: 1em; /* Slightly smaller text */
+    }
+
+    .team-score {
+        font-size: 0.8em; /* Adjust size for mobile */
+        min-width: 20px; /* Ensure it stays readable */
+    }
 }
 
