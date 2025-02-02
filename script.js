@@ -197,6 +197,7 @@ function toggleFilter(button) {
     }
 }
 
+<<<<<<< HEAD
 document.addEventListener("contextmenu", function(event) {
     if (event.target.tagName === "IMG") {
         event.preventDefault();
@@ -208,4 +209,11 @@ document.addEventListener("touchstart", function(event) {
     if (event.target.tagName === "IMG") {
         event.target.setAttribute("draggable", "false"); // Disable dragging
     }
+=======
+// Prevent right-click and long-press menu on images
+document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); // This prevents the right-click menu or long press menu
+    });
+>>>>>>> 88d1bd2 (fix dragging)
 });
