@@ -175,9 +175,14 @@ document.addEventListener('touchstart', function (e) {
 >>>>>>> 299ff1b (clean some function, notify)
 // Toggle filter visibility
 function toggleFilter(button) {
-    const content = button.nextElementSibling;
-    content.style.display = content.style.display === "none" ? "block" : "none";
-    button.innerHTML = content.style.display === "none" ? "Filters ▼" : "Filters ▲";
+    var content = button.nextElementSibling; // Get the filter-content div
+    if (content.style.display === "none") {
+        content.style.display = "block"; // Show the filter content
+        button.innerHTML = "Filters ▲"; // Change button text to '▲'
+    } else {
+        content.style.display = "none"; // Hide the filter content
+        button.innerHTML = "Filters ▼"; // Change button text to '▼'
+    }
 }
 
 <<<<<<< HEAD
