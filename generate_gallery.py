@@ -34,58 +34,6 @@ html_template = """
 </head>
 <body>
 
-<div class="filter-section">
-    <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
-    <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
-        <div class="filter-box">
-            <h4>Burst:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-                <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-                <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-                <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Class:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
-                <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
-                <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Industry:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-                <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-                <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-                <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-                <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Rarity:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-                <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-                <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Weapon Type:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-                <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-                <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-                <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-                <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-                <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
-            </div>
-        </div>
-    </div>
-</div>
-
     <!-- Sort Controls -->
     <div class="sort-controls">
         <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
@@ -137,6 +85,60 @@ html_template = """
             </div>
         </div>
     </div>
+
+    <div class="filter-section">
+    <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
+    <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
+        <div class="filter-box">
+            <h4>Burst:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
+                <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
+                <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
+                <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+            </div>
+        </div>
+        <div class="filter-box">
+            <h4>Class:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
+                <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
+                <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
+            </div>
+        </div>
+        <div class="filter-box">
+            <h4>Industry:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
+                <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
+                <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
+                <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
+                <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+            </div>
+        </div>
+        <div class="filter-box">
+            <h4>Rarity:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
+                <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
+                <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+            </div>
+        </div>
+        <div class="filter-box">
+            <h4>Weapon Type:</h4>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
+                <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
+                <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
+                <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
+                <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
+                <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <!-- Gallery -->
     <div class="gallery">
