@@ -34,24 +34,7 @@ html_template = """
 </head>
 <body>
 
-    <!-- Sort Controls -->
-    <div class="sort-controls">
-        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
-        <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
-        <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
-    </div>
-
-    <!-- Search Input -->
-
-    <div class="search-wrapper">
-    <div class="search-bar">
-        <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-        <button id="clearSelectionBtn">Clear Selection</button>
-    </div>
-</div>
-
 <button id="exportBtn" onclick="exportSelectedContainerAsPNG()">Export as PNG</button>
-
 
     <div id="selectedContainer">
         <!-- Team 1 -->
@@ -86,6 +69,14 @@ html_template = """
         </div>
     </div>
 
+        <!-- Sort Controls -->
+    <div class="sort-controls">
+        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
+        <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
+        <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
+    </div>
+
+    
     <div class="filter-section">
     <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
     <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
@@ -138,7 +129,14 @@ html_template = """
     </div>
 </div>
 
+<!-- Search Input -->
 
+    <div class="search-wrapper">
+    <div class="search-bar">
+        <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
+        <button id="clearSelectionBtn">Clear Selection</button>
+    </div>
+</div>
 
     <!-- Gallery -->
     <div class="gallery">

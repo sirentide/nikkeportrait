@@ -235,6 +235,11 @@ body, .gallery {
     max-width: 500px; /* Maximum width for the search bar */
 }
 
+.exportBtn {
+    display: flex;
+    align-items: center; /* Align items vertically */
+}
+
 /* Search input styling */
 #searchInput {
     width: 100%; /* Take up full width of the container */
