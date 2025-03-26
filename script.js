@@ -83,6 +83,7 @@ function toggleImageSelection(imgElement) {
         removeImageFromSelection(imgElement, imgSrc);
     } else {
         addImageToSelection(imgElement, imgSrc);
+        saveSelectionToLocalStorage();
     }
 
     updateTeamScore();
@@ -103,6 +104,7 @@ function removeImageFromSelection(imgElement, imgSrc) {
     });
 
     imgElement.classList.remove('selected');
+    saveSelectionToLocalStorage();
     updateTeamScore();
 }
 
@@ -122,6 +124,29 @@ function addImageToSelection(imgElement, imgSrc) {
         }
     }
 }
+
+// Save selected images to localStorage
+function saveSelectionToLocalStorage() {
+    const selectedImages = Array.from(document.querySelectorAll('.selected')).map(img => img.src);
+    localStorage.setItem('selectedImages', JSON.stringify(selectedImages));
+}
+
+// Load selected images from localStorage
+function loadSelectionFromLocalStorage() {
+    const savedImages = JSON.parse(localStorage.getItem('selectedImages')) || [];
+    savedImages.forEach(imgSrc => {
+        const imgElement = document.querySelector(`.photo img[src="${imgSrc}"]`);
+        if (imgElement) {
+            addImageToSelection(imgElement, imgSrc);
+        }
+    });
+}
+
+window.onload = () => {
+    toggleShowHide();
+    loadSelectionFromLocalStorage();
+};
+
 
 // Adjust image size based on screen width
 function adjustImageSize(imgElement) {
