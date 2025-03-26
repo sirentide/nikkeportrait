@@ -74,6 +74,7 @@ html_template = """
         <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
         <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
         <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
+        <button id="clearSelectionBtn">Clear Selected Team</button>
     </div>
 
     
@@ -134,7 +135,6 @@ html_template = """
     <div class="search-wrapper">
     <div class="search-bar">
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-        <button id="clearSelectionBtn">Clear Selection</button>
     </div>
 </div>
 
