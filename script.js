@@ -75,19 +75,17 @@ function sortImages() {
 // Image selection functionality
 function toggleImageSelection(imgElement) {
     const imgSrc = imgElement.src;
-    const selectedContainer = document.getElementById('selectedContainer');
     const isSelected = imgElement.classList.contains('selected');
-    const score = parseInt(imgSrc.split('/').pop().split('_')[0], 10) / 10;
 
     if (isSelected) {
         removeImageFromSelection(imgElement, imgSrc);
     } else {
         addImageToSelection(imgElement, imgSrc);
-        saveSelectionToLocalStorage();
     }
 
     updateTeamScore();
-    applyProtectionToGalleryAndSelected()
+    applyProtectionToGalleryAndSelected();
+    saveSelectionToLocalStorage(); // Save after any changes
 }
 
 // Remove image from selection
@@ -104,7 +102,7 @@ function removeImageFromSelection(imgElement, imgSrc) {
     });
 
     imgElement.classList.remove('selected');
-    saveSelectionToLocalStorage();
+    saveSelectionToLocalStorage(); // Save after removal
     updateTeamScore();
 }
 
@@ -127,24 +125,68 @@ function addImageToSelection(imgElement, imgSrc) {
 
 // Save selected images to localStorage
 function saveSelectionToLocalStorage() {
-    const selectedImages = Array.from(document.querySelectorAll('.selected')).map(img => img.src);
-    localStorage.setItem('selectedImages', JSON.stringify(selectedImages));
+    const teams = document.querySelectorAll('.team-images');
+    const teamsData = Array.from(teams).map(team => ({
+        images: Array.from(team.querySelectorAll('img')).map(img => ({
+            src: img.src,
+            score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
+        }))
+    }));
+    
+    // Save selected state for gallery images
+    const selectedGalleryImages = Array.from(document.querySelectorAll('.photo img.selected')).map(img => img.src);
+    
+    const saveData = {
+        teams: teamsData,
+        selectedImages: selectedGalleryImages
+    };
+    
+    localStorage.setItem('nikkePortraitData', JSON.stringify(saveData));
 }
 
 // Load selected images from localStorage
 function loadSelectionFromLocalStorage() {
-    const savedImages = JSON.parse(localStorage.getItem('selectedImages')) || [];
-    savedImages.forEach(imgSrc => {
-        const imgElement = document.querySelector(`.photo img[src="${imgSrc}"]`);
-        if (imgElement) {
-            addImageToSelection(imgElement, imgSrc);
+    const savedData = JSON.parse(localStorage.getItem('nikkePortraitData'));
+    if (!savedData) return;
+
+    const { teams, selectedImages } = savedData;
+    
+    // First, mark gallery images as selected
+    selectedImages.forEach(imgSrc => {
+        const galleryImg = document.querySelector(`.photo img[src="${imgSrc}"]`);
+        if (galleryImg) {
+            galleryImg.classList.add('selected');
         }
     });
+
+    // Then populate teams
+    const teamContainers = document.querySelectorAll('.team-images');
+    teams.forEach((teamData, index) => {
+        if (teamContainers[index]) {
+            teamData.images.forEach(imgData => {
+                const selectedImg = document.createElement('img');
+                selectedImg.src = imgData.src;
+                adjustImageSize(selectedImg);
+                selectedImg.onclick = () => {
+                    const galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+                    if (galleryImg) {
+                        removeImageFromSelection(galleryImg, imgData.src);
+                    }
+                };
+                teamContainers[index].appendChild(selectedImg);
+            });
+        }
+    });
+
+    updateTeamScore();
+    applyProtectionToGalleryAndSelected();
 }
 
 window.onload = () => {
     toggleShowHide();
     loadSelectionFromLocalStorage();
+    updateTeamScore();
+    applyProtectionToGalleryAndSelected();
 };
 
 
@@ -170,8 +212,14 @@ function updateTeamScore() {
 function clearSelection() {
     document.querySelectorAll('.selected').forEach(image => {
         image.classList.remove('selected');
-        removeImageFromSelection(image, image.src);
     });
+    
+    document.querySelectorAll('.team-images').forEach(team => {
+        team.innerHTML = '';
+    });
+    
+    localStorage.removeItem('nikkePortraitData');
+    updateTeamScore();
 }
 
 // Event listener for clear selection
