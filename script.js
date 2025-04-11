@@ -569,46 +569,101 @@ document.getElementById('clearSelectionBtn').addEventListener('click', function(
 
 // Filter toggle functionality
 function toggleFilter(button) {
-    // Get the filter content that's a sibling of the button
-    const filterContent = button.parentElement.querySelector('.filter-content');
+    // Get the filter content by ID since it's now outside the button's parent
+    const filterContent = document.getElementById('filterContent');
 
     if (filterContent.style.display === "none" || !filterContent.style.display) {
-        // Show the filter content
-        filterContent.style.display = "block";
+        // Get button position for positioning the dropdown
+        const buttonRect = button.getBoundingClientRect();
+
+        // First display the content to get its dimensions
+        filterContent.style.opacity = '0';
+        filterContent.style.display = 'block';
+
+        // Get dimensions after display
+        const contentHeight = filterContent.offsetHeight;
+
+        // Check if there's enough space above
+        const spaceAbove = buttonRect.top;
+
+        // Position the filter content relative to the button
+        if (window.innerWidth <= 768) {
+            // Mobile positioning
+            if (spaceAbove >= contentHeight + 10) {
+                // Position above
+                filterContent.style.top = (buttonRect.top - 10 - contentHeight) + 'px';
+            } else {
+                // Not enough space above, position below
+                filterContent.style.top = (buttonRect.bottom + 10) + 'px';
+            }
+            filterContent.style.right = '10px';
+            filterContent.style.left = 'auto';
+        } else {
+            // Desktop positioning - to the left
+            if (spaceAbove >= contentHeight + 10) {
+                // Position above
+                filterContent.style.top = (buttonRect.top - 10 - contentHeight) + 'px';
+            } else {
+                // Not enough space above, position below
+                filterContent.style.top = (buttonRect.bottom + 10) + 'px';
+            }
+            filterContent.style.left = 'auto';
+            filterContent.style.right = (window.innerWidth - buttonRect.left + 10) + 'px';
+        }
+
+        // Show the filter content with animation
+        filterContent.style.opacity = '1';
         button.classList.add('active');
 
-        // Ensure the filter content stays within the viewport
+        // Add click outside listener to close dropdown
         setTimeout(() => {
-            const rect = filterContent.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-
-            // Check if the filter content extends beyond the right edge of the viewport
-            if (rect.right > viewportWidth - 10) { // Allow 10px margin from the right edge
-                // Calculate how much to shift it left to keep it in view
-                const adjustment = rect.right - (viewportWidth - 10); // How much we need to move it left
-                const currentMargin = parseInt(getComputedStyle(filterContent).marginLeft) || 10;
-                filterContent.style.marginLeft = `${currentMargin - adjustment}px`;
-            }
-        }, 10); // Slight delay to ensure the content is rendered
+            document.addEventListener('click', closeFilterDropdown);
+        }, 10);
     } else {
         // Hide the filter content
         filterContent.style.display = "none";
         button.classList.remove('active');
-        // Reset position
-        filterContent.style.left = '100%';
-        filterContent.style.marginLeft = '10px';
+
+        // Remove click outside listener
+        document.removeEventListener('click', closeFilterDropdown);
+    }
+}
+
+// Function to close filter dropdown when clicking outside
+function closeFilterDropdown(event) {
+    const filterContent = document.getElementById('filterContent');
+    const filterBtn = document.querySelector('.filter-btn');
+
+    // If click is outside filter content and filter button
+    if (!filterContent.contains(event.target) && !filterBtn.contains(event.target)) {
+        // Fade out
+        filterContent.style.opacity = '0';
+        filterBtn.classList.remove('active');
+
+        // Hide after transition
+        setTimeout(() => {
+            filterContent.style.display = 'none';
+        }, 200);
+
+        // Remove this event listener
+        document.removeEventListener('click', closeFilterDropdown);
     }
 }
 
 // Initialize filter visibility and setup checkbox handlers
 document.addEventListener('DOMContentLoaded', function() {
-    const filterContent = document.querySelector('.filter-content');
+    const filterContent = document.getElementById('filterContent');
     if (filterContent) {
         filterContent.style.display = "none";
     }
 
     // Setup checkbox styling and event handlers
     setupCheckboxStyling();
+
+    // Prevent clicks on the filter content from closing it
+    filterContent.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
 });
 
 // Function to ensure selected images have green borders
