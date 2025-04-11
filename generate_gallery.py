@@ -101,7 +101,7 @@ html_template = """
 
     <!-- Team Selection Container (Fixed) -->
     <div class="fixed-team-container">
-        <h2 class="team-title">Team Selection</h2>
+        <h2 class="team-title">Teams</h2>
         <div id="selectedContainer">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -177,7 +177,7 @@ html_template = """
 </div>
     <!-- Gallery Container -->
     <div class="gallery-container">
-        <h2 class="gallery-title">Character Gallery</h2>
+        <h2 class="gallery-title">Nikkes</h2>
         <!-- Gallery -->
         <div class="gallery">
         {gallery_items}

@@ -349,7 +349,8 @@ button:disabled {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    margin-left: -40px; /* Push to the left to make room for team container */
+    margin-left: -40px;
+    margin-top: 80px;
 }
 
 /* Gallery and Team Titles */
@@ -438,14 +439,16 @@ button:disabled {
 }
 
 .gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Increased size for better visibility */
-    gap: 10px; /* Increased gap for better spacing */
-    justify-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Spacing between items */
+    justify-content: flex-start; /* Align items to the start */
+    align-content: flex-start; /* Align rows to the start */
     flex: 1; /* Take up remaining space in the container */
     overflow-y: auto; /* Enable vertical scrolling */
-    padding: 10px;
+    padding: 5px;
     margin: 0 auto;
+    margin-top: 10px;
     width: 100%;
     background-color: transparent; /* Make background transparent since container has background */
     border-radius: 8px;
@@ -500,7 +503,7 @@ button:disabled {
 .search-wrapper {
     position: fixed;
     top: 20px;
-    right: 20px;
+    right: 650px;
     z-index: 1000;
     background-color: rgba(17, 17, 17, 0.8);
     padding: 10px;
@@ -736,7 +739,6 @@ button:disabled {
     }
 
     .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
         gap: 8px;
     }
 
