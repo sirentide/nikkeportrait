@@ -160,7 +160,7 @@ function saveSelectionToLocalStorage() {
     }));
 }
 
-function loadSelectionFromLocalStorage() {
+async function loadSelectionFromLocalStorage() {
     try {
         const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!savedData) return;
@@ -183,14 +183,27 @@ function loadSelectionFromLocalStorage() {
         });
 
         // Mark all gallery images from selectedImages as selected
-        selectedImages.forEach(imgSrc => {
+        for (const imgSrc of selectedImages) {
             // Extract the filename from the src
             const savedFilename = imgSrc.split('/').pop();
+
+            // Try normalized version of the filename (lowercase b2/b3)
+            const normalizedFilename = normalizeFilename(savedFilename);
+            const normalizedSrc = imgSrc.replace(savedFilename, normalizedFilename);
+
+            // Check if the normalized image exists
+            const imageExists = await checkImageExists(normalizedSrc);
 
             // Try to find the image with exact match first
             let galleryImg = document.querySelector(`.photo img[src="${imgSrc}"]`);
 
-            // If not found, try case-insensitive match
+            // If not found and normalized version exists, try that
+            if (!galleryImg && imageExists) {
+                galleryImg = document.querySelector(`.photo img[src="${normalizedSrc}"]`);
+                console.log('Using normalized filename:', normalizedFilename);
+            }
+
+            // If still not found, try case-insensitive match
             if (!galleryImg) {
                 console.log('Image not found with exact match, trying case-insensitive match:', savedFilename);
 
@@ -202,7 +215,8 @@ function loadSelectionFromLocalStorage() {
                     const currentFilename = img.src.split('/').pop();
 
                     // Compare filenames ignoring case
-                    if (currentFilename.toLowerCase() === savedFilename.toLowerCase()) {
+                    if (currentFilename.toLowerCase() === savedFilename.toLowerCase() ||
+                        currentFilename.toLowerCase() === normalizedFilename.toLowerCase()) {
                         galleryImg = img;
                         console.log('Found case-insensitive match:', currentFilename);
                         break;
@@ -222,25 +236,47 @@ function loadSelectionFromLocalStorage() {
             } else {
                 console.warn('Gallery image not found:', savedFilename);
             }
-        });
+        }
 
         // Load images into team slots
         const teamContainers = document.querySelectorAll('.team-images');
-        teams.forEach((teamData, teamIndex) => {
+        for (let teamIndex = 0; teamIndex < teams.length; teamIndex++) {
+            const teamData = teams[teamIndex];
             if (teamContainers[teamIndex]) {
                 const slots = teamContainers[teamIndex].querySelectorAll('.image-slot');
 
                 // Add images to slots
-                teamData.images.forEach((imgData, slotIndex) => {
+                for (let slotIndex = 0; slotIndex < teamData.images.length; slotIndex++) {
+                    const imgData = teamData.images[slotIndex];
                     if (slots[slotIndex]) {
                         const selectedImg = document.createElement('img');
-                        selectedImg.src = imgData.src;
 
                         // Extract the filename from the src
                         const savedFilename = imgData.src.split('/').pop();
 
+                        // Try normalized version of the filename (lowercase b2/b3)
+                        const normalizedFilename = normalizeFilename(savedFilename);
+                        const normalizedSrc = imgData.src.replace(savedFilename, normalizedFilename);
+
+                        // Check if the normalized image exists
+                        const imageExists = await checkImageExists(normalizedSrc);
+
+                        // Use normalized src if it exists
+                        if (imageExists) {
+                            selectedImg.src = normalizedSrc;
+                            console.log('Using normalized filename for team image:', normalizedFilename);
+                        } else {
+                            selectedImg.src = imgData.src;
+                        }
+
                         // Try to find the image with exact match first
                         let galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+
+                        // If not found and normalized version exists, try that
+                        if (!galleryImg && imageExists) {
+                            galleryImg = document.querySelector(`.photo img[src="${normalizedSrc}"]`);
+                            console.log('Using normalized filename (from team):', normalizedFilename);
+                        }
 
                         // If not found, try case-insensitive match
                         if (!galleryImg) {
@@ -338,9 +374,9 @@ function loadSelectionFromLocalStorage() {
                         slots[slotIndex].appendChild(selectedImg);
                         slots[slotIndex].classList.remove('empty');
                     }
-                });
+                }
             }
-        });
+        }
 
         // Update team scores
         updateTeamScore();
@@ -557,13 +593,27 @@ function cleanupCharacterName(name) {
     return uniqueWords.join(' ');
 }
 
-// Initialize
-window.onload = () => {
-    loadSelectionFromLocalStorage();
-    updateTeamScore();
-    applyProtectionToGalleryAndSelected();
-    sortImages();
+// Function to normalize filename case (convert B2/B3 to b2/b3)
+function normalizeFilename(filename) {
+    // Replace uppercase B2 and B3 with lowercase
+    return filename
+        .replace('_B2_', '_b2_')
+        .replace('_B3_', '_b3_')
+        .replace('_A_', '_a_');
+}
 
+// Function to check if an image exists
+function checkImageExists(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+    });
+}
+
+// Initialize
+window.onload = async () => {
     // Clean up duplicate character names in filenames
     document.querySelectorAll('.photo').forEach(photo => {
         const img = photo.querySelector('img');
@@ -588,6 +638,13 @@ window.onload = () => {
             }
         }
     });
+
+    // Load selection from localStorage (async function)
+    await loadSelectionFromLocalStorage();
+
+    updateTeamScore();
+    applyProtectionToGalleryAndSelected();
+    sortImages();
 
     // Apply green borders after a short delay to ensure DOM is fully loaded
     setTimeout(ensureGreenBorders, 500);
