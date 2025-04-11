@@ -36,17 +36,72 @@ html_template = """
 
 <div class="page-container">
     <div class="flex-container-1">
-        <div class="controls-container">
-            <button id="exportBtn" onclick="exportSelectedContainerAsPNG()">Export</button>
-            <div class="sort-controls">
-                <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
-                <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
-                <button id="clearSelectionBtn">Clear Selected Team</button>
+        <div class="top-controls-wrapper">
+            <div class="controls-container">
+                <div class="sort-controls">
+                    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
+                    <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
+                </div>
+            </div>
+            <div class="filter-section">
+                <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
+                <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
+                    <div class="filter-grid">
+                        <div class="filter-box">
+                            <h4>Burst:</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
+                                <label class="checkbox-label"><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
+                                <label class="checkbox-label"><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
+                                <label class="checkbox-label"><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+                            </div>
+                        </div>
+                        <div class="filter-box">
+                            <h4>Class:</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
+                                <label class="checkbox-label"><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
+                                <label class="checkbox-label"><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
+                            </div>
+                        </div>
+                        <div class="filter-box">
+                            <h4>Industry:</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
+                                <label class="checkbox-label"><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
+                                <label class="checkbox-label"><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
+                                <label class="checkbox-label"><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
+                                <label class="checkbox-label"><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+                            </div>
+                        </div>
+                        <div class="filter-box">
+                            <h4>Rarity:</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
+                                <label class="checkbox-label"><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
+                                <label class="checkbox-label"><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+                            </div>
+                        </div>
+                        <div class="filter-box">
+                            <h4>Weapon Type:</h4>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label"><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
+                                <label class="checkbox-label"><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
+                                <label class="checkbox-label"><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
+                                <label class="checkbox-label"><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
+                                <label class="checkbox-label"><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
+                                <label class="checkbox-label"><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="flex-container-2">
+    <!-- Team Selection Container (Fixed) -->
+    <div class="fixed-team-container">
+        <h2 class="team-title">Team Selection</h2>
         <div id="selectedContainer">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -104,61 +159,9 @@ html_template = """
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- End of fixed-team-container -->
 
-    <div class="flex-container-3">
-        <div class="filter-section">
-            <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
-            <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
-                <div class="filter-box">
-                    <h4>Burst:</h4>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-                        <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-                        <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-                        <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
-                    </div>
-                </div>
-                <div class="filter-box">
-                    <h4>Class:</h4>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
-                        <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
-                        <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
-                    </div>
-                </div>
-                <div class="filter-box">
-                    <h4>Industry:</h4>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-                        <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-                        <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-                        <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-                        <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
-                    </div>
-                </div>
-                <div class="filter-box">
-                    <h4>Rarity:</h4>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-                        <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-                        <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
-                    </div>
-                </div>
-                <div class="filter-box">
-                    <h4>Weapon Type:</h4>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-                        <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-                        <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-                        <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-                        <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-                        <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Filter section moved to top controls wrapper -->
 </div>
 
 <div class="search-wrapper">
@@ -166,61 +169,85 @@ html_template = """
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
     </div>
 </div>
-    <!-- Gallery -->
-    <div class="gallery">
+
+<!-- Fixed bottom buttons -->
+<div class="bottom-buttons">
+    <button id="exportBtn" class="fixed-button left" onclick="exportSelectedContainerAsPNG()">Export</button>
+    <button id="clearSelectionBtn" class="fixed-button right">Clear Selected Team</button>
+</div>
+    <!-- Gallery Container -->
+    <div class="gallery-container">
+        <h2 class="gallery-title">Character Gallery</h2>
+        <!-- Gallery -->
+        <div class="gallery">
         {gallery_items}
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="script.js"></script>
+    <script src="export.js"></script>
      <script>
         // Initialize Sortable.js on each team-images container with group option
         document.querySelectorAll('.team-images').forEach((teamContainer) => {
-    new Sortable(teamContainer, {
-        animation: 150,  // Smooth animation
-        ghostClass: 'sortable-ghost',  // Class for the dragged item
-        delay: 300, // Require 300ms hold before dragging
-        delayOnTouchOnly: true, // Apply delay only on touch devices
-        group: {
-            name: 'shared',  // The group name must be the same for all teams to allow movement
-            pull: true,  // Allow pulling items from this list
-            put: true   // Allow putting items into this list
-        },
-        onEnd: function(evt) {
-            console.log(`Image moved from team ${evt.from.getAttribute('data-team')} to team ${evt.to.getAttribute('data-team')}`);
-            // You can perform other actions after the drag event
-            updateTeamScore();
-        }
-    });
-});
-    </script>
-    <script>
-    function exportSelectedContainerAsPNG() {
-    console.log("Exporting container...");
+            new Sortable(teamContainer, {
+                animation: 150,  // Smooth animation
+                ghostClass: 'sortable-ghost',  // Class for the dragged item
+                delay: 300, // Require 300ms hold before dragging
+                delayOnTouchOnly: true, // Apply delay only on touch devices
+                group: {
+                    name: 'shared',  // The group name must be the same for all teams to allow movement
+                    pull: true,  // Allow pulling items from this list
+                    put: true   // Allow putting items into this list
+                },
+                swapThreshold: 0.65, // Threshold of the swap zone (0.65 means 65% overlap required to swap)
+                swap: true, // Enable swap mode
+                onStart: function(evt) {
+                    // Store the number of slots in each team before dragging
+                    document.querySelectorAll('.team-images').forEach(team => {
+                        team.dataset.slotCount = team.children.length;
+                    });
+                },
+                onEnd: function(evt) {
+                    console.log(`Image moved from team ${evt.from.parentNode.getAttribute('data-team')} to team ${evt.to.parentNode.getAttribute('data-team')}`);
 
-    // Use html2canvas to capture the container
-    html2canvas(document.getElementById("selectedContainer"), {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#000", // Set the background to black
-    }).then(function(canvas) {
-        console.log("Canvas rendered successfully.");
-        
-        // Convert canvas to PNG blob and trigger download
-        canvas.toBlob(function(blob) {
-            var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "selectedContainer.png";  // Name the file
-            link.click();
-            console.log("Download triggered.");
-        }, 'image/png');
-    }).catch(function(error) {
-        console.error("html2canvas failed:", error);
-    });
-}
+                    // Check if any team has more than 5 slots and fix it
+                    document.querySelectorAll('.team-images').forEach(team => {
+                        const originalCount = parseInt(team.dataset.slotCount || 5);
+                        const currentCount = team.children.length;
 
+                        // If this team has more slots than it should
+                        if (currentCount > 5) {
+                            console.log(`Team ${team.parentNode.getAttribute('data-team')} has ${currentCount} slots, fixing...`);
+
+                            // Remove excess slots
+                            while (team.children.length > 5) {
+                                team.removeChild(team.lastChild);
+                            }
+                        }
+
+                        // If this team has fewer slots than it should
+                        if (currentCount < 5) {
+                            console.log(`Team ${team.parentNode.getAttribute('data-team')} has ${currentCount} slots, adding empty slots...`);
+
+                            // Add empty slots
+                            for (let i = currentCount; i < 5; i++) {
+                                const emptySlot = document.createElement('div');
+                                emptySlot.className = 'image-slot empty';
+                                team.appendChild(emptySlot);
+                            }
+                        }
+                    });
+
+                    // Update team scores
+                    updateTeamScore();
+                    saveSelectionToLocalStorage();
+                }
+            });
+        });
     </script>
+    <!-- Export function moved to export.js -->
 
 
 </body>

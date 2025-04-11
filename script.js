@@ -8,11 +8,11 @@ const getCheckedValues = (values) =>
         .map(chk => chk.value);
 
 const getPhotoAttributes = (photo) => ({
-    type: photo.getAttribute('data-type'),
-    position: photo.getAttribute('data-position'),
-    faction: photo.getAttribute('data-faction'),
-    rarity: photo.getAttribute('data-rarity'),
-    weapon: photo.getAttribute('data-weapon'),
+    type: photo.getAttribute('data-type').toLowerCase(),
+    position: photo.getAttribute('data-position').toLowerCase(),
+    faction: photo.getAttribute('data-faction').toLowerCase(),
+    rarity: photo.getAttribute('data-rarity').toLowerCase(),
+    weapon: photo.getAttribute('data-weapon').toLowerCase(),
     name: photo.getAttribute('data-name').toLowerCase(),
 });
 
@@ -25,11 +25,11 @@ const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) =>
 function updateFilters() {
     const photos = document.querySelectorAll('.photo');
     const selectedFilters = {
-        type: getCheckedValues(['b1', 'b2', 'b3', 'a']),
-        position: getCheckedValues(['def', 'sp', 'atk']),
-        faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']),
-        rarity: getCheckedValues(['ssr', 'sr', 'r']),
-        weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']),
+        type: getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']),
+        position: getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']),
+        faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']),
+        rarity: getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']),
+        weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']),
     };
 
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
@@ -458,12 +458,54 @@ function ensureGreenBorders() {
     });
 }
 
+// Function to clean up duplicate character names in filenames
+function cleanupCharacterName(name) {
+    // Find repeated words
+    const words = name.split(' ');
+    const uniqueWords = [];
+
+    for (let i = 0; i < words.length; i++) {
+        // Skip if this word is a repeat of the previous word
+        if (i > 0 && words[i].toLowerCase() === words[i-1].toLowerCase()) {
+            continue;
+        }
+        uniqueWords.push(words[i]);
+    }
+
+    return uniqueWords.join(' ');
+}
+
 // Initialize
 window.onload = () => {
     loadSelectionFromLocalStorage();
     updateTeamScore();
     applyProtectionToGalleryAndSelected();
     sortImages();
+
+    // Clean up duplicate character names in filenames
+    document.querySelectorAll('.photo').forEach(photo => {
+        const img = photo.querySelector('img');
+        if (img) {
+            const src = img.src;
+            const filename = src.split('/').pop();
+            const parts = filename.split('_');
+
+            if (parts.length > 5) {
+                // Get the character name parts
+                let nameParts = parts.slice(5);
+
+                // Remove file extension
+                let lastPart = nameParts[nameParts.length - 1].replace('.webp', '');
+                nameParts[nameParts.length - 1] = lastPart;
+
+                // Clean up the name
+                const name = cleanupCharacterName(nameParts.join(' '));
+
+                // Set the data-name attribute
+                photo.setAttribute('data-name', name);
+            }
+        }
+    });
 
     // Apply green borders after a short delay to ensure DOM is fully loaded
     setTimeout(ensureGreenBorders, 500);
