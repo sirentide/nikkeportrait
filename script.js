@@ -184,9 +184,34 @@ function loadSelectionFromLocalStorage() {
 
         // Mark all gallery images from selectedImages as selected
         selectedImages.forEach(imgSrc => {
-            const galleryImg = document.querySelector(`.photo img[src="${imgSrc}"]`);
+            // Extract the filename from the src
+            const savedFilename = imgSrc.split('/').pop();
+
+            // Try to find the image with exact match first
+            let galleryImg = document.querySelector(`.photo img[src="${imgSrc}"]`);
+
+            // If not found, try case-insensitive match
+            if (!galleryImg) {
+                console.log('Image not found with exact match, trying case-insensitive match:', savedFilename);
+
+                // Get all gallery images
+                const allGalleryImages = document.querySelectorAll('.photo img');
+
+                // Find one with a matching filename (case-insensitive)
+                for (const img of allGalleryImages) {
+                    const currentFilename = img.src.split('/').pop();
+
+                    // Compare filenames ignoring case
+                    if (currentFilename.toLowerCase() === savedFilename.toLowerCase()) {
+                        galleryImg = img;
+                        console.log('Found case-insensitive match:', currentFilename);
+                        break;
+                    }
+                }
+            }
+
             if (galleryImg) {
-                console.log('Marking gallery image as selected:', imgSrc);
+                console.log('Marking gallery image as selected:', galleryImg.src);
                 galleryImg.classList.add('selected');
                 // Force style update
                 galleryImg.style.border = '3px solid #00ff00';
@@ -194,6 +219,8 @@ function loadSelectionFromLocalStorage() {
                 galleryImg.style.boxShadow = '0 0 8px #00ff00';
                 galleryImg.style.zIndex = '10';
                 galleryImg.style.position = 'relative';
+            } else {
+                console.warn('Gallery image not found:', savedFilename);
             }
         });
 
@@ -209,10 +236,37 @@ function loadSelectionFromLocalStorage() {
                         const selectedImg = document.createElement('img');
                         selectedImg.src = imgData.src;
 
-                        // Make sure the corresponding gallery image is marked as selected
-                        const galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+                        // Extract the filename from the src
+                        const savedFilename = imgData.src.split('/').pop();
+
+                        // Try to find the image with exact match first
+                        let galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+
+                        // If not found, try case-insensitive match
+                        if (!galleryImg) {
+                            console.log('Image not found with exact match, trying case-insensitive match (from team):', savedFilename);
+
+                            // Get all gallery images
+                            const allGalleryImages = document.querySelectorAll('.photo img');
+
+                            // Find one with a matching filename (case-insensitive)
+                            for (const img of allGalleryImages) {
+                                const currentFilename = img.src.split('/').pop();
+
+                                // Compare filenames ignoring case
+                                if (currentFilename.toLowerCase() === savedFilename.toLowerCase()) {
+                                    galleryImg = img;
+                                    console.log('Found case-insensitive match (from team):', currentFilename);
+
+                                    // Update the src to use the actual filename with correct case
+                                    selectedImg.src = img.src;
+                                    break;
+                                }
+                            }
+                        }
+
                         if (galleryImg) {
-                            console.log('Marking gallery image as selected (from team):', imgData.src);
+                            console.log('Marking gallery image as selected (from team):', galleryImg.src);
                             galleryImg.classList.add('selected');
                             // Force style update
                             galleryImg.style.border = '3px solid #00ff00';
@@ -220,17 +274,45 @@ function loadSelectionFromLocalStorage() {
                             galleryImg.style.boxShadow = '0 0 8px #00ff00';
                             galleryImg.style.zIndex = '10';
                             galleryImg.style.position = 'relative';
+                        } else {
+                            console.warn('Gallery image not found (from team):', savedFilename);
                         }
 
                         // Add click handler for removal
                         selectedImg.onclick = () => {
-                            const galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+                            // Use the updated src from the selectedImg
+                            const currentSrc = selectedImg.src;
+                            const filename = currentSrc.split('/').pop();
+
+                            // Try to find the image with exact match first
+                            let galleryImg = document.querySelector(`.photo img[src="${currentSrc}"]`);
+
+                            // If not found, try case-insensitive match
+                            if (!galleryImg) {
+                                console.log('Image not found with exact match for removal, trying case-insensitive match:', filename);
+
+                                // Get all gallery images
+                                const allGalleryImages = document.querySelectorAll('.photo img');
+
+                                // Find one with a matching filename (case-insensitive)
+                                for (const img of allGalleryImages) {
+                                    const currentFilename = img.src.split('/').pop();
+
+                                    // Compare filenames ignoring case
+                                    if (currentFilename.toLowerCase() === filename.toLowerCase()) {
+                                        galleryImg = img;
+                                        console.log('Found case-insensitive match for removal:', currentFilename);
+                                        break;
+                                    }
+                                }
+                            }
+
                             if (galleryImg) {
-                                console.log('Team image clicked, toggling gallery image:', imgData.src);
+                                console.log('Team image clicked, toggling gallery image:', galleryImg.src);
                                 toggleImageSelection(galleryImg);
                             } else {
                                 // If gallery image not found, still remove from slot
-                                console.log('Gallery image not found, removing from slot:', imgData.src);
+                                console.log('Gallery image not found, removing from slot:', filename);
 
                                 // Find all gallery images with the same source and remove selected class and styles
                                 document.querySelectorAll('.photo img').forEach(img => {
