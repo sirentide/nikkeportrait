@@ -5,6 +5,11 @@
     box-sizing: border-box;
 }
 
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 /* Layout */
 body {
     margin: 0;
@@ -195,33 +200,9 @@ button:disabled {
     border-radius: 2px;
 }
 
-/* Sort Controls */
-.sort-controls {
-    display: flex;
-    align-items: center;
-    height: 32px;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-}
 
-.sort-controls button {
-    height: 32px;
-    padding: 0 12px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 0.8em;
-    min-width: 80px;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    flex-shrink: 0;
-}
+
+
 
 /* Clear Selection Button styles moved to fixed-button class */
 
@@ -251,18 +232,23 @@ button:disabled {
 }
 
 .collapse-btn {
-    height: 32px;
-    padding: 0 12px;
+    width: 40px;
+    height: 40px;
     background-color: #333;
     color: white;
     border: none;
-    border-radius: 3px;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 0.8em;
-    transition: background-color 0.2s;
-    display: inline-flex;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.filter-icon {
+    font-style: normal;
+    font-size: 20px;
 }
 
 .collapse-btn:hover {
@@ -272,52 +258,86 @@ button:disabled {
 .filter-content {
     position: absolute;
     top: calc(100% + 10px);
-    left: 0;
+    left: 100%; /* Position to the right of the filter button */
+    margin-left: 10px; /* Add some spacing from the button */
     background-color: #222;
     border-radius: 8px;
-    padding: 15px;
+    padding: 10px;
     max-height: 400px;
     overflow-y: auto;
-    width: max-content;
+    overflow-x: auto;
+    max-width: 30vw; /* Limit width to 90% of viewport width */
+    width: 250px; /* Reduced width for more compact appearance */
     z-index: 1001;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    font-size: 0.4em; /* Slightly smaller font size */
 }
 
 .filter-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 5px;
 }
 
 .filter-box {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .filter-box h4 {
-    margin: 0 0 8px 0;
+    margin: 0 0 5px 0;
     color: #ddd;
-    font-size: 14px;
+    font-size: 13px;
     border-bottom: 1px solid #444;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
 }
 
 .checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 6px;
 }
 
 .checkbox-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    font-size: 13px;
+    justify-content: center;
+    font-size: 12px;
     cursor: pointer;
-    padding: 3px 0;
-    transition: color 0.2s;
+    position: relative;
+    width: auto;
+    height: 26px;
+    padding: 0 10px;
+    background-color: #333;
+    color: white;
+    border-radius: 13px;
+    transition: all 0.2s ease;
 }
 
 .checkbox-label:hover {
-    color: #fff;
+    background-color: #444;
+}
+
+.checkbox-label input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkbox-label input:checked + span {
+    color: white;
+}
+
+.checkbox-label input:checked {
+    background-color: #2a6496;
+}
+
+.checkbox-label.active,
+.checkbox-label input:checked ~ .checkbox-label {
+    background-color: #2a6496;
+    box-shadow: 0 0 8px rgba(42, 100, 150, 0.8);
 }
 
 .checkbox-label input {
@@ -349,7 +369,7 @@ button:disabled {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    margin-left: -40px;
+    margin-left: 20px;
     margin-top: 80px;
 }
 
@@ -499,12 +519,64 @@ button:disabled {
     transform: scale(1.05);
 }
 
-/* Search */
-.search-wrapper {
+/* Search and Burst Filter Container */
+.search-filter-container {
     position: fixed;
     top: 20px;
-    right: 650px;
+    right: 20px;
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Burst Filter Buttons */
+.burst-filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.burst-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.burst-btn:hover {
+    background-color: #444;
+}
+
+.filter-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-btn {
+    background-color: #2a6496;
+}
+
+.filter-btn:hover {
+    background-color: #3a7db6;
+}
+
+.burst-btn.active {
+    background-color: #2a6496;
+    box-shadow: 0 0 8px rgba(42, 100, 150, 0.8);
+}
+
+/* Search */
+.search-wrapper {
     background-color: rgba(17, 17, 17, 0.8);
     padding: 10px;
     border-radius: 8px;
@@ -611,53 +683,100 @@ button:disabled {
         margin-left: 10px;
     }
 
-    .sort-controls button {
-        padding: 0 8px;
-        font-size: 12px;
-        min-width: auto;
-        height: 28px;
-    }
+
 
     .filter-section {
-        width: auto;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 946; /* Higher than search-filter-container */
     }
 
     .collapse-btn {
-        width: auto;
-        font-size: 12px;
-        height: 28px;
-        padding: 0 8px;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        padding: 0;
+    }
+
+    .filter-icon {
+        font-size: 16px;
     }
 
     .filter-content {
-        width: 90%;
-        left: 5%;
-        right: 5%;
-        top: calc(40vh + 50px); /* Position below the controls */
-        max-height: calc(60vh - 120px); /* Limit height to fit between controls and bottom buttons */
-        z-index: 935;
+        width: 85%;
+        left: 100%; /* Position to the right of the filter button */
+        margin-left: 5px; /* Add some spacing from the button */
+        top: calc(100% + 5px); /* Position below the filter button */
+        max-height: calc(100vh - 200px); /* Limit height */
+        z-index: 947; /* Higher than everything else */
+        overflow-y: auto;
+        overflow-x: auto;
+        padding: 8px;
+        max-width: 85vw; /* Limit width to 85% of viewport width on mobile */
+        width: 250px; /* Smaller width for mobile */
+        font-size: 0.85em; /* Even smaller font for mobile */
     }
 
     .filter-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
 
-    .search-wrapper {
+    .filter-box {
+        margin-bottom: 8px;
+    }
+
+    .search-filter-container {
         position: fixed;
         top: 40vh; /* Position directly below the fixed team container */
-        right: 10px;
+        right: 50px; /* Move it to the left to make room for filter button */
         width: auto;
         margin-bottom: 0;
         z-index: 945;
-        height: 50px; /* Match height of controls wrapper */
+        height: auto;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+        padding: 5px;
+        background-color: rgba(17, 17, 17, 0.7);
+        border-radius: 5px;
+    }
+
+    .burst-filter-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 2px;
+    }
+
+    .burst-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .search-wrapper {
+        height: 28px;
+        width: auto;
         display: flex;
         align-items: center;
+        padding: 3px;
+        background-color: transparent;
+        box-shadow: none;
+    }
+
+    .search-bar {
+        height: 28px;
     }
 
     .search-bar input {
-        width: 150px;
-        padding: 6px 10px;
-        font-size: 13px;
+        width: 120px;
+        padding: 4px 8px;
+        font-size: 12px;
+        height: 20px;
     }
 
     .bottom-buttons {
@@ -719,16 +838,22 @@ button:disabled {
         height: 60px;
         margin-bottom: 5px;
         padding: 3px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .team-images {
         height: 50px;
         gap: 4px;
+        width: calc(100% - 70px); /* Account for team label and score */
+        justify-content: space-between;
     }
 
     .image-slot {
-        width: 45px;
+        width: calc((100% - 16px) / 5); /* Divide available space by 5, accounting for gaps */
         height: 45px;
+        min-width: 35px;
+        max-width: 45px;
     }
 
     /* Smaller title on mobile */
@@ -738,8 +863,45 @@ button:disabled {
         padding-bottom: 5px;
     }
 
+    /* Smaller team labels and scores on mobile */
+    .team-label {
+        width: 25px;
+        font-size: 12px;
+    }
+
+    .team-score {
+        width: 40px;
+        font-size: 12px;
+    }
+
     .gallery {
         gap: 8px;
+    }
+
+    /* Mobile filter styles */
+    .filter-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .filter-box {
+        margin-bottom: 8px;
+    }
+
+    .filter-box h4 {
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .checkbox-group {
+        gap: 4px;
+    }
+
+    .checkbox-label {
+        font-size: 11px;
+        height: 26px;
+        padding: 0 8px;
+        border-radius: 13px;
     }
 
     .photo {

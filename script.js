@@ -16,55 +16,101 @@ const getPhotoAttributes = (photo) => ({
     name: photo.getAttribute('data-name').toLowerCase(),
 });
 
-const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) =>
-    Object.keys(selectedFilters).every(key =>
-        selectedFilters[key].length === 0 || selectedFilters[key].includes(attributes[key])
-    ) && (searchValue === '' || attributes.name.includes(searchValue));
+const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {
+    // Check if the photo matches all selected filters
+    const filtersMatch = Object.keys(selectedFilters).every(key => {
+        // If no filters of this type are selected, it's a match
+        if (selectedFilters[key].length === 0) return true;
+
+        // Check if the attribute value is in the selected filters
+        // For case-insensitive comparison
+        return selectedFilters[key].some(value => {
+            // Skip null values
+            if (value === null) return false;
+
+            // Convert to lowercase for case-insensitive comparison
+            return value.toLowerCase() === attributes[key].toLowerCase();
+        });
+    });
+
+    // Check if the photo matches the search text
+    const searchMatch = searchValue === '' || attributes.name.includes(searchValue);
+
+    // Photo matches if it passes both filter and search criteria
+    return filtersMatch && searchMatch;
+};
+
+// Burst filter buttons functionality
+function toggleBurstFilter(button) {
+    // Toggle active state for this button
+    button.classList.toggle('active');
+
+    // Update filters
+    updateFilters();
+}
+
+// Get active burst filters
+function getActiveBurstFilters() {
+    // Only select burst buttons that are active and don't have the filter-btn class
+    const activeButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
+    return Array.from(activeButtons)
+        .map(btn => btn.getAttribute('data-value'))
+        .filter(value => value !== null); // Filter out null values
+}
 
 // Filter functionality
 function updateFilters() {
     const photos = document.querySelectorAll('.photo');
+    console.log('Updating filters, found', photos.length, 'photos');
+
+    // Get burst filters from the modern buttons
+    const burstFilters = getActiveBurstFilters();
+    console.log('Active burst filters:', burstFilters);
+
+    // Get checked values for each filter type
+    const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']);
+    const positionValues = getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']);
+    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']);
+    const rarityValues = getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']);
+    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']);
+
+    console.log('Checked filters:', {
+        type: typeValues,
+        position: positionValues,
+        faction: factionValues,
+        rarity: rarityValues,
+        weapon: weaponValues
+    });
+
     const selectedFilters = {
-        type: getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']),
-        position: getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']),
-        faction: getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']),
-        rarity: getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']),
-        weapon: getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']),
+        type: burstFilters.length > 0 ? burstFilters : typeValues,
+        position: positionValues,
+        faction: factionValues,
+        rarity: rarityValues,
+        weapon: weaponValues,
     };
 
     const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    console.log('Search value:', searchValue);
+
+    let visibleCount = 0;
     photos.forEach(photo => {
         const attributes = getPhotoAttributes(photo);
         const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
         photo.style.display = isMatch ? 'flex' : 'none';
+        if (isMatch) visibleCount++;
     });
+
+    console.log('Visible photos after filtering:', visibleCount);
 }
 
-// Sort functionality
-let currentSortCriteria = 'number';
-let currentSortOrder = 'desc';
-
-function toggleSortCriteria() {
-    currentSortCriteria = currentSortCriteria === 'name' ? 'number' : 'name';
-    document.getElementById('sortToggle').innerText =
-        currentSortCriteria === 'name' ? 'Sort by Burst Gen' : 'Sort by Name';
-    sortImages();
-}
-
-function toggleSortOrder() {
-    currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-    document.getElementById('orderToggle').innerText =
-        currentSortOrder === 'asc' ? 'Highest' : 'Lowest';
-    sortImages();
-}
-
+// Function to organize images
 function sortImages() {
     const photosArray = Array.from(document.querySelectorAll('.photo'));
+
+    // Sort by data-number attribute in descending order (highest first)
     photosArray.sort((a, b) => {
-        const comparison = currentSortCriteria === 'name'
-            ? a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'))
-            : parseInt(a.getAttribute('data-number')) - parseInt(b.getAttribute('data-number'));
-        return currentSortOrder === 'asc' ? comparison : -comparison;
+        return parseInt(b.getAttribute('data-number')) - parseInt(a.getAttribute('data-number'));
     });
 
     const gallery = document.querySelector('.gallery');
@@ -514,41 +560,55 @@ document.getElementById('clearSelectionBtn').addEventListener('click', function(
         }
     }
 
-    // Reset sort to default if needed
-    currentSortCriteria = 'number';
-    currentSortOrder = 'desc';
-
-    // Update UI elements for sort
-    const sortToggle = document.getElementById('sortToggle');
-    const orderToggle = document.getElementById('orderToggle');
-    if (sortToggle) sortToggle.innerText = 'Sort by Name';
-    if (orderToggle) orderToggle.innerText = 'Highest';
-
     // Clear local storage
     localStorage.removeItem(STORAGE_KEY);
 
-    // Re-sort images to default state
+    // Re-organize images
     sortImages();
 });
 
 // Filter toggle functionality
 function toggleFilter(button) {
-    const content = button.nextElementSibling;
-    if (content.style.display === "none" || !content.style.display) {
-        content.style.display = "grid";
-        button.innerHTML = "Filters ▼";
+    // Get the filter content that's a sibling of the button
+    const filterContent = button.parentElement.querySelector('.filter-content');
+
+    if (filterContent.style.display === "none" || !filterContent.style.display) {
+        // Show the filter content
+        filterContent.style.display = "block";
+        button.classList.add('active');
+
+        // Ensure the filter content stays within the viewport
+        setTimeout(() => {
+            const rect = filterContent.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+
+            // Check if the filter content extends beyond the right edge of the viewport
+            if (rect.right > viewportWidth - 10) { // Allow 10px margin from the right edge
+                // Calculate how much to shift it left to keep it in view
+                const adjustment = rect.right - (viewportWidth - 10); // How much we need to move it left
+                const currentMargin = parseInt(getComputedStyle(filterContent).marginLeft) || 10;
+                filterContent.style.marginLeft = `${currentMargin - adjustment}px`;
+            }
+        }, 10); // Slight delay to ensure the content is rendered
     } else {
-        content.style.display = "none";
-        button.innerHTML = "Filters ►";
+        // Hide the filter content
+        filterContent.style.display = "none";
+        button.classList.remove('active');
+        // Reset position
+        filterContent.style.left = '100%';
+        filterContent.style.marginLeft = '10px';
     }
 }
 
-// Initialize filter visibility
+// Initialize filter visibility and setup checkbox handlers
 document.addEventListener('DOMContentLoaded', function() {
     const filterContent = document.querySelector('.filter-content');
     if (filterContent) {
         filterContent.style.display = "none";
     }
+
+    // Setup checkbox styling and event handlers
+    setupCheckboxStyling();
 });
 
 // Function to ensure selected images have green borders
@@ -639,6 +699,9 @@ window.onload = async () => {
         }
     });
 
+    // Set up checkbox styling
+    setupCheckboxStyling();
+
     // Load selection from localStorage (async function)
     await loadSelectionFromLocalStorage();
 
@@ -649,3 +712,33 @@ window.onload = async () => {
     // Apply green borders after a short delay to ensure DOM is fully loaded
     setTimeout(ensureGreenBorders, 500);
 };
+
+// Function to set up checkbox styling
+function setupCheckboxStyling() {
+    // Add active class to checkboxes when checked
+    document.querySelectorAll('.checkbox-label input').forEach(checkbox => {
+        // Initial state
+        if (checkbox.checked) {
+            checkbox.parentElement.classList.add('active');
+        }
+
+        // Remove existing event listeners to prevent duplicates
+        checkbox.removeEventListener('change', checkboxChangeHandler);
+
+        // Add new event listener
+        checkbox.addEventListener('change', checkboxChangeHandler);
+    });
+}
+
+// Handler for checkbox changes
+function checkboxChangeHandler() {
+    // Update styling
+    if (this.checked) {
+        this.parentElement.classList.add('active');
+    } else {
+        this.parentElement.classList.remove('active');
+    }
+
+    // Update filters
+    updateFilters();
+}
