@@ -34,110 +34,138 @@ html_template = """
 </head>
 <body>
 
-<button id="exportBtn" onclick="exportSelectedContainerAsPNG()">Export as PNG</button>
-
-    <div id="selectedContainer">
-        <!-- Team 1 -->
-        <div class="team-row" data-team="1">
-            <div class="team-label">T1</div> <div class="team-score">0.0</div>
-            <div class="team-images" data-team="1">
-            </div>
-        </div>
-        <!-- Team 2 -->
-        <div class="team-row" data-team="2">
-            <div class="team-label">T2</div> <div class="team-score">0.0</div>
-            <div class="team-images" data-team="2">
-            </div>
-        </div>
-        <!-- Team 3 -->
-        <div class="team-row" data-team="3">
-            <div class="team-label">T3</div> <div class="team-score">0.0</div>
-            <div class="team-images" data-team="3">
-            </div>
-        </div>
-        <!-- Team 4 -->
-        <div class="team-row" data-team="4">
-            <div class="team-label">T4</div> <div class="team-score">0.0</div>
-            <div class="team-images" data-team="4">
-            </div>
-        </div>
-        <!-- Team 5 -->
-        <div class="team-row" data-team="5">
-            <div class="team-label">T5</div> <div class="team-score">0.0</div>
-            <div class="team-images" data-team="5">
+<div class="page-container">
+    <div class="flex-container-1">
+        <div class="controls-container">
+            <button id="exportBtn" onclick="exportSelectedContainerAsPNG()">Export</button>
+            <div class="sort-controls">
+                <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
+                <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
+                <button id="clearSelectionBtn">Clear Selected Team</button>
             </div>
         </div>
     </div>
 
-        <!-- Sort Controls -->
-    <div class="sort-controls">
-        <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
-        <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
-        <button id="showHideButton" onclick="toggleShowHide()">Show/Hide All</button>
-        <button id="clearSelectionBtn">Clear Selected Team</button>
+    <div class="flex-container-2">
+        <div id="selectedContainer">
+            <div class="team-row" data-team="1">
+                <div class="team-label">T1</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="2">
+                <div class="team-label">T2</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="3">
+                <div class="team-label">T3</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="4">
+                <div class="team-label">T4</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="5">
+                <div class="team-label">T5</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    
-    <div class="filter-section">
-    <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
-    <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
-        <div class="filter-box">
-            <h4>Burst:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-                <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-                <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-                <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Class:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
-                <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
-                <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Industry:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-                <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-                <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-                <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-                <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Rarity:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-                <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-                <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
-            </div>
-        </div>
-        <div class="filter-box">
-            <h4>Weapon Type:</h4>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-                <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-                <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-                <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-                <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-                <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+    <div class="flex-container-3">
+        <div class="filter-section">
+            <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
+            <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
+                <div class="filter-box">
+                    <h4>Burst:</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
+                        <label><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
+                        <label><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
+                        <label><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <h4>Class:</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
+                        <label><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
+                        <label><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <h4>Industry:</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
+                        <label><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
+                        <label><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
+                        <label><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
+                        <label><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <h4>Rarity:</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
+                        <label><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
+                        <label><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
+                    </div>
+                </div>
+                <div class="filter-box">
+                    <h4>Weapon Type:</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
+                        <label><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
+                        <label><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
+                        <label><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
+                        <label><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
+                        <label><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Search Input -->
-
-    <div class="search-wrapper">
+<div class="search-wrapper">
     <div class="search-bar">
         <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
     </div>
 </div>
-
     <!-- Gallery -->
     <div class="gallery">
         {gallery_items}

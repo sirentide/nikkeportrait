@@ -1,398 +1,885 @@
-/* General Body Styling */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0.5rem;
-    padding: 0.5rem;
-    background-color: #000000; /* Dark background */
-    color: #e0e0e0; /* Light text color */
-}
-
-*,
-*::before,
-*::after {
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
-/* Reset any possible unwanted margin or padding */
-body, .gallery {
+/* Layout */
+body {
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    min-height: 100vh;
+    background-color: #000;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0;  /* Changed from auto to 0 */
+}
+
+.left-container {
+    width: 65%;
+    padding-right: 20px;
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px;
+}
+
+.right-container {
+    width: 35%;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    background-color: #111;
+    border-left: 1px solid #333;
+    z-index: 1001; /* Ensure right container stays on top */
+}
+
+.right-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 15px;
+}
+
+/* Top Controls Wrapper */
+.top-controls-wrapper {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background-color: rgba(17, 17, 17, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+/* Controls Container */
+.controls-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Buttons */
+button {
+    padding: 6px 12px;
+    background-color: #333;
+        color: white;
+        border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    min-width: 80px;
+}
+
+button:hover {
+    background-color: #444;
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Export Button styles moved to fixed-button class */
+
+/* Selected Container */
+#selectedContainer {
+    width: 100%;
+    flex: 1; /* Take up remaining space in fixed-team-container */
+    padding: 10px;
+    background-color: rgba(34, 34, 34, 0.8);
+    border-radius: 8px;
+    margin: 0 auto;
+    overflow-y: auto; /* Enable scrolling if content overflows */
+    max-height: calc(100vh - 220px); /* Ensure it fits within the fixed container */
+}
+
+.team-row {
+    margin-bottom: 8px;
+    padding: 5px;
+    background-color: #333;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    height: 70px; /* Reduced height for more compact layout */
+    width: 100%;
+}
+
+.team-label {
+    width: 30px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.team-score {
+    width: 50px;
+    text-align: center;
+    margin-right: 8px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.team-images {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    height: 60px; /* Reduced height to match team-row */
+    padding: 2px;
+}
+
+.image-slot {
+    width: 55px;
+    height: 55px;
+    background-color: #222;
+    border: 2px dashed #444;
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.image-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.image-slot.empty::after {
+    content: "+";
+    color: #444;
+    font-size: 24px;
+}
+
+/* Custom scrollbar for team images */
+.team-images::-webkit-scrollbar {
+    height: 4px;
+}
+
+.team-images::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 2px;
+}
+
+.team-images::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 2px;
+}
+
+/* Sort Controls */
+.sort-controls {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    gap: 6px;
     margin: 0;
     padding: 0;
 }
 
-/* Fix for .gallery */
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px; /* Add some gap for spacing between items */
-    padding: 0;
-    background-color: #1e1e1e; /* Darker gallery background */
-    overflow: hidden; /* Hide overflow that might cause horizontal scroll */
-}
-
-/* Ensure images within the gallery are responsive */
-.gallery img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures images fit within their container without stretching */
-    display: block; /* Remove inline-block space */
-}
-
-/* Media query for tablets (768px and up) */
-@media (min-width: 768px) {
-    .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(50%, 1fr)); /* 2 columns for tablets */
-    }
-}
-
-/* Media query for desktop (1024px and up) */
-@media (min-width: 1024px) {
-    .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(25%, 1fr)); /* 4 columns for desktop */
-    }
-}
-
-/* Optional: For very large screens, like widescreen monitors */
-@media (min-width: 1440px) {
-    .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(20%, 1fr)); /* 5 columns for large screens */
-    }
-}
-
-.sort-controls{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2px;
-    gap: 5px;
-    border-radius: 2px;
-}
-
-/* Photo Card Styling */
-.photo {
-    display: none; /* Initially hide all images */
-    background-color: #333; /* Darker photo background */
-    border: 1px solid #444; /* Lighter border for contrast */
-    padding: 2px;
-    border-radius: 2px;
-    text-align: center;
-}
-
-/* Show photos when toggleShowHide is triggered */
-.photo.visible {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Filter Section Styling */
-.filter-section {
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    padding: 10px; /* Increased padding for better spacing */
-    background-color: #333; /* Darker filter section background */
-    color: #e0e0e0; /* Lighter text for better contrast */
-    border-radius: 8px; /* Rounded corners for a more polished look */
-    margin: 10px 0; /* Add vertical margin for separation from other sections */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for depth */
-}
-
-
-/* Centering the Filter Section */
-.filter-section {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
+.sort-controls button {
+    height: 32px;
+    padding: 0 12px;
     background-color: #333;
-    color: #e0e0e0;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    min-width: 80px;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* Clear Selection Button styles moved to fixed-button class */
+
+/* Adjust flex containers to account for fixed sort controls */
+.flex-container-1 {
+    margin-top: 72px; /* Height of sort controls (32px) + spacing (40px) */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sort-controls {
+        position: static;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .flex-container-1 {
+        margin-top: 20px;
+    }
+}
+
+/* Filter Section */
+.filter-section {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.collapse-btn {
+    height: 32px;
+    padding: 0 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.collapse-btn:hover {
+    background-color: #444;
+}
+
+.filter-content {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background-color: #222;
     border-radius: 8px;
-    margin: 10px auto;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 600px;
-    height: auto;
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    width: max-content;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-
-/* Centering the content within the filter section */
-.filter-section h3,
-.filter-section .filter-box,
-.filter-section .checkbox-group,
-.filter-section .collapse-btn {
-    text-align: center; /* Align text to the center */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
 }
 
-/* Filter Box Styling */
 .filter-box {
-    margin-bottom: 15px; /* Add space between each filter box */
+    margin-bottom: 12px;
 }
 
 .filter-box h4 {
-    font-size: 1.1em;
-    margin-bottom: 8px; /* Space between the filter title and checkboxes */
+    margin: 0 0 8px 0;
+    color: #ddd;
+    font-size: 14px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
 }
 
-/* Checkbox Group Styling */
 .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.checkbox-label {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px; /* Space between checkboxes */
-    justify-content: center; /* Center checkboxes */
-}
-
-/* Individual Checkbox Styling */
-.checkbox-group label {
-    font-size: 1em;
-    cursor: pointer; /* Indicate that it's clickable */
-    transition: color 0.2s ease-in-out; /* Smooth transition for hover/focus effects */
-}
-
-.checkbox-group input[type="checkbox"] {
-    margin-right: 5px; /* Space between the checkbox and label */
-}
-
-/* Hover & Focus States for Labels */
-.checkbox-group label:hover, .checkbox-group label:focus {
-    color: #007BFF; /* Highlight on hover or focus */
-}
-
-/* Filter Buttons Styling */
-.collapse-btn {
-    background-color: #007BFF; /* Bright color for the filter toggle button */
-    color: white;
-    padding: 12px;
-    border: none;
+    align-items: center;
+    font-size: 13px;
     cursor: pointer;
-    width: 100%; /* Full width to make it easier to click */
-    text-align: center;
-    font-size: 1.1em;
-    border-radius: 8px; /* Rounded corners */
-    transition: background-color 0.3s ease; /* Smooth background color transition */
+    padding: 3px 0;
+    transition: color 0.2s;
 }
 
-/* Hover effect for collapse button */
-.collapse-btn:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+.checkbox-label:hover {
+    color: #fff;
 }
 
-/* Filter Content Styling */
-.filter-content {
-    display: none; /* Initially hidden */
-    margin-top: 10px;
+.checkbox-label input {
+    margin-right: 6px;
+    cursor: pointer;
 }
 
-.filter-content.visible {
-    display: block; /* Show when toggled */
-}
-
-/* Mobile Styling */
-@media (max-width: 600px) {
-    .filter-section {
-        padding: 8px; /* Adjust padding for mobile screens */
-        margin: 0 auto; /* Center horizontally */
-    }
-
-    .checkbox-group {
-        gap: 5px; /* Smaller gap between checkboxes */
-    }
-
-    .collapse-btn {
-        font-size: 1em; /* Smaller font size for mobile */
-    }
-}
-
-/* Desktop Styling */
-@media (min-width: 601px) {
-    .filter-section {
-        flex-direction: column; /* Keep the vertical stacking */
-        justify-content: center; /* Center the content */
-    }
-
-    .checkbox-group {
-        gap: 12px; /* More space between checkboxes */
-    }
-
-    .collapse-btn {
-        width: auto; /* Button size back to normal for desktops */
-        font-size: 1.2em; /* Larger font size */
-    }
-}
-
-
-/* Wrapper for search bar */
-.search-wrapper {
+/* Gallery */
+.flex-container-1,
+.flex-container-2 {
     width: 100%;
-    display: flex;
-    justify-content: center; /* Center the search bar */
-    margin-top: 10px;
+    max-width: 1000px;
+    margin-bottom: 80px; /* Increased spacing to avoid overlap with fixed bottom buttons */
+    position: relative;  /* Changed to relative */
+    left: 0;
 }
 
-/* Search bar container */
-.search-bar {
-    display: flex;
-    align-items: center; /* Align items vertically */
-    gap: 10px; /* Space between the input and the button */
-    width: 100%;
-    max-width: 500px; /* Maximum width for the search bar */
-}
-
-.exportBtn {
-    display: flex;
-    align-items: center; /* Align items vertically */
-}
-
-/* Search input styling */
-#searchInput {
-    width: 100%; /* Take up full width of the container */
+/* Gallery Container */
+.gallery-container {
+    width: calc(100% - 380px); /* Leave space for the fixed team container */
+    max-width: 800px;
+    height: calc(100vh - 200px); /* Fixed height that fits in viewport */
+    margin: 80px auto 80px; /* Top margin increased to avoid overlap with controls */
+    background-color: rgba(17, 17, 17, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden; /* Hide overflow */
+    position: relative;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    margin-left: -40px; /* Push to the left to make room for team container */
 }
 
-/* Clear button styling */
-#clearSelectionBtn {
-    padding: 10px 10px;
-    background-color: #5a0000; /* Red background for the button */
-    color: white;
+/* Gallery and Team Titles */
+.gallery-title, .team-title {
+    color: #fff;
+    font-size: 18px;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+/* Adjust margins to account for fixed top controls */
+.flex-container-1 {
+    margin-top: 80px; /* Increased to account for fixed top controls */
+}
+
+/* Fixed Team Container */
+.fixed-team-container {
+    position: fixed;
+    top: 120px; /* Position below the top controls */
+    right: 20px;
+    width: 480px; /* Fixed width */
+    max-height: calc(100vh - 160px); /* Leave space for top and bottom */
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(17, 17, 17, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    padding: 15px;
+    z-index: 900; /* Below the top controls but above most content */
+}
+
+/* Fixed bottom buttons */
+.bottom-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 15px;
+    pointer-events: none; /* This allows clicks to pass through to elements below */
+}
+
+.fixed-button {
+    padding: 10px 20px;
     border: none;
     border-radius: 5px;
+    background-color: rgba(34, 34, 34, 0.9);
+    color: white;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    pointer-events: auto; /* Re-enable pointer events for the buttons */
 }
 
-/* Mobile responsiveness (max-width: 768px) */
-@media (max-width: 768px) {
-    .search-bar {
-        width: 100%;
-        gap: 5px; /* Corrected from 5x to 5px */
-        justify-content: space-between;
-    }
-    
-
-    #searchInput {
-        flex-grow: 1; /* Make the input field take up remaining space */
-    }
-
-    #clearSelectionBtn {
-        flex-shrink: 0; /* Ensure button size remains constant */
-    }
+.fixed-button:hover {
+    background-color: rgba(51, 51, 51, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
+.fixed-button.left {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+}
 
+.fixed-button.right {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+
+.flex-container-4 {
+    width: 35%;
+    max-width: 600px;
+    padding: 20px;
+    background-color: #111;
+    border-radius: 5px;
+    height: calc(100vh - 40px);
+    position: fixed;
+    right: 20px;
+    top: 20px;
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Increased size for better visibility */
+    gap: 10px; /* Increased gap for better spacing */
+    justify-items: center;
+    flex: 1; /* Take up remaining space in the container */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    margin: 0 auto;
+    width: 100%;
+    background-color: transparent; /* Make background transparent since container has background */
+    border-radius: 8px;
+}
+
+.gallery::-webkit-scrollbar {
+    width: 8px;
+}
+
+.gallery::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 4px;
+}
+
+.gallery::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+.gallery::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 
 .photo {
-    display: none;
-    flex-direction: column;
-    align-items: center;
+    width: 80px; /* Increased size to match gallery grid */
+    height: 80px; /* Increased size to match gallery grid */
+    position: relative;
+    background-color: #222;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+.photo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .photo img {
-    width: 100px; /* Default width for desktop */
-    height: 100px; /* Default height for desktop */
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    cursor: pointer;
-    border-radius: 5px;
+    transition: transform 0.2s;
 }
 
-/* Selected image border */
-.photo img.selected {
-    border: 2px solid blue;
+.photo img:hover {
+    transform: scale(1.05);
 }
 
-/* Media query for mobile devices (max-width: 768px) */
-@media (max-width: 768px) {
-    .photo img {
-        width: 50px; /* Reduced width for mobile */
-        height: 50px; /* Reduced height for mobile */
-    }
+/* Search */
+.search-wrapper {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: rgba(17, 17, 17, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
 }
 
-
-img {
-    -webkit-touch-callout: none; /* Prevents save image on long press */
-    -webkit-user-select: none; /* Prevents selecting */
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-    #selectedContainer {
-        width: 95%; /* Use more screen width */
-        margin: 10px auto; /* Adjust centering */
-        padding: 8px; /* Reduce padding */
-    }
-}
-
-
-/* Main container styling */
-#selectedContainer { 
-    width: 90%;  /* Takes up most of the screen width */
-    max-width: 675px;  /* Limits width on larger screens */
-    margin: 5px auto;  /* Centers the container */
-    padding: 5px;  /* Adds inner spacing */
-    background-color: #222; /* Dark background */
-    border-radius: 0px; 
+.search-bar {
     display: flex;
-    flex-direction: column; /* Stack teams vertically */
-    gap: 10px; /* Adds space between teams */
+    align-items: center;
 }
 
-@media (max-width: 600px) {
-    #selectedContainer {
-        width: 100%;  /* Use more screen space */
-        max-width: 380px;  /* Reduce max width */
-        margin: 5px auto;  /* Smaller margin */
-        padding: 2px;  /* Reduce inner spacing */
-        gap: 2px;  /* Reduce space between teams */
-    }
-}
-
-
-.team-row {
-    display: flex;
-    align-items: center;  /* Ensures vertical alignment */
-    justify-content: space-between; /* Keeps them on the same row */
-    background: #333;  
-    padding: 10px 15px;
-    border-radius: 0px; 
-    gap: 5px; /* Space between label and score */
-}
-
-/* Team label */
-.team-label {
-    font-weight: bold;
+.search-bar input {
+    padding: 8px 12px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #222;
     color: #fff;
-    flex: 1.1; /* Fills available space */
-    display: flex;
-    align-items: center;  /* Ensures vertical alignment */
-    text-align: left;
+    width: 200px;
+    font-size: 14px;
 }
 
-/* Team score */
-.team-score {
-    color: #f39c12;  
-    font-size: 1em;  
-    font-weight: bold;
-    min-width: 20px; 
-    display: flex;
-    align-items: center; /* Centers it vertically */
-    text-align: right;
+.search-bar input::placeholder {
+    color: #666;
 }
 
-@media (max-width: 600px) {
+.search-bar input:focus {
+    outline: none;
+    border-color: #666;
+    background-color: #333;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #222;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+.selected, img.selected {
+    border: 2px solid #00ff00 !important;
+    outline: 1px solid #ffffff !important;
+}
+
+.photo img.selected {
+    border: 2px solid #00ff00 !important;
+    outline: 1px solid #ffffff !important;
+    box-shadow: 0 0 8px #00ff00 !important;
+    z-index: 10 !important;
+    position: relative !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    .left-container,
+    .right-container {
+        width: 100%;
+        position: static;
+    }
+
+    .right-container {
+        height: auto;
+        margin-top: 20px;
+    }
+
+    .top-controls-wrapper {
+        position: fixed;
+        top: 40vh; /* Position directly below the fixed team container */
+        left: 0;
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0;
+        padding: 8px;
+        z-index: 940;
+        background-color: rgba(17, 17, 17, 0.9); /* Add background for better visibility */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .controls-container {
+        flex-wrap: nowrap;
+        margin-bottom: 0;
+        margin-left: 10px;
+    }
+
+    .sort-controls button {
+        padding: 0 8px;
+        font-size: 12px;
+        min-width: auto;
+        height: 28px;
+    }
+
+    .filter-section {
+        width: auto;
+    }
+
+    .collapse-btn {
+        width: auto;
+        font-size: 12px;
+        height: 28px;
+        padding: 0 8px;
+    }
+
+    .filter-content {
+        width: 90%;
+        left: 5%;
+        right: 5%;
+        top: calc(40vh + 50px); /* Position below the controls */
+        max-height: calc(60vh - 120px); /* Limit height to fit between controls and bottom buttons */
+        z-index: 935;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-wrapper {
+        position: fixed;
+        top: 40vh; /* Position directly below the fixed team container */
+        right: 10px;
+        width: auto;
+        margin-bottom: 0;
+        z-index: 945;
+        height: 50px; /* Match height of controls wrapper */
+        display: flex;
+        align-items: center;
+    }
+
+    .search-bar input {
+        width: 150px;
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    .bottom-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        margin-top: 0;
+        background-color: rgba(17, 17, 17, 0.8);
+        z-index: 950;
+    }
+
+    .fixed-button.left,
+    .fixed-button.right {
+        position: static;
+        margin: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    /* Gallery container styles for mobile */
+    .gallery-container {
+        width: 100%;
+        height: calc(60vh - 70px); /* Adjusted height to fit between controls and bottom buttons */
+        position: fixed;
+        top: calc(40vh + 50px); /* Position directly below the top-controls-wrapper */
+        left: 0;
+        right: 0;
+        margin: 0 auto 0;
+        margin-right: 0;
+        z-index: 930; /* Below controls but above other content */
+        padding-bottom: 60px; /* Add padding to ensure content doesn't get cut off by bottom buttons */
+    }
+
+    .fixed-team-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 40vh; /* Limit height to 40% of viewport */
+        margin: 0;
+        padding: 10px;
+        border-radius: 0 0 10px 10px; /* Round only bottom corners */
+        z-index: 950; /* Above most content but below search */
+    }
+
+    #selectedContainer {
+        max-height: calc(40vh - 50px); /* Account for title and padding */
+        align-content: center;
+        padding: 5px;
+    }
+
+    /* Make team rows more compact on mobile */
     .team-row {
-        flex-direction: row; /* Keep it horizontal */
-        align-items: flex-start; /* Align items to the top */
+        height: 60px;
+        margin-bottom: 5px;
+        padding: 3px;
     }
 
-    .team-info {
-        flex-direction: column; /* Stack label & score vertically */
-        align-items: flex-start;
+    .team-images {
+        height: 50px;
+        gap: 4px;
     }
 
-    .team-label, .team-score {
-        font-size: 0.8em;
+    .image-slot {
+        width: 45px;
+        height: 45px;
+    }
+
+    /* Smaller title on mobile */
+    .team-title {
+        font-size: 16px;
+        margin: 0 0 8px 0;
+        padding-bottom: 5px;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 8px;
+    }
+
+    .photo {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Ensure proper ordering of flex containers */
+.flex-container-1 { order: 1; }
+.flex-container-2 { order: 2; }
+.flex-container-4 { order: 3; }
+
+/* Responsive adjustments */
+@media (max-width: 1600px) {
+    .flex-container-1,
+    .flex-container-2 {
+        max-width: 800px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .flex-container-1,
+    .flex-container-2 {
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .left-container {
+        width: 100%;
+        position: static;
+        height: auto;
+        overflow-y: visible;
+    }
+
+    .flex-container-1,
+    .flex-container-2 {
+        margin: 20px auto;
+    }
+
+    .flex-container-4 {
+        width: 100%;
+        position: static;
+        margin: 20px auto;
+        height: auto;
+    }
+}
+
+/* Scrollbar styling for left container */
+.left-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.left-container::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 4px;
+}
+
+.left-container::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+/* New layout for top controls */
+.top-controls {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    width: calc(100% - 40px);
+}
+
+.controls-container {
+    flex-shrink: 0;
+}
+
+.filter-section {
+    flex-shrink: 0;
+}
+
+.sort-controls {
+    position: static;
+    display: flex;
+    align-items: center;
+    height: 32px;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    width: auto;
+}
+
+.filter-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #222;
+    border-radius: 4px;
+    margin-top: 5px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    width: max-content;
+}
+
+.collapse-btn {
+    height: 32px;
+    padding: 0 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Update flex-container-1 margin to account for new layout */
+.flex-container-1 {
+    margin-top: 72px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .top-controls {
+        position: static;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .filter-content {
+        position: relative;
+        width: 100%;
+    }
+
+    .flex-container-1 {
+        margin-top: 20px;
     }
 }
