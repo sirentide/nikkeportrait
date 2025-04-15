@@ -5,6 +5,20 @@
     box-sizing: border-box;
 }
 
+/* Prevent image selection and dragging */
+img {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    pointer-events: auto; /* Allow clicks but prevent default actions */
+}
+
 html, body {
     width: 100%;
     overflow-x: hidden;
@@ -255,67 +269,128 @@ button:disabled {
     background-color: #444;
 }
 
-#filterContent {
-    position: fixed;
-    /* Position will be set by JavaScript */
-    background-color: #222;
-    border-radius: 8px;
-    padding: 10px;
-    max-height: 60vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-width: 30vw; /* Limit width to 30% of viewport width */
-    width: 220px; /* Narrower width for dropdown style */
-    z-index: 1001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    font-size: 0.8em; /* Slightly smaller font size */
-    border: 1px solid #444;
-    display: none; /* Hidden by default */
-    transition: opacity 0.2s ease; /* Smooth transition */
+.filter-panel {
+    position: fixed !important;
+    top: 100px !important;
+    right: 20px !important;
+    background-color: rgba(34, 34, 34, 0.95) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    width: 380px !important;
+    z-index: 999999 !important; /* Even higher z-index */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 170, 255, 0.5) !important;
+    font-size: 1em !important;
+    border: 3px solid #00aaff !important;
+    transition: transform 0.3s ease, opacity 0.3s ease !important;
+    backdrop-filter: blur(10px) !important;
+    color: white !important;
+    transform: translateX(400px) !important; /* Start off-screen */
+    opacity: 0 !important;
+    display: block !important; /* Always in the DOM */
+    pointer-events: auto !important; /* Ensure it can receive clicks */
+}
+
+.filter-panel.visible {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-title {
+    margin: 0;
+    color: #00aaff;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-filter-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.close-filter-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #00aaff;
 }
 
 .filter-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
 .filter-box {
-    margin-bottom: 6px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 6px;
+    margin-bottom: 15px;
+    background-color: rgba(51, 51, 51, 0.7);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .filter-box h4 {
-    margin: 0 0 5px 0;
-    color: #ddd;
-    font-size: 13px;
-    border-bottom: 1px solid #444;
-    padding-bottom: 3px;
+    margin: 0 0 10px 0;
+    color: #fff;
+    font-size: 14px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .checkbox-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 6px;
+    margin-bottom: 5px;
+    padding: 0 5px;
 }
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
     position: relative;
     width: 100%;
-    height: 24px;
-    padding: 0 8px;
+    height: 30px;
+    padding: 0 10px;
     color: white;
     transition: all 0.2s ease;
+    border-radius: 15px;
+    background-color: #333;
+    margin-bottom: 5px;
 }
 
 .checkbox-label:hover {
-    background-color: #333;
+    background-color: #444;
 }
 
 .checkbox-label input {
@@ -328,6 +403,7 @@ button:disabled {
 
 .checkbox-label input:checked + span {
     color: white;
+    font-weight: bold;
 }
 
 .checkbox-label input:checked {
@@ -335,9 +411,23 @@ button:disabled {
 }
 
 .checkbox-label.active,
-.checkbox-label input:checked ~ .checkbox-label {
+.checkbox-label input:checked ~ .checkbox-label,
+.checkbox-label input:checked {
     background-color: #2a6496;
     box-shadow: 0 0 8px rgba(42, 100, 150, 0.8);
+}
+
+.checkbox-label input:checked + span {
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.checkbox-label input:checked ~ span::before {
+    content: '✓';
+    margin-right: 5px;
+    color: #4CAF50;
+    font-weight: bold;
 }
 
 .checkbox-label input {
@@ -355,26 +445,27 @@ button:disabled {
     left: 0;
 }
 
-/* Gallery Container */
-.gallery-container {
-    width: calc(100% - 380px); /* Leave space for the fixed team container */
+/* Common container styles for gallery and toggle */
+.gallery-container, .toggle-container {
+    width: calc(100% - 520px); /* Leave space for the fixed team container */
     max-width: 800px;
-    height: calc(100vh - 200px); /* Fixed height that fits in viewport */
-    margin: 80px auto 80px; /* Top margin increased to avoid overlap with controls */
+    height: calc(100vh - 220px); /* Fixed height that fits in viewport, adjusted for tabs */
     background-color: rgba(17, 17, 17, 0.7);
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     overflow: hidden; /* Hide overflow */
-    position: relative;
-    padding: 10px;
+    position: fixed;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    margin-left: 20px;
-    margin-top: 80px;
+    left: 20px;
+    top: 120px;
+    bottom: 60px; /* Leave space for tabs */
+    z-index: 900;
 }
 
-/* Gallery and Team Titles */
-.gallery-title, .team-title {
+/* Gallery, Toggle and Team Titles */
+.gallery-title, .toggle-title, .team-title {
     color: #fff;
     font-size: 18px;
     margin: 0 0 15px 0;
@@ -394,7 +485,7 @@ button:disabled {
     top: 120px; /* Position below the top controls */
     right: 20px;
     width: 480px; /* Fixed width */
-    max-height: calc(100vh - 160px); /* Leave space for top and bottom */
+    max-height: calc(100vh - 220px); /* Leave space for top and bottom including tabs */
     display: flex;
     flex-direction: column;
     background-color: rgba(17, 17, 17, 0.9);
@@ -402,17 +493,178 @@ button:disabled {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     padding: 15px;
     z-index: 900; /* Below the top controls but above most content */
+    transition: opacity 0.3s ease;
+}
+
+/* Hide elements */
+.hidden {
+    display: none !important;
 }
 
 /* Fixed bottom buttons */
 .bottom-buttons {
     position: fixed;
-    bottom: 0;
+    bottom: 60px; /* Adjusted to make room for tabs */
     left: 0;
     width: 100%;
     z-index: 1000;
     padding: 15px;
     pointer-events: none; /* This allows clicks to pass through to elements below */
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    background-color: #222;
+    border-top: 1px solid #444;
+    z-index: 1000;
+    height: 40px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.tab-group {
+    display: flex;
+    height: 100%;
+}
+
+.tab-button {
+    padding: 0 15px;
+    height: 100%;
+    background-color: #333;
+    color: #ccc;
+    border: none;
+    border-right: 1px solid #444;
+    cursor: pointer;
+    font-size: 12px;
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.tab-button:hover {
+    background-color: #444;
+}
+
+.tab-button.active {
+    background-color: #555;
+    color: white;
+}
+
+.tab-button.active:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #00aaff;
+}
+
+.tab-button.import-toggle {
+    background-color: #2a6e9c;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.import-toggle:hover {
+    background-color: #3a8ebc;
+}
+
+.tab-button.clear-toggle {
+    background-color: #9c2a2a;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.clear-toggle:hover {
+    background-color: #bc3a3a;
+}
+
+.tab-button.export-data {
+    background-color: #2a9c6e;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.export-data:hover {
+    background-color: #3abc8e;
+}
+
+.tab-button.import-data {
+    background-color: #9c6e2a;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.import-data:hover {
+    background-color: #bc8e4a;
+}
+
+/* Toggle Tabs Container */
+.toggle-tabs-container {
+    position: fixed;
+    top: 120px;
+    left: 20px;
+    width: calc(100% - 520px); /* Leave space for team container */
+    max-width: 800px;
+    height: calc(100vh - 220px); /* Fixed height that fits in viewport, adjusted for tabs */
+    bottom: 60px; /* Leave space for bottom tabs */
+    z-index: 900;
+}
+
+/* Toggle title styles now combined with gallery and team title styles */
+
+/* Toggle images styles now combined with gallery styles */
+
+/* Toggle item styles now combined with photo styles */
+
+/* Remove button styles removed */
+
+/* Selection Overlay Styles */
+.selection-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.selection-overlay h2 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+.selection-overlay p {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.selection-overlay button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.selection-overlay button:hover {
+    opacity: 0.9;
 }
 
 .fixed-button {
@@ -440,6 +692,18 @@ button:disabled {
     bottom: 20px;
 }
 
+.fixed-button.middle {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    background-color: #9c6e2a;
+}
+
+.fixed-button.middle:hover {
+    background-color: #bc8e4a;
+}
+
 .fixed-button.right {
     position: absolute;
     right: 20px;
@@ -458,7 +722,8 @@ button:disabled {
     top: 20px;
 }
 
-.gallery {
+/* Common styles for gallery and toggle-images */
+.gallery, .toggle-images {
     display: flex;
     flex-wrap: wrap;
     gap: 10px; /* Spacing between items */
@@ -466,56 +731,88 @@ button:disabled {
     align-content: flex-start; /* Align rows to the start */
     flex: 1; /* Take up remaining space in the container */
     overflow-y: auto; /* Enable vertical scrolling */
-    padding: 5px;
-    margin: 0 auto;
-    margin-top: 10px;
+    padding: 10px;
+    margin: 0;
+    margin-top: 0;
     width: 100%;
     background-color: transparent; /* Make background transparent since container has background */
     border-radius: 8px;
 }
 
-.gallery::-webkit-scrollbar {
+.gallery::-webkit-scrollbar, .toggle-images::-webkit-scrollbar {
     width: 8px;
 }
 
-.gallery::-webkit-scrollbar-track {
+.gallery::-webkit-scrollbar-track, .toggle-images::-webkit-scrollbar-track {
     background: #222;
     border-radius: 4px;
 }
 
-.gallery::-webkit-scrollbar-thumb {
+.gallery::-webkit-scrollbar-thumb, .toggle-images::-webkit-scrollbar-thumb {
     background: #444;
     border-radius: 4px;
 }
 
-.gallery::-webkit-scrollbar-thumb:hover {
+.gallery::-webkit-scrollbar-thumb:hover, .toggle-images::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
-.photo {
-    width: 80px; /* Increased size to match gallery grid */
-    height: 80px; /* Increased size to match gallery grid */
+.photo, .toggle-item {
+    width: 80px;
+    height: 80px;
     position: relative;
     background-color: #222;
     border-radius: 6px;
-    overflow: hidden;
+    overflow: visible; /* Changed to visible to show the buttons */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    margin: 0;
 }
 
-.photo:hover {
+/* Add to Toggle button */
+.add-to-toggle {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    background-color: #2a6e9c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s;
+    z-index: 20;
+}
+
+.photo:hover .add-to-toggle {
+    opacity: 1;
+}
+
+.add-to-toggle:hover {
+    background-color: #3a8ebc;
+    transform: scale(1.1);
+}
+
+.photo:hover, .toggle-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-.photo img {
+.photo img, .toggle-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.2s;
 }
 
-.photo img:hover {
+.photo img:hover, .toggle-item img:hover {
     transform: scale(1.05);
 }
 
@@ -523,12 +820,17 @@ button:disabled {
 .search-filter-container {
     position: fixed;
     top: 20px;
-    right: 20px;
+    left: 20px;
     z-index: 1000;
     display: flex;
     align-items: center;
     gap: 15px;
     flex-wrap: nowrap; /* Prevent wrapping */
+    background-color: rgba(17, 17, 17, 0.8);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
 }
 
 /* Burst Filter Buttons */
@@ -637,7 +939,7 @@ button:disabled {
     outline: 1px solid #ffffff !important;
 }
 
-.photo img.selected {
+.photo img.selected, .toggle-item img.selected {
     border: 2px solid #00ff00 !important;
     outline: 1px solid #ffffff !important;
     box-shadow: 0 0 8px #00ff00 !important;
@@ -704,19 +1006,29 @@ button:disabled {
         font-size: 16px;
     }
 
-    #filterContent {
-        width: 85%;
-        max-height: 70vh; /* Limit height to 70% of viewport height */
-        z-index: 1010; /* Higher than everything else */
-        padding: 8px;
-        max-width: 85vw; /* Limit width to 85% of viewport width on mobile */
-        width: 220px; /* Smaller width for mobile */
-        font-size: 0.85em; /* Even smaller font for mobile */
+    .filter-panel {
+        width: 90% !important;
+        max-height: 80vh !important;
+        padding: 15px !important;
+        max-width: 90vw !important;
+        width: 320px !important;
+        font-size: 1em !important;
+        left: 5% !important;
+        right: auto !important;
+        top: 60px !important;
+        margin: 0 !important;
+        transform: translateY(-100vh) !important; /* Start off-screen from top */
+        display: block !important; /* Always in the DOM */
+    }
+
+    .filter-panel.visible {
+        transform: translateY(0) !important;
+        opacity: 1 !important;
     }
 
     .filter-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
 
     .filter-box {
@@ -725,8 +1037,8 @@ button:disabled {
 
     .search-filter-container {
         position: fixed;
-        top: 40vh; /* Position directly below the fixed team container */
-        right: 50px; /* Move it to the left to make room for filter button */
+        top: 10px; /* Position at the top */
+        left: 10px; /* Position at the left */
         width: auto;
         margin-bottom: 0;
         z-index: 945;
@@ -776,7 +1088,7 @@ button:disabled {
 
     .bottom-buttons {
         position: fixed;
-        bottom: 0;
+        bottom: 80px; /* Adjusted for tab navigation */
         left: 0;
         width: 100%;
         display: flex;
@@ -798,7 +1110,7 @@ button:disabled {
     /* Gallery container styles for mobile */
     .gallery-container {
         width: 100%;
-        height: calc(60vh - 70px); /* Adjusted height to fit between controls and bottom buttons */
+        height: calc(60vh - 110px); /* Adjusted height to fit between controls and bottom buttons + tabs */
         position: fixed;
         top: calc(40vh + 50px); /* Position directly below the top-controls-wrapper */
         left: 0;
@@ -807,6 +1119,39 @@ button:disabled {
         margin-right: 0;
         z-index: 930; /* Below controls but above other content */
         padding-bottom: 60px; /* Add padding to ensure content doesn't get cut off by bottom buttons */
+    }
+
+    /* Toggle container styles for mobile */
+    .toggle-container {
+        width: 100%;
+        height: calc(60vh - 110px);
+        position: fixed;
+        top: calc(40vh + 50px);
+        left: 0;
+        right: 0;
+        margin: 0 auto 0;
+        z-index: 930;
+    }
+
+    /* Tab Navigation for mobile */
+    .tab-navigation {
+        height: auto;
+        flex-direction: column;
+    }
+
+    .tab-group {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .tab-button {
+        font-size: 11px;
+        padding: 0 10px;
+        min-width: 50px;
+        flex-shrink: 0;
     }
 
     .fixed-team-container {
