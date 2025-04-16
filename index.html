@@ -10,6 +10,7 @@
     <link rel="icon" href="image/favicon.ico" type="image/x-icon">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="github-assets.js"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
         label { margin-right: 10px; color: #fff; }
@@ -27,7 +28,7 @@
     <!-- Team Selection Container (Fixed) - Multiple team sets with tabs -->
     <!-- Team Set 1 -->
     <div class="fixed-team-container" id="teamSet1" data-team-set="1">
-        <h2 class="team-title">Teams - SET1</h2>
+        <h2 class="team-title">Defender</h2>
         <div id="selectedContainer1" class="selected-container">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -89,7 +90,7 @@
 
     <!-- Team Set 2 -->
     <div class="fixed-team-container hidden" id="teamSet2" data-team-set="2">
-        <h2 class="team-title">Teams - SET2</h2>
+        <h2 class="team-title">Attacker</h2>
         <div id="selectedContainer2" class="selected-container">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -154,22 +155,7 @@
     <!-- Filter section moved to top controls wrapper -->
 </div>
 
-<div class="search-filter-container">
-    <div class="burst-filter-buttons">
-        <button class="burst-btn" data-value="b1">I</button>
-        <button class="burst-btn" data-value="b2">II</button>
-        <button class="burst-btn" data-value="b3">III</button>
-        <button class="burst-btn" data-value="a">A</button>
-    </div>
-    <div class="search-wrapper">
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Type to search...">
-        </div>
-    </div>
-    <div class="filter-wrapper">
-        <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
-    </div>
-</div>
+
 
 <!-- Fixed bottom buttons -->
 <div class="bottom-buttons">
@@ -182,6 +168,22 @@
     <div class="toggle-container" id="toggleImagesContainer">
         <h2 class="toggle-title">My Nikkes</h2>
         <div class="toggle-images" id="toggleImages"></div>
+        <div class="search-filter-container">
+            <div class="burst-filter-buttons">
+                <button class="burst-btn" data-value="b1">I</button>
+                <button class="burst-btn" data-value="b2">II</button>
+                <button class="burst-btn" data-value="b3">III</button>
+                <button class="burst-btn" data-value="a">A</button>
+            </div>
+            <div class="search-wrapper">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Type to search...">
+                </div>
+            </div>
+            <div class="filter-wrapper">
+                <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -190,14 +192,15 @@
     <div class="tab-group">
         <button class="tab-button" data-tab="gallery">Nikkes</button>
         <button class="tab-button active" data-tab="toggleImages">My Nikkes</button>
-        <button class="tab-button import-toggle" id="importToggleBtn">Import to My Nikkes</button>
+        <button class="tab-button import-toggle" id="importToggleBtn">Add Nikkes</button>
         <button class="tab-button clear-toggle" id="clearToggleBtn">Remove from My Nikkes</button>
-        <button class="tab-button export-data" id="exportToggleDataBtn">Export My Nikkes</button>
+        <button class="tab-button export-data" id="exportToggleDataBtn">Save My Nikkes</button>
         <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset Data</button>
     </div>
     <div class="tab-group">
-        <button class="tab-button team-tab active" data-set="1">SET 1</button>
-        <button class="tab-button team-tab" data-set="2">SET 2</button>
+        <button class="tab-button team-tab active" data-set="1">Defender</button>
+        <button class="tab-button team-tab" data-set="2">Attacker</button>
+        <button class="tab-button saved-sets" id="savedSetsBtn">Saved Sets</button>
     </div>
 </div>
 
@@ -207,8 +210,9 @@
         <!-- Gallery -->
         <div class="gallery">
 
+
         <div class="photo" data-number="105" data-name="Asuka Shikinami Langley" data-type="b3" data-position="atk" data-faction="abnormal" data-rarity="ssr" data-weapon="ar">
-            <img src="image/105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" alt="105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp">
+            <img crossorigin="anonymous" src="image/105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp" alt="105_abnormal_ssr_b3_atk_ar_Asuka Shikinami Langley.webp">
         </div>
 
 
@@ -1088,6 +1092,22 @@
                 <label class="checkbox-label"><input type="checkbox" value="rl" onchange="updateFilters()"><span>RL</span></label>
                 <label class="checkbox-label"><input type="checkbox" value="sg" onchange="updateFilters()"><span>SG</span></label>
                 <label class="checkbox-label"><input type="checkbox" value="mg" onchange="updateFilters()"><span>MG</span></label>
+            </div>
+        </div>
+        <div class="search-filter-container">
+            <div class="burst-filter-buttons">
+                <button class="burst-btn" data-value="b1">I</button>
+                <button class="burst-btn" data-value="b2">II</button>
+                <button class="burst-btn" data-value="b3">III</button>
+                <button class="burst-btn" data-value="a">A</button>
+            </div>
+            <div class="search-wrapper">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Type to search...">
+                </div>
+            </div>
+            <div class="filter-wrapper">
+                <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
             </div>
         </div>
     </div>

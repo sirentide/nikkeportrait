@@ -132,7 +132,8 @@ function loadTeamSet(name, targetSet) {
     saveSelectionToLocalStorage();
 
     // Show success message
-    alert(`Team set "${name}" has been loaded into SET${targetSet}.`);
+    const setName = targetSet === '1' ? 'Defender' : 'Attacker';
+    alert(`Team set "${name}" has been loaded into ${setName}.`);
 
     // Switch to the target team set
     switchTeamSet(targetSet);

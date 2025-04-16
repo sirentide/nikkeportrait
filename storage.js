@@ -1,5 +1,6 @@
 // Storage keys and global variables for the application
 const STORAGE_KEY = 'nikkePortraitData';
+const TOGGLE_TABS_KEY = 'nikkeToggleTabsData';
 
 // Global variables
 let currentTeamSet = '1'; // Default to team set 1

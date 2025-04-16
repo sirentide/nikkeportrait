@@ -27,7 +27,7 @@ html, body {
 /* Layout */
 body {
     margin: 0;
-    padding: 20px;
+    padding: 0px;
     display: flex;
     min-height: 100vh;
     background-color: #000;
@@ -37,8 +37,8 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    gap: 20px;
-    padding: 20px;
+    gap: 0px;
+    padding: 0px;
     max-width: 1200px;
     margin: 0;  /* Changed from auto to 0 */
 }
@@ -449,17 +449,17 @@ button:disabled {
 .gallery-container, .toggle-container {
     width: calc(100% - 520px); /* Leave space for the fixed team container */
     max-width: 800px;
-    height: calc(100vh - 220px); /* Fixed height that fits in viewport, adjusted for tabs */
+    height: calc(100vh - 150px); /* Adjusted height to account for reduced top space */
     background-color: rgba(17, 17, 17, 0.7);
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     overflow: hidden; /* Hide overflow */
     position: fixed;
-    padding: 15px;
+    padding: 0; /* Remove padding to accommodate search-filter-container */
     display: flex;
     flex-direction: column;
     left: 20px;
-    top: 120px;
+    top: 20px; /* Reduced top position */
     bottom: 60px; /* Leave space for tabs */
     z-index: 900;
 }
@@ -469,9 +469,12 @@ button:disabled {
     color: #fff;
     font-size: 18px;
     margin: 0 0 15px 0;
-    padding-bottom: 10px;
+    padding: 15px 10px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     text-align: center;
+    display: block;
+    width: 100%;
+    background-color: rgba(17, 17, 17, 0.8);
 }
 
 /* Adjust margins to account for fixed top controls */
@@ -482,10 +485,12 @@ button:disabled {
 /* Fixed Team Container */
 .fixed-team-container {
     position: fixed;
-    top: 120px; /* Position below the top controls */
+    top: 20px; /* Reduced top position */
     right: 20px;
     width: 480px; /* Fixed width */
-    max-height: calc(100vh - 220px); /* Leave space for top and bottom including tabs */
+    min-width: 380px; /* Minimum width */
+    max-width: 480px; /* Maximum width */
+    max-height: calc(100vh - 60px); /* Adjusted to account for reduced top space */
     display: flex;
     flex-direction: column;
     background-color: rgba(17, 17, 17, 0.9);
@@ -516,19 +521,62 @@ button:disabled {
 .team-sets-container {
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
     background-color: #111;
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
 }
 
 /* Responsive layout for mobile */
 @media (max-width: 768px) {
     .team-sets-container {
         flex-direction: column;
+        padding: 10px;
+        gap: 5px;
+    }
+
+    .export-container {
+        padding: 5px;
+    }
+
+    .export-container .team-title {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .export-container .team-row {
+        height: 50px;
+        margin-bottom: 3px;
+    }
+
+    .export-container .team-images {
+        height: 40px;
+    }
+
+    .export-container .image-slot {
+        width: 35px;
+        height: 35px;
+    }
+
+    .export-container button {
+        padding: 8px 12px;
+        font-size: 14px;
+        margin: 5px;
+    }
+
+    .export-controls-container {
+        padding: 3px;
+        margin-bottom: 5px;
+    }
+
+    .export-search-wrapper input {
+        width: 100px;
+        padding: 3px 5px;
+        font-size: 11px;
     }
 }
 
@@ -568,6 +616,31 @@ button:disabled {
 .export-container .image-slot {
     width: 45px;
     height: 45px;
+}
+
+.export-controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background-color: #222;
+    border-radius: 5px;
+}
+
+.export-search-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.export-search-wrapper input {
+    padding: 5px 8px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+    width: 120px;
+    font-size: 12px;
 }
 
 .export-container button {
@@ -713,14 +786,24 @@ button:disabled {
     background-color: #bc8e4a;
 }
 
+.tab-button.saved-sets {
+    background-color: #2a6e9c;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.saved-sets:hover {
+    background-color: #3a8ebc;
+}
+
 /* Toggle Tabs Container */
 .toggle-tabs-container {
     position: fixed;
-    top: 120px;
+    top: 20px; /* Reduced top position */
     left: 20px;
     width: calc(100% - 520px); /* Leave space for team container */
     max-width: 800px;
-    height: calc(100vh - 220px); /* Fixed height that fits in viewport, adjusted for tabs */
+    height: calc(100vh - 120px); /* Adjusted height to account for reduced top space */
     bottom: 60px; /* Leave space for bottom tabs */
     z-index: 900;
 }
@@ -837,12 +920,12 @@ button:disabled {
     align-content: flex-start; /* Align rows to the start */
     flex: 1; /* Take up remaining space in the container */
     overflow-y: auto; /* Enable vertical scrolling */
-    padding: 10px;
+    padding: 15px;
     margin: 0;
     margin-top: 0;
     width: 100%;
     background-color: transparent; /* Make background transparent since container has background */
-    border-radius: 8px;
+    border-radius: 0; /* No rounded corners */
 }
 
 .gallery::-webkit-scrollbar, .toggle-images::-webkit-scrollbar {
@@ -872,6 +955,85 @@ button:disabled {
     overflow: visible; /* Changed to visible to show the buttons */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    margin: 0;
+}
+
+/* Drag and drop styles */
+.toggle-item {
+    cursor: grab;
+}
+
+.toggle-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    z-index: 1000;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.7);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.toggle-item:hover::before {
+    content: '≡';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    padding: 0 3px;
+    font-size: 14px;
+    z-index: 10;
+}
+
+.toggle-item.drag-over {
+    border: 2px dashed #4CAF50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+    transform: scale(1.05);
+    z-index: 999;
+    background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* Drop indicator styles */
+.drop-indicator {
+    position: absolute;
+    width: 4px;
+    background-color: #00AAFF;
+    border-radius: 2px;
+    z-index: 1001;
+    box-shadow: 0 0 8px rgba(0, 170, 255, 0.8);
+    pointer-events: none;
+}
+
+/* Pulse animation for drop indicator */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+        box-shadow: 0 0 5px rgba(0, 170, 255, 0.6);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(0, 170, 255, 1);
+    }
+    100% {
+        opacity: 0.6;
+        box-shadow: 0 0 5px rgba(0, 170, 255, 0.6);
+    }
+}
+
+.drop-indicator.vertical {
+    height: 80px;
+}
+
+.drop-placeholder {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #00AAFF;
+    border-radius: 6px;
+    background-color: rgba(0, 170, 255, 0.1);
+    box-shadow: inset 0 0 10px rgba(0, 170, 255, 0.3);
+    pointer-events: none;
+    z-index: 999;
+    position: relative;
     margin: 0;
 }
 
@@ -924,19 +1086,22 @@ button:disabled {
 
 /* Search and Burst Filter Container */
 .search-filter-container {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    z-index: 950;
+    width: 100%;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
+    gap: 10px;
     flex-wrap: nowrap; /* Prevent wrapping */
-    background-color: rgba(17, 17, 17, 0.8);
+    background-color: rgba(34, 34, 34, 0.9);
     padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
+    border-radius: 0 0 8px 8px; /* Round only bottom corners */
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+    height: auto;
 }
 
 /* Burst Filter Buttons */
@@ -1072,17 +1237,18 @@ button:disabled {
 
     .top-controls-wrapper {
         position: fixed;
-        top: 40vh; /* Position directly below the fixed team container */
+        top: 300px; /* Adjusted to match reduced team container height */
         left: 0;
         width: 100%;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 0;
-        padding: 8px;
+        padding: 5px;
         z-index: 940;
         background-color: rgba(17, 17, 17, 0.9); /* Add background for better visibility */
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        height: 40px; /* Fixed height for consistency */
     }
 
     .controls-container {
@@ -1097,7 +1263,7 @@ button:disabled {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
+        width: 350px;
         z-index: 946; /* Higher than search-filter-container */
     }
 
@@ -1142,54 +1308,83 @@ button:disabled {
     }
 
     .search-filter-container {
-        position: fixed;
-        top: 10px; /* Position at the top */
-        left: 10px; /* Position at the left */
-        width: auto;
-        margin-bottom: 0;
-        z-index: 945;
-        height: auto;
+        position: relative;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        z-index: 960; /* Higher z-index to appear above fixed-team-container */
         flex-direction: row;
         gap: 5px;
         align-items: center;
-        padding: 5px;
-        background-color: rgba(17, 17, 17, 0.7);
-        border-radius: 5px;
+        justify-content: space-between; /* Space between elements */
+        padding: 8px 5px;
+        background-color: rgba(34, 34, 34, 0.95); /* More opaque background */
+        border-radius: 0 0 8px 8px; /* Round only bottom corners */
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+        height: auto;
+        margin-top: 5px;
     }
 
     .burst-filter-buttons {
         display: flex;
         flex-direction: row;
-        gap: 2px;
+        gap: 4px;
+        margin-right: 5px;
     }
 
     .burst-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 11px;
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
         min-width: 0;
         padding: 0;
+        border-radius: 16px; /* Make buttons circular */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+    }
+
+    .filter-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px; /* Make button circular */
+        background-color: #2a6e9c; /* Blue background to stand out */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+    }
+
+    .filter-icon {
+        font-size: 16px; /* Larger icon */
     }
 
     .search-wrapper {
-        height: 28px;
+        height: 32px;
         width: auto;
         display: flex;
         align-items: center;
         padding: 3px;
         background-color: transparent;
         box-shadow: none;
+        margin-right: 5px;
     }
 
     .search-bar {
-        height: 28px;
+        height: 32px;
+        display: flex;
+        align-items: center;
     }
 
     .search-bar input {
-        width: 120px;
-        padding: 4px 8px;
+        width: 130px;
+        padding: 6px 10px;
         font-size: 12px;
         height: 20px;
+        border-radius: 15px; /* Rounded corners */
+        border: 1px solid #444; /* Subtle border */
+        background-color: rgba(34, 34, 34, 0.9); /* Darker background */
+        color: white;
     }
 
     .bottom-buttons {
@@ -1199,10 +1394,11 @@ button:disabled {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        padding: 10px;
+        padding: 5px;
         margin-top: 0;
-        background-color: rgba(17, 17, 17, 0.8);
+        background-color: rgba(17, 17, 17, 0.9);
         z-index: 950;
+        height: 40px;
     }
 
     .fixed-button.left,
@@ -1216,33 +1412,36 @@ button:disabled {
     /* Gallery container styles for mobile */
     .gallery-container {
         width: 100%;
-        height: calc(60vh - 110px); /* Adjusted height to fit between controls and bottom buttons + tabs */
+        height: calc(60vh - 40px); /* Adjusted height for reduced top space */
         position: fixed;
-        top: calc(40vh + 50px); /* Position directly below the top-controls-wrapper */
+        top: 30vh; /* Adjusted to match reduced team container height */
         left: 0;
         right: 0;
         margin: 0 auto 0;
         margin-right: 0;
         z-index: 930; /* Below controls but above other content */
-        padding-bottom: 60px; /* Add padding to ensure content doesn't get cut off by bottom buttons */
+        padding: 0; /* Remove padding to accommodate search-filter-container */
     }
 
     /* Toggle container styles for mobile */
     .toggle-container {
         width: 100%;
-        height: calc(60vh - 110px);
+        height: calc(60vh - 40px); /* Adjusted height for reduced top space */
         position: fixed;
-        top: calc(40vh + 50px);
+        top: 30vh; /* Adjusted to match reduced team container height */
         left: 0;
         right: 0;
         margin: 0 auto 0;
-        z-index: 930;
+        z-index: 1200;
+        padding: 0; /* Remove padding to accommodate search-filter-container */
     }
 
     /* Tab Navigation for mobile */
     .tab-navigation {
         height: auto;
         flex-direction: column;
+        padding: 0;
+        background-color: rgba(34, 34, 34, 0.95);
     }
 
     .tab-group {
@@ -1251,13 +1450,22 @@ button:disabled {
         -webkit-overflow-scrolling: touch;
         display: flex;
         flex-wrap: nowrap;
+        height: 40px;
+        scrollbar-width: none; /* Hide scrollbar for Firefox */
+        -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+    }
+
+    .tab-group::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
     }
 
     .tab-button {
         font-size: 11px;
-        padding: 0 10px;
-        min-width: 50px;
+        padding: 0 8px;
+        min-width: 45px;
         flex-shrink: 0;
+        height: 40px;
+        border-right: 1px solid #333;
     }
 
     .fixed-team-container {
@@ -1266,17 +1474,22 @@ button:disabled {
         left: 0;
         right: 0;
         width: 100%;
-        max-height: 40vh; /* Limit height to 40% of viewport */
+        max-height: 35vh; /* Reduced height to save space */
         margin: 0;
-        padding: 10px;
+        padding: 8px 5px;
         border-radius: 0 0 10px 10px; /* Round only bottom corners */
         z-index: 950; /* Above most content but below search */
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
-    #selectedContainer {
+    #selectedContainer, #selectedContainer1, #selectedContainer2 {
         max-height: calc(40vh - 50px); /* Account for title and padding */
         align-content: center;
         padding: 5px;
+        width: 100%;
+        flex: 1;
     }
 
     /* Make team rows more compact on mobile */
@@ -1291,22 +1504,27 @@ button:disabled {
     .team-images {
         height: 50px;
         gap: 4px;
-        width: calc(100% - 70px); /* Account for team label and score */
+        width: calc(100% - 110px); /* Account for team label and wider score */
         justify-content: space-between;
     }
 
     .image-slot {
-        width: calc((100% - 16px) / 5); /* Divide available space by 5, accounting for gaps */
-        height: 45px;
-        min-width: 35px;
-        max-width: 45px;
+        width: 40px; /* Fixed width for consistency */
+        height: 40px;
+        min-width: 40px;
+        max-width: 40px;
+        margin: 0 2px;
     }
 
     /* Smaller title on mobile */
-    .team-title {
+    .gallery-title, .toggle-title, .team-title {
         font-size: 16px;
         margin: 0 0 8px 0;
-        padding-bottom: 5px;
+        padding: 10px 5px 8px;
+        display: block;
+        text-align: center;
+        width: 100%;
+        background-color: rgba(17, 17, 17, 0.9);
     }
 
     /* Smaller team labels and scores on mobile */
@@ -1316,8 +1534,9 @@ button:disabled {
     }
 
     .team-score {
-        width: 40px;
+        width: 80px;
         font-size: 12px;
+        margin-right: 4px;
     }
 
     .gallery {
@@ -1326,7 +1545,7 @@ button:disabled {
 
     /* Mobile filter styles */
     .filter-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
 
@@ -1351,8 +1570,21 @@ button:disabled {
     }
 
     .photo {
-        width: 70px;
-        height: 70px;
+        width: 65px;
+        height: 65px;
+        margin: 2px;
+    }
+
+    .gallery, .toggle-images {
+        padding: 10px;
+        justify-content: center;
+        border-radius: 0 0 8px 8px; /* Round only bottom corners */
+    }
+
+    .toggle-item {
+        width: 65px;
+        height: 65px;
+        margin: 2px;
     }
 }
 
