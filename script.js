@@ -1,5 +1,29 @@
 // Constants, global variables, and shared utility functions are now defined in storage.js
 
+// Device orientation detection
+function detectOrientation() {
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+    // We can determine landscape from portrait, no need for a separate variable
+    const isPhone = window.innerWidth <= 768;
+    const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+
+    console.log(`Device orientation: ${isPortrait ? 'Portrait' : 'Landscape'}`);
+    console.log(`Device type: ${isPhone ? 'Phone' : isTablet ? 'Tablet/iPad' : 'Desktop'}`);
+    console.log(`Screen dimensions: ${window.innerWidth}x${window.innerHeight}`);
+
+    // Add classes to body for easier CSS targeting
+    document.body.classList.remove('portrait', 'landscape', 'phone', 'tablet', 'desktop');
+    document.body.classList.add(isPortrait ? 'portrait' : 'landscape');
+    document.body.classList.add(isPhone ? 'phone' : isTablet ? 'tablet' : 'desktop');
+}
+
+// Listen for orientation changes
+window.addEventListener('resize', detectOrientation);
+window.addEventListener('orientationchange', detectOrientation);
+
+// Call on page load
+window.addEventListener('DOMContentLoaded', detectOrientation);
+
 // Burst filter buttons functionality
 function toggleBurstFilter(button) {
     // Toggle active state for this button
@@ -51,7 +75,15 @@ function updateFilters() {
         weapon: weaponValues,
     };
 
-    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    // Get search value from either search input depending on which tab is active
+    let searchValue = '';
+    if (currentContentTab === 'toggleImages') {
+        const searchInput = document.getElementById('myNikkesSearchInput');
+        searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+    } else {
+        const searchInput = document.getElementById('gallerySearchInput');
+        searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+    }
     console.log('Search value:', searchValue);
 
     // Filter gallery photos
@@ -1749,10 +1781,17 @@ window.onload = async () => {
         }
     });
 
-    // Add event listener to search input
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
+    // Add event listeners to search inputs
+    const myNikkesSearchInput = document.getElementById('myNikkesSearchInput');
+    if (myNikkesSearchInput) {
+        myNikkesSearchInput.addEventListener('input', function() {
+            updateFilters();
+        });
+    }
+
+    const gallerySearchInput = document.getElementById('gallerySearchInput');
+    if (gallerySearchInput) {
+        gallerySearchInput.addEventListener('input', function() {
             updateFilters();
         });
     }
