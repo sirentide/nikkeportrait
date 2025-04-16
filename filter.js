@@ -1,11 +1,6 @@
 // Filter Panel Functionality
 
-// Define functions in global scope
-let filterPanel;
-let filterBtn;
-
-// Global variable to track if we're currently toggling
-let isToggling = false;
+// Global variables are defined in storage.js
 
 // Function to toggle filter panel visibility
 function toggleFilterPanel() {

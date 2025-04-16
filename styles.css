@@ -155,7 +155,7 @@ button:disabled {
 }
 
 .team-score {
-    width: 50px;
+    width: 80px;
     text-align: center;
     margin-right: 8px;
     font-size: 14px;
@@ -496,6 +496,96 @@ button:disabled {
     transition: opacity 0.3s ease;
 }
 
+/* Export Container Styles */
+.export-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: auto;
+}
+
+.team-sets-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    max-width: 1000px;
+    background-color: #111;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive layout for mobile */
+@media (max-width: 768px) {
+    .team-sets-container {
+        flex-direction: column;
+    }
+}
+
+.export-container .fixed-team-container {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 48%;
+    max-height: none;
+    margin-bottom: 10px;
+    padding: 10px;
+    flex: 1;
+}
+
+/* Responsive layout for mobile */
+@media (max-width: 768px) {
+    .export-container .fixed-team-container {
+        width: 100%;
+    }
+}
+
+.export-container .team-title {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+}
+
+.export-container .team-row {
+    margin-bottom: 5px;
+    height: 60px;
+}
+
+.export-container .team-images {
+    height: 50px;
+}
+
+.export-container .image-slot {
+    width: 45px;
+    height: 45px;
+}
+
+.export-container button {
+    padding: 10px 20px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px;
+    transition: background-color 0.3s;
+}
+
+.export-container button:hover {
+    background-color: #555;
+}
+
 /* Hide elements */
 .hidden {
     display: none !important;
@@ -523,8 +613,9 @@ button:disabled {
     background-color: #222;
     border-top: 1px solid #444;
     z-index: 1000;
-    height: 40px;
+    height: 50px;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    padding: 0 10px;
 }
 
 .tab-group {
@@ -540,12 +631,16 @@ button:disabled {
     border: none;
     border-right: 1px solid #444;
     cursor: pointer;
-    font-size: 12px;
-    min-width: 60px;
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .tab-button:hover {
@@ -553,8 +648,9 @@ button:disabled {
 }
 
 .tab-button.active {
-    background-color: #555;
+    background-color: #2a6496;
     color: white;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .tab-button.active:after {
@@ -595,6 +691,16 @@ button:disabled {
 
 .tab-button.export-data:hover {
     background-color: #3abc8e;
+}
+
+.tab-button.reset-data {
+    background-color: #9c2a6e;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.reset-data:hover {
+    background-color: #bc3a8e;
 }
 
 .tab-button.import-data {
@@ -1385,5 +1491,173 @@ button:disabled {
 
     .flex-container-1 {
         margin-top: 20px;
+    }
+}
+
+/* Import Modal Styles */
+.import-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.import-modal-content {
+    background-color: #222;
+    border-radius: 10px;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    color: white;
+    position: relative;
+}
+
+.import-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: flex-start;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 8px;
+}
+
+.import-item {
+    width: 80px;
+    height: 80px;
+    background-color: #444;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.import-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.import-item.selected {
+    border: 3px solid #00ff00;
+    transform: scale(1.05);
+}
+
+.import-item.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #00ff00;
+    color: #000;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.import-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.import-controls button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+#importSelectedBtn {
+    background-color: #2a6496;
+    color: white;
+}
+
+#importSelectedBtn:hover {
+    background-color: #3a7db6;
+}
+
+#importAllBtn {
+    background-color: #2a9c6e;
+    color: white;
+}
+
+#importAllBtn:hover {
+    background-color: #3abc8e;
+}
+
+#loadToggleDataBtn {
+    background-color: #9c6e2a;
+    color: white;
+}
+
+#loadToggleDataBtn:hover {
+    background-color: #bc8e4a;
+}
+
+#cancelImportBtn {
+    background-color: #9c2a2a;
+    color: white;
+}
+
+#cancelImportBtn:hover {
+    background-color: #bc3a3a;
+}
+
+.no-images-message {
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 8px;
+    margin: 20px 0;
+    display: none;
+}
+
+/* Mobile styles for import modal */
+@media (max-width: 768px) {
+    .import-modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .import-gallery {
+        max-height: 40vh;
+    }
+
+    .import-item {
+        width: 60px;
+        height: 60px;
+    }
+
+    .import-controls {
+        flex-wrap: wrap;
+    }
+
+    .import-controls button {
+        flex: 1;
+        min-width: 120px;
+        font-size: 12px;
+        padding: 8px 10px;
     }
 }

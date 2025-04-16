@@ -174,14 +174,13 @@
 <!-- Fixed bottom buttons -->
 <div class="bottom-buttons">
     <button id="exportBtn" class="fixed-button left">Export</button>
-    <button id="savedSetsBtn" class="fixed-button middle">Saved Sets</button>
     <button id="clearSelectionBtn" class="fixed-button right">Clear Selected Team</button>
 </div>
 
-<!-- Tab System for Toggle Images -->
+<!-- Tab System for My Nikkes -->
 <div class="toggle-tabs-container">
     <div class="toggle-container" id="toggleImagesContainer">
-        <h2 class="toggle-title">Toggle Images</h2>
+        <h2 class="toggle-title">My Nikkes</h2>
         <div class="toggle-images" id="toggleImages"></div>
     </div>
 </div>
@@ -190,14 +189,15 @@
 <div class="tab-navigation">
     <div class="tab-group">
         <button class="tab-button" data-tab="gallery">Nikkes</button>
-        <button class="tab-button active" data-tab="toggleImages">Toggle Images</button>
-        <button class="tab-button import-toggle" id="importToggleBtn">Import Nikke</button>
-        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove Nikke</button>
-        <button class="tab-button export-data" id="exportToggleDataBtn">Save Toggle Data</button>
+        <button class="tab-button active" data-tab="toggleImages">My Nikkes</button>
+        <button class="tab-button import-toggle" id="importToggleBtn">Import to My Nikkes</button>
+        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove from My Nikkes</button>
+        <button class="tab-button export-data" id="exportToggleDataBtn">Export My Nikkes</button>
+        <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset Data</button>
     </div>
     <div class="tab-group">
-        <button class="tab-button team-tab active" data-team-set="1">SET 1</button>
-        <button class="tab-button team-tab" data-team-set="2">SET 2</button>
+        <button class="tab-button team-tab active" data-set="1">SET 1</button>
+        <button class="tab-button team-tab" data-set="2">SET 2</button>
     </div>
 </div>
 
@@ -1093,6 +1093,7 @@
     </div>
 </div>
 
+    <script src="storage.js"></script>
     <script src="script.js"></script>
     <script src="filter.js"></script>
     <script src="teamsets.js"></script>
