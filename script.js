@@ -3413,11 +3413,12 @@ function exportTeamSetsAsJpeg() {
     title.textContent = 'My Nikkes Teams';
     title.style.color = '#fff';
     title.style.margin = '0';
-    title.style.fontSize = '22px'; // Increased font size
+    title.style.fontSize = '24px'; // Increased font size
     title.style.fontWeight = '600'; // Semi-bold
-    title.style.padding = '8px 0'; // Increased padding
+    title.style.padding = '10px 0'; // Increased padding
     title.style.letterSpacing = '0.5px'; // Slight letter spacing for better readability
-    title.style.marginBottom = '10px'; // Added margin
+    title.style.marginBottom = '15px'; // Added margin
+    title.style.textShadow = '0 2px 4px rgba(0,0,0,0.3)'; // Add text shadow for better visibility
     headerContainer.appendChild(title);
 
     // Add the header before the team sets container
@@ -3464,7 +3465,8 @@ function exportTeamSetsAsJpeg() {
         teamSet.style.width = '49%';
         teamSet.style.flex = '1';
         teamSet.style.padding = '15px'; // Increased padding
-        teamSet.style.paddingTop = '25px'; // Extra padding at top for SET label
+        teamSet.style.paddingTop = '35px'; // Extra padding at top for SET label
+        teamSet.style.paddingBottom = '30px'; // Extra padding at bottom for custom name label
         teamSet.style.margin = '0';
         teamSet.style.boxSizing = 'border-box';
         teamSet.style.backgroundColor = '#1e1e1e'; // Better background color
@@ -3473,25 +3475,51 @@ function exportTeamSetsAsJpeg() {
         teamSet.style.minWidth = '380px'; // Minimum width for team set
         teamSet.style.maxWidth = '480px'; // Maximum width for team set
 
-        // Add set label - more prominent since we removed the titles
-        const setLabel = document.createElement('div');
+        // Add top label for Defender/Attacker
+        const topLabel = document.createElement('div');
         const setId = (index + 1).toString();
         const baseName = index === 0 ? 'Defender' : 'Attacker';
-        const customName = teamNames[setId] ? `, ${teamNames[setId]}` : '';
-        setLabel.textContent = `${baseName}${customName}`;
-        setLabel.style.position = 'absolute';
-        setLabel.style.top = '0';
-        setLabel.style.left = '50%'; // Center horizontally
-        setLabel.style.transform = 'translateX(-50%)'; // Center horizontally
-        setLabel.style.fontSize = '16px'; // Increased font size
-        setLabel.style.fontWeight = '600'; // Semi-bold
-        setLabel.style.color = '#fff'; // Brighter color
-        setLabel.style.backgroundColor = 'rgba(42, 110, 209, 0.8)'; // Blue background
-        setLabel.style.padding = '5px 15px'; // Increased padding
-        setLabel.style.borderRadius = '0 0 8px 8px'; // Rounded bottom corners
-        setLabel.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'; // Enhanced shadow
+        topLabel.textContent = baseName;
+        topLabel.style.position = 'absolute';
+        topLabel.style.top = '0';
+        topLabel.style.left = '50%'; // Center horizontally
+        topLabel.style.transform = 'translateX(-50%)'; // Center horizontally
+        topLabel.style.fontSize = '18px'; // Increased font size
+        topLabel.style.fontWeight = '600'; // Semi-bold
+        topLabel.style.color = '#fff'; // Brighter color
+        topLabel.style.backgroundColor = index === 0 ? 'rgba(42, 110, 209, 0.9)' : 'rgba(209, 42, 42, 0.9)'; // Different colors for Defender/Attacker
+        topLabel.style.padding = '4px 20px'; // Increased padding
+        topLabel.style.borderRadius = '0 0 10px 10px'; // Rounded bottom corners
+        topLabel.style.boxShadow = '0 3px 6px rgba(0,0,0,0.4)'; // Enhanced shadow
+        topLabel.style.textShadow = '0 1px 2px rgba(0,0,0,0.5)'; // Text shadow for better readability
+        topLabel.style.zIndex = '5'; // Ensure it's above other elements
         teamSet.style.position = 'relative'; // For absolute positioning of the label
-        teamSet.appendChild(setLabel);
+        teamSet.appendChild(topLabel);
+
+        // Add bottom label for custom team name (if exists)
+        const customName = teamNames[setId];
+        if (customName) {
+            const bottomLabel = document.createElement('div');
+            bottomLabel.textContent = customName;
+            bottomLabel.style.position = 'absolute';
+            bottomLabel.style.bottom = '0';
+            bottomLabel.style.left = '50%'; // Center horizontally
+            bottomLabel.style.transform = 'translateX(-50%)'; // Center horizontally
+            bottomLabel.style.fontSize = '16px'; // Slightly smaller than top label
+            bottomLabel.style.fontWeight = '500'; // Medium weight
+            bottomLabel.style.color = '#fff'; // Brighter color
+            bottomLabel.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Dark background for contrast
+            bottomLabel.style.padding = '5px 10px'; // Slightly smaller padding
+            bottomLabel.style.borderRadius = '10px 10px 0 0'; // Rounded top corners
+            bottomLabel.style.boxShadow = '0 -2px 4px rgba(0,0,0,0.3)'; // Shadow pointing up
+            bottomLabel.style.textShadow = '0 1px 2px rgba(0,0,0,0.5)'; // Text shadow for better readability
+            bottomLabel.style.zIndex = '5'; // Ensure it's above other elements
+            bottomLabel.style.maxWidth = '90%'; // Prevent overflow
+            bottomLabel.style.overflow = 'hidden'; // Hide overflow
+            bottomLabel.style.textOverflow = 'ellipsis'; // Add ellipsis for long text
+            bottomLabel.style.whiteSpace = 'nowrap'; // Prevent wrapping
+            teamSet.appendChild(bottomLabel);
+        }
 
         // Make responsive
         if (mediaQuery.matches) {
@@ -3564,7 +3592,7 @@ function exportTeamSetsAsJpeg() {
             // Redesign team score with better proportions
             const teamScore = row.querySelector('.team-score');
             if (teamScore) {
-                teamScore.style.width = '80px'; // Increased width
+                teamScore.style.width = '60px'; // Increased width
                 teamScore.style.fontSize = '14px'; // Increased font size
                 teamScore.style.fontWeight = '500'; // Medium weight
                 teamScore.style.padding = '0 6px'; // Increased padding
@@ -3646,7 +3674,7 @@ function exportTeamSetsAsJpeg() {
 
     // Add a footer with copyright/info
     const footerText = document.createElement('div');
-    footerText.textContent = 'Nikkes Portrait • Team Builder';
+    footerText.textContent = 'Nikkes Arena • Team Builder';
     footerText.style.color = '#666';
     footerText.style.fontSize = '10px';
     footerText.style.marginTop = '8px';
