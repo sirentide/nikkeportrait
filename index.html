@@ -28,7 +28,10 @@
     <!-- Team Selection Container (Fixed) - Multiple team sets with tabs -->
     <!-- Team Set 1 -->
     <div class="fixed-team-container" id="teamSet1" data-team-set="1">
-        <h2 class="team-title">Defender</h2>
+        <div class="team-title-container">
+            <h2 class="team-title">Defender</h2>
+            <button class="edit-team-name-btn" onclick="editTeamName('1')">✏️</button>
+        </div>
         <div id="selectedContainer1" class="selected-container">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -90,7 +93,10 @@
 
     <!-- Team Set 2 -->
     <div class="fixed-team-container hidden" id="teamSet2" data-team-set="2">
-        <h2 class="team-title">Attacker</h2>
+        <div class="team-title-container">
+            <h2 class="team-title">Attacker</h2>
+            <button class="edit-team-name-btn" onclick="editTeamName('2')">✏️</button>
+        </div>
         <div id="selectedContainer2" class="selected-container">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
@@ -993,23 +999,134 @@
             new Sortable(teamContainer, {
                 animation: 150,  // Smooth animation
                 ghostClass: 'sortable-ghost',  // Class for the dragged item
-                delay: 300, // Require 300ms hold before dragging
+                delay: 500, // Increased delay for better mobile experience
                 delayOnTouchOnly: true, // Apply delay only on touch devices
+                touchStartThreshold: 10, // Increased threshold for touch devices
+                fallbackTolerance: 10, // Increased tolerance for mobile
                 group: {
                     name: 'shared',  // The group name must be the same for all teams to allow movement
                     pull: true,  // Allow pulling items from this list
                     put: true   // Allow putting items into this list
                 },
-                swapThreshold: 0.65, // Threshold of the swap zone (0.65 means 65% overlap required to swap)
+                swapThreshold: 0.5, // Reduced threshold for easier swapping on mobile
                 swap: true, // Enable swap mode
+                forceFallback: true, // Force fallback mode for consistent behavior across devices
+                fallbackClass: 'sortable-fallback', // Class for the cloned fallback element
+                scrollSensitivity: 80, // Increased scroll sensitivity for mobile
+                scrollSpeed: 20, // Faster scrolling when dragging near edges
+                bubbleScroll: true, // Enable bubbling of scroll events
+                dragoverBubble: true, // Bubble dragover events for better mobile handling
+                preventOnFilter: true, // Prevent default browser behavior when filtering
+                tapTolerance: 15, // Increased tap tolerance for mobile
                 onStart: function(evt) {
                     // Store the number of slots in each team before dragging
                     document.querySelectorAll('.team-images').forEach(team => {
                         team.dataset.slotCount = team.children.length;
                     });
+
+                    // Add dragging class to body for global styling
+                    document.body.classList.add('is-dragging');
+
+                    // Add dragging class to the element being dragged
+                    evt.item.classList.add('being-dragged');
+
+                    // Create a drag path indicator container if it doesn't exist
+                    if (!document.getElementById('dragPathIndicator')) {
+                        const pathIndicator = document.createElement('div');
+                        pathIndicator.id = 'dragPathIndicator';
+                        document.body.appendChild(pathIndicator);
+                    }
+                },
+
+                onMove: function(evt, originalEvent) {
+                    // Remove target indicator from all slots
+                    document.querySelectorAll('.target-indicator').forEach(el => el.remove());
+
+                    // Get the target element (where the item would be dropped)
+                    const targetEl = evt.related;
+
+                    // Only add indicator if we're over a valid target
+                    if (targetEl && targetEl.classList.contains('image-slot')) {
+                        // Create and add the target indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = 'target-indicator';
+                        targetEl.appendChild(indicator);
+
+                        // Update the path indicator if we have touch or mouse position
+                        if (originalEvent.touches || originalEvent.clientX) {
+                            const pathIndicator = document.getElementById('dragPathIndicator');
+                            if (pathIndicator) {
+                                // Get current position
+                                const clientX = originalEvent.touches ?
+                                    originalEvent.touches[0].clientX : originalEvent.clientX;
+                                const clientY = originalEvent.touches ?
+                                    originalEvent.touches[0].clientY : originalEvent.clientY;
+
+                                // Get target position
+                                const targetRect = targetEl.getBoundingClientRect();
+                                const targetX = targetRect.left + targetRect.width / 2;
+                                const targetY = targetRect.top + targetRect.height / 2;
+
+                                // Draw path indicator
+                                const pathDot = document.createElement('div');
+                                pathDot.className = 'path-dot';
+                                pathDot.style.left = clientX + 'px';
+                                pathDot.style.top = clientY + 'px';
+                                pathIndicator.appendChild(pathDot);
+
+                                // Draw arrow to target
+                                const arrow = document.createElement('div');
+                                arrow.className = 'path-arrow';
+
+                                // Calculate angle for arrow
+                                const angle = Math.atan2(targetY - clientY, targetX - clientX) * 180 / Math.PI;
+                                arrow.style.transform = `rotate(${angle}deg)`;
+
+                                // Position arrow
+                                arrow.style.left = clientX + 'px';
+                                arrow.style.top = clientY + 'px';
+                                arrow.style.width = Math.sqrt(
+                                    Math.pow(targetX - clientX, 2) +
+                                    Math.pow(targetY - clientY, 2)
+                                ) + 'px';
+
+                                pathIndicator.appendChild(arrow);
+
+                                // Clean up old dots/arrows (keep only the most recent few)
+                                const maxIndicators = 3;
+                                const dots = pathIndicator.querySelectorAll('.path-dot');
+                                const arrows = pathIndicator.querySelectorAll('.path-arrow');
+
+                                if (dots.length > maxIndicators) {
+                                    for (let i = 0; i < dots.length - maxIndicators; i++) {
+                                        dots[i].remove();
+                                    }
+                                }
+
+                                if (arrows.length > maxIndicators) {
+                                    for (let i = 0; i < arrows.length - maxIndicators; i++) {
+                                        arrows[i].remove();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
                 onEnd: function(evt) {
                     console.log(`Image moved from team ${evt.from.parentNode.getAttribute('data-team')} to team ${evt.to.parentNode.getAttribute('data-team')}`);
+
+                    // Remove dragging classes
+                    document.body.classList.remove('is-dragging');
+                    evt.item.classList.remove('being-dragged');
+
+                    // Remove all target indicators
+                    document.querySelectorAll('.target-indicator').forEach(el => el.remove());
+
+                    // Remove path indicator
+                    const pathIndicator = document.getElementById('dragPathIndicator');
+                    if (pathIndicator) {
+                        pathIndicator.remove();
+                    }
 
                     // Check if any team has more than 5 slots and fix it
                     document.querySelectorAll('.team-images').forEach(team => {

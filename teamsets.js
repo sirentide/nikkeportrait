@@ -316,27 +316,28 @@ function showSavedSetsPanel() {
     // Create the panel
     const panel = document.createElement('div');
     panel.className = 'saved-sets-panel';
-    panel.style.position = 'fixed';
-    panel.style.top = '50%';
-    panel.style.left = '50%';
-    panel.style.transform = 'translate(-50%, -50%)';
-    panel.style.backgroundColor = '#222';
-    panel.style.border = '2px solid #00aaff';
-    panel.style.borderRadius = '8px';
-    panel.style.padding = '20px';
-    panel.style.zIndex = '9999';
-    panel.style.width = '90%';
-    panel.style.maxWidth = '600px';
-    panel.style.maxHeight = '80vh';
-    panel.style.overflowY = 'auto';
-    panel.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
-    panel.style.color = 'white';
 
     // Create header
     const header = document.createElement('div');
-    header.innerHTML = '<h2>Saved Team Sets</h2>';
-    header.style.marginBottom = '20px';
-    header.style.textAlign = 'center';
+    header.className = 'saved-sets-header';
+
+    // Add title
+    const title = document.createElement('h2');
+    title.textContent = 'Saved Team Sets';
+    title.style.margin = '0';
+    title.style.textAlign = 'center';
+    title.style.width = '100%';
+    header.appendChild(title);
+
+    // Add close button
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-saved-sets-btn';
+    closeBtn.innerHTML = '&#10005;'; // ✕ symbol
+    closeBtn.addEventListener('click', function() {
+        panel.remove();
+    });
+    header.appendChild(closeBtn);
+
     panel.appendChild(header);
 
     // Create save form
@@ -348,14 +349,37 @@ function showSavedSetsPanel() {
 
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
-    nameInput.placeholder = 'Enter a name for the current team set';
+    nameInput.placeholder = 'Enter a name for your team set';
     nameInput.style.flex = '1';
     nameInput.style.padding = '8px';
     nameInput.style.borderRadius = '4px';
     nameInput.style.border = '1px solid #444';
     nameInput.style.backgroundColor = '#333';
     nameInput.style.color = 'white';
+
+    // Add event listener for Enter key
+    nameInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            saveTeamSet(nameInput.value);
+        }
+    });
+
+    // Pre-fill with current team name if available
+    const currentSetId = currentTeamSet; // '1' for Defender, '2' for Attacker
+    const customName = teamNames[currentSetId] || '';
+
+    // Use only the custom name if available, otherwise leave empty
+    nameInput.value = customName;
+
     saveForm.appendChild(nameInput);
+
+    // Focus and select the text in the input field after a short delay
+    // (to ensure the panel is fully rendered)
+    setTimeout(() => {
+        nameInput.focus();
+        nameInput.select();
+    }, 100);
 
     const saveButton = document.createElement('button');
     saveButton.textContent = 'Save Current';
@@ -405,21 +429,10 @@ function showSavedSetsPanel() {
 
     panel.appendChild(setsList);
 
-    // Create close button
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close';
-    closeButton.style.display = 'block';
-    closeButton.style.margin = '20px auto 0';
-    closeButton.style.padding = '10px 20px';
-    closeButton.style.backgroundColor = '#555';
-    closeButton.style.color = 'white';
-    closeButton.style.border = 'none';
-    closeButton.style.borderRadius = '4px';
-    closeButton.style.cursor = 'pointer';
-    closeButton.addEventListener('click', function() {
-        panel.remove();
-    });
-    panel.appendChild(closeButton);
+    // Add some bottom padding
+    const bottomPadding = document.createElement('div');
+    bottomPadding.style.height = '20px';
+    panel.appendChild(bottomPadding);
 
     // Add the panel to the body
     document.body.appendChild(panel);

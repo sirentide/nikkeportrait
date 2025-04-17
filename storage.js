@@ -1,10 +1,17 @@
 // Storage keys and global variables for the application
 const STORAGE_KEY = 'nikkePortraitData';
 const TOGGLE_TABS_KEY = 'nikkeToggleTabsData';
+const TEAM_NAMES_KEY = 'nikkeTeamNames';
 
 // Global variables
 let currentTeamSet = '1'; // Default to team set 1
 let currentContentTab = 'toggleImages'; // Default to My Nikkes tab
+
+// Default team names
+let teamNames = {
+    '1': '', // Custom name for Defender (SET1)
+    '2': ''  // Custom name for Attacker (SET2)
+};
 
 // Flag to track if we've already shown the import prompt
 let importPromptShown = false;
@@ -328,3 +335,56 @@ function clearStorageCache() {
 const debouncedSaveStorageData = debounce((data) => {
     saveStorageData(data);
 }, 300); // 300ms debounce time
+
+// Functions for team names
+
+// Load team names from localStorage
+function loadTeamNames() {
+    try {
+        const savedNames = localStorage.getItem(TEAM_NAMES_KEY);
+        if (savedNames) {
+            teamNames = JSON.parse(savedNames);
+            console.log('Loaded team names:', teamNames);
+        } else {
+            console.log('No saved team names found, using defaults');
+        }
+    } catch (error) {
+        console.error('Error loading team names:', error);
+    }
+}
+
+// Save team names to localStorage
+function saveTeamNames() {
+    try {
+        localStorage.setItem(TEAM_NAMES_KEY, JSON.stringify(teamNames));
+        console.log('Saved team names:', teamNames);
+    } catch (error) {
+        console.error('Error saving team names:', error);
+    }
+}
+
+// Update team name and save to localStorage
+function updateTeamName(setId, name) {
+    teamNames[setId] = name;
+    saveTeamNames();
+    updateTeamTitle(setId);
+}
+
+// Update the team title in the UI
+function updateTeamTitle(setId) {
+    const container = document.querySelector(`#teamSet${setId}`);
+    if (!container) return;
+
+    const titleElement = container.querySelector('.team-title');
+    if (!titleElement) return;
+
+    const baseName = setId === '1' ? 'Defender' : 'Attacker';
+    const customName = teamNames[setId] ? `, ${teamNames[setId]}` : '';
+    titleElement.textContent = `${baseName}${customName}`;
+}
+
+// Update all team titles
+function updateAllTeamTitles() {
+    updateTeamTitle('1');
+    updateTeamTitle('2');
+}

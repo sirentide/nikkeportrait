@@ -1819,9 +1819,92 @@ function updateToggleImagesPositions() {
     console.log('Updated toggle images positions');
 }
 
+// Helper function to detect mobile devices
+function isMobileDevice() {
+    return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+}
+
+// Helper function to add mobile-specific classes
+function setupMobileClasses() {
+    if (isMobileDevice()) {
+        document.body.classList.add('mobile-device');
+
+        // Add touch feedback to draggable elements
+        setupTouchListeners();
+
+        // Set up a mutation observer to watch for new image slots
+        setupMutationObserver();
+    }
+}
+
+// Add touch event listeners to image slots
+function setupTouchListeners(parent = document) {
+    const imageSlots = parent.querySelectorAll('.image-slot');
+    imageSlots.forEach(slot => {
+        // Remove existing listeners to prevent duplicates
+        slot.removeEventListener('touchstart', touchStartHandler);
+        slot.removeEventListener('touchend', touchEndHandler);
+        slot.removeEventListener('touchcancel', touchEndHandler);
+
+        // Add new listeners
+        slot.addEventListener('touchstart', touchStartHandler, { passive: true });
+        slot.addEventListener('touchend', touchEndHandler, { passive: true });
+        slot.addEventListener('touchcancel', touchEndHandler, { passive: true });
+    });
+}
+
+// Touch event handlers
+function touchStartHandler() {
+    this.classList.add('touch-active');
+}
+
+function touchEndHandler() {
+    this.classList.remove('touch-active');
+}
+
+// Set up mutation observer to watch for new image slots
+function setupMutationObserver() {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                // Check if any of the added nodes are image slots or contain image slots
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.classList && node.classList.contains('image-slot')) {
+                            // This is an image slot, add touch listeners
+                            setupTouchListeners(node.parentNode);
+                        } else if (node.querySelectorAll) {
+                            // Check if this node contains any image slots
+                            const slots = node.querySelectorAll('.image-slot');
+                            if (slots.length > 0) {
+                                setupTouchListeners(node);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // Observe the entire document for changes to the DOM
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
 // Initialize
 window.onload = async () => {
     // Global variables are already initialized in storage.js
+
+    // Load team names from localStorage
+    loadTeamNames();
+    updateAllTeamTitles();
+
+    // Setup mobile-specific classes and behaviors
+    setupMobileClasses();
 
     // Update all image sources to use GitHub URLs
     document.querySelectorAll('img').forEach(img => {
@@ -2136,6 +2219,17 @@ function ensureGreenBorders() {
 
     // Update selection state in localStorage
     updateToggleImageSelectionState(currentTeamSet);
+}
+
+// Function to edit team name
+function editTeamName(setId) {
+    const baseName = setId === '1' ? 'Defender' : 'Attacker';
+    const currentName = teamNames[setId] || '';
+    const newName = prompt(`Enter a custom name for ${baseName}:`, currentName);
+
+    if (newName !== null) { // User didn't cancel
+        updateTeamName(setId, newName.trim());
+    }
 }
 
 // Set up tab system
@@ -3208,6 +3302,10 @@ function exportTeamSetsAsJpeg() {
     const teamSet1 = document.querySelector('#teamSet1').cloneNode(true);
     const teamSet2 = document.querySelector('#teamSet2').cloneNode(true);
 
+    // Remove edit team name buttons from the cloned team sets
+    teamSet1.querySelectorAll('.edit-team-name-btn').forEach(btn => btn.remove());
+    teamSet2.querySelectorAll('.edit-team-name-btn').forEach(btn => btn.remove());
+
     // Remove any existing search or filter elements from the cloned team sets
     [teamSet1, teamSet2].forEach(teamSet => {
         // Remove search wrapper if it exists
@@ -3252,7 +3350,10 @@ function exportTeamSetsAsJpeg() {
 
         // Add set label - more prominent since we removed the titles
         const setLabel = document.createElement('div');
-        setLabel.textContent = index === 0 ? 'Defender' : 'Attacker';
+        const setId = (index + 1).toString();
+        const baseName = index === 0 ? 'Defender' : 'Attacker';
+        const customName = teamNames[setId] ? `, ${teamNames[setId]}` : '';
+        setLabel.textContent = `${baseName}${customName}`;
         setLabel.style.position = 'absolute';
         setLabel.style.top = '0';
         setLabel.style.left = '50%'; // Center horizontally

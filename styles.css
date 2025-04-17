@@ -265,6 +265,39 @@ button:disabled {
     align-items: center;
     justify-content: center;
     position: relative;
+    touch-action: none; /* Prevent browser handling of touch events */
+}
+
+/* Add drag handle for mobile */
+.image-slot::before {
+    content: '≡';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 3px 0;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Show drag handle on touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .image-slot::before {
+        opacity: 0.8;
+    }
+}
+
+/* Show drag handle on hover for desktop */
+.image-slot:hover::before {
+    opacity: 0.8;
 }
 
 .image-slot img {
@@ -281,6 +314,29 @@ button:disabled {
     content: "+";
     color: #444;
     font-size: 24px;
+}
+
+/* Highlight empty slots when dragging */
+body.is-dragging .image-slot.empty {
+    border: 2px dashed rgba(66, 153, 225, 0.6);
+    background-color: rgba(66, 153, 225, 0.1);
+    transition: all 0.3s ease;
+}
+
+body.is-dragging .image-slot.empty::after {
+    color: rgba(66, 153, 225, 0.8);
+    animation: pulse-plus 1s infinite alternate ease-in-out;
+}
+
+@keyframes pulse-plus {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
 }
 
 /* Custom scrollbar for team images */
@@ -580,6 +636,41 @@ button:disabled {
     background-color: rgba(17, 17, 17, 0.8);
 }
 
+/* Team Title Container */
+.team-title-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Edit Team Name Button */
+.edit-team-name-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.edit-team-name-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #4299e1;
+}
+
 /* Adjust margins to account for fixed top controls */
 .flex-container-1 {
     margin-top: 80px; /* Increased to account for fixed top controls */
@@ -766,6 +857,261 @@ button:disabled {
 
 .export-container button:hover {
     background-color: #555;
+}
+
+/* Sortable.js Styles */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: rgba(66, 153, 225, 0.2) !important;
+    border: 2px dashed rgba(66, 153, 225, 0.6) !important;
+    box-shadow: 0 0 10px rgba(66, 153, 225, 0.4) !important;
+}
+
+.sortable-fallback {
+    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+    border: 2px solid rgba(66, 153, 225, 0.8) !important;
+    border-radius: 3px !important;
+    pointer-events: none;
+    z-index: 2000;
+}
+
+/* Target indicator styles */
+.target-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(66, 153, 225, 0.3);
+    border: 2px solid rgba(66, 153, 225, 0.8);
+    border-radius: 3px;
+    z-index: 5;
+    pointer-events: none;
+    animation: pulse-target 1s infinite alternate ease-in-out;
+}
+
+/* Path indicator container */
+#dragPathIndicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9000;
+}
+
+/* Path dots */
+.path-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(66, 153, 225, 0.7);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9001;
+    opacity: 0.7;
+    animation: fade-out 1s forwards;
+}
+
+/* Path arrows */
+.path-arrow {
+    position: absolute;
+    height: 2px;
+    background-color: rgba(66, 153, 225, 0.5);
+    transform-origin: left center;
+    pointer-events: none;
+    z-index: 9001;
+    opacity: 0.7;
+    animation: fade-out 1s forwards;
+}
+
+.path-arrow::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid rgba(66, 153, 225, 0.7);
+}
+
+@keyframes fade-out {
+    0% { opacity: 0.7; }
+    100% { opacity: 0; }
+}
+
+/* Pulse animation for target indicator */
+@keyframes pulse-target {
+    0% {
+        box-shadow: 0 0 5px rgba(66, 153, 225, 0.5);
+        background-color: rgba(66, 153, 225, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 15px rgba(66, 153, 225, 0.8);
+        background-color: rgba(66, 153, 225, 0.4);
+    }
+}
+
+/* Styles for the element being dragged */
+.being-dragged {
+    z-index: 2000;
+}
+
+/* Global styles when dragging is happening */
+body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
+    border-color: rgba(66, 153, 225, 0.8);
+    background-color: rgba(66, 153, 225, 0.1);
+    transition: all 0.2s ease;
+}
+
+/* Mobile-specific drag styles */
+@media (hover: none) and (pointer: coarse) {
+    .sortable-fallback {
+        opacity: 0.9;
+        transform: scale(1.1);
+        box-shadow: 0 5px 20px rgba(66, 153, 225, 0.5) !important;
+    }
+
+    .sortable-ghost {
+        opacity: 0.3;
+        background-color: rgba(66, 153, 225, 0.3) !important;
+    }
+
+    .image-slot {
+        /* Increase touch target size slightly on mobile */
+        width: 58px;
+        height: 58px;
+    }
+
+    .team-images {
+        gap: 8px; /* Slightly more space between items on mobile */
+    }
+
+    /* Enhanced target indicator for mobile */
+    .target-indicator {
+        border-width: 3px;
+        background-color: rgba(66, 153, 225, 0.4);
+        box-shadow: 0 0 15px rgba(66, 153, 225, 0.8);
+    }
+
+    /* Add a "drop here" text for mobile */
+    .target-indicator::after {
+        content: 'DROP';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+    }
+
+    /* Add visual feedback for active touch */
+    .touch-active {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(66, 153, 225, 0.7);
+        z-index: 10;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    /* Make the drag handle more prominent on mobile */
+    .image-slot::before {
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+        background-color: rgba(66, 153, 225, 0.7);
+    }
+
+    /* Add a hint message for mobile users */
+    .team-row::after {
+        content: 'Tap and hold to drag';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.5);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .team-row:hover::after {
+        opacity: 1;
+    }
+
+    /* Show the hint only on the first team row initially */
+    .team-row:first-child::after {
+        opacity: 1;
+    }
+}
+
+/* Saved Sets Panel Styles */
+.saved-sets-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #222;
+    border: 2px solid #00aaff;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 9999;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.saved-sets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.close-saved-sets-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    max-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 1;
+    text-align: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.close-saved-sets-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #4299e1;
 }
 
 /***************************************
