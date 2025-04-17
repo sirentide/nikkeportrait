@@ -309,6 +309,82 @@ function filterSavedSets(query, setsList, savedSets) {
     });
 }
 
+// Function to compress team data for sharing
+function compressTeamData(data) {
+    try {
+        // Convert the data to a JSON string
+        const jsonString = JSON.stringify(data);
+
+        // Compress using LZString
+        const compressed = LZString.compressToEncodedURIComponent(jsonString);
+
+        return compressed;
+    } catch (error) {
+        console.error('Error compressing team data:', error);
+        return null;
+    }
+}
+
+// Function to decompress team data from a shared link
+function decompressTeamData(compressed) {
+    try {
+        // Decompress using LZString
+        const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+
+        // Parse the JSON string
+        const data = JSON.parse(jsonString);
+
+        return data;
+    } catch (error) {
+        console.error('Error decompressing team data:', error);
+        return null;
+    }
+}
+
+// Function to generate a shareable link for a team set
+function generateShareableLink(teamSetName) {
+    // Get saved sets from localStorage
+    let savedSets = {};
+    try {
+        const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+        if (savedSetsJson) {
+            savedSets = JSON.parse(savedSetsJson);
+        }
+    } catch (error) {
+        console.error('Error parsing saved sets:', error);
+        alert('Error generating link: ' + error.message);
+        return null;
+    }
+
+    // Check if the team set exists
+    if (!savedSets[teamSetName]) {
+        alert(`Team set "${teamSetName}" not found.`);
+        return null;
+    }
+
+    // Create export data with metadata
+    const exportData = {
+        version: '1.0',
+        type: 'nikke-portrait-team-set',
+        timestamp: new Date().toISOString(),
+        name: teamSetName,
+        set: savedSets[teamSetName]
+    };
+
+    // Compress the data
+    const compressed = compressTeamData(exportData);
+    if (!compressed) {
+        alert('Error compressing team data.');
+        return null;
+    }
+
+    // Generate the shareable link
+    const baseUrl = window.location.href.split('?')[0];
+    const shareableLink = `${baseUrl}?teamset=${compressed}`;
+
+    return shareableLink;
+}
+
 // Function to export all saved team sets to a JSON file
 function exportSavedTeamSets() {
     // Get saved sets from localStorage
@@ -330,45 +406,307 @@ function exportSavedTeamSets() {
         return;
     }
 
-    // Create export data with metadata
-    const exportData = {
-        version: '1.0',
-        type: 'nikke-portrait-saved-sets',
-        timestamp: new Date().toISOString(),
-        sets: savedSets
-    };
+    // Ask user if they want to export as JSON file or generate a shareable link
+    const exportType = confirm(
+        'How would you like to export your team sets?\n\n' +
+        'Click OK to generate a shareable link (good for Discord).\n' +
+        'Click Cancel to download as a JSON file (good for backup).'
+    );
 
-    // Convert to JSON string
-    const jsonString = JSON.stringify(exportData, null, 2); // Pretty print with 2 spaces
+    if (exportType) {
+        // User chose to generate a shareable link
+        // If there are multiple sets, ask which one to share
+        const setNames = Object.keys(savedSets);
 
-    // Create a Blob with the JSON data
-    const blob = new Blob([jsonString], { type: 'application/json' });
+        if (setNames.length === 1) {
+            // Only one set, share it directly
+            const shareableLink = generateShareableLink(setNames[0]);
+            if (shareableLink) {
+                // Copy to clipboard
+                navigator.clipboard.writeText(shareableLink)
+                    .then(() => {
+                        alert('Shareable link copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Could not copy link to clipboard:', err);
+                        // Show the link in a prompt so user can copy it manually
+                        prompt('Copy this shareable link:', shareableLink);
+                    });
+            }
+        } else {
+            // Multiple sets, create a dialog to select which one to share
+            showShareDialog(setNames);
+        }
+    } else {
+        // User chose to download as JSON file
+        // Create export data with metadata
+        const exportData = {
+            version: '1.0',
+            type: 'nikke-portrait-saved-sets',
+            timestamp: new Date().toISOString(),
+            sets: savedSets
+        };
 
-    // Create a timestamp for the filename
-    const now = new Date();
-    const timestamp = now.getFullYear() +
-                     ('0' + (now.getMonth() + 1)).slice(-2) +
-                     ('0' + now.getDate()).slice(-2) + '_' +
-                     ('0' + now.getHours()).slice(-2) +
-                     ('0' + now.getMinutes()).slice(-2);
+        // Convert to JSON string
+        const jsonString = JSON.stringify(exportData, null, 2); // Pretty print with 2 spaces
 
-    // Create a download link
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `nikke_saved_team_sets_${timestamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+        // Create a Blob with the JSON data
+        const blob = new Blob([jsonString], { type: 'application/json' });
 
-    // Clean up the URL object
-    URL.revokeObjectURL(a.href);
+        // Create a timestamp for the filename
+        const now = new Date();
+        const timestamp = now.getFullYear() +
+                         ('0' + (now.getMonth() + 1)).slice(-2) +
+                         ('0' + now.getDate()).slice(-2) + '_' +
+                         ('0' + now.getHours()).slice(-2) +
+                         ('0' + now.getMinutes()).slice(-2);
 
-    // Show success message
-    alert('Saved team sets exported successfully!');
+        // Create a download link
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `nikke_saved_team_sets_${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Clean up the URL object
+        URL.revokeObjectURL(a.href);
+
+        // Show success message
+        alert('Saved team sets exported successfully as JSON file!');
+    }
 }
 
-// Function to import saved team sets from a JSON file
+// Function to import saved team sets from a JSON file or shared code
 function importSavedTeamSets() {
+    // Ask user if they want to import from a file or a shared code
+    const importType = confirm(
+        'How would you like to import team sets?\n\n' +
+        'Click OK to import from a shared code (from Discord).\n' +
+        'Click Cancel to import from a JSON file.'
+    );
+
+    if (importType) {
+        // User chose to import from a shared code
+        showImportCodeModal();
+    } else {
+        // User chose to import from a JSON file
+        importFromJsonFile();
+    }
+}
+
+// Function to show a modal for importing from a shared code
+function showImportCodeModal() {
+    // Create modal container
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'import-modal-container';
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
+    modalContainer.style.zIndex = '9999';
+
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'import-modal-content';
+    modalContent.style.backgroundColor = '#222';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.maxWidth = '600px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '80vh';
+    modalContent.style.overflowY = 'auto';
+    modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+
+    // Add title
+    const title = document.createElement('h2');
+    title.textContent = 'Import Team Sets from Code';
+    title.style.color = '#fff';
+    title.style.marginTop = '0';
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+
+    // Add instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Paste the shared code below to import team sets.';
+    instructions.style.color = '#ccc';
+    instructions.style.marginBottom = '15px';
+    modalContent.appendChild(instructions);
+
+    // Add text area for code input
+    const textArea = document.createElement('textarea');
+    textArea.placeholder = 'Paste the shared code here...';
+    textArea.style.width = '100%';
+    textArea.style.height = '120px';
+    textArea.style.padding = '10px';
+    textArea.style.backgroundColor = '#333';
+    textArea.style.color = '#fff';
+    textArea.style.border = '1px solid #444';
+    textArea.style.borderRadius = '4px';
+    textArea.style.resize = 'none';
+    textArea.style.marginBottom = '15px';
+    modalContent.appendChild(textArea);
+
+    // Add import button
+    const importButton = document.createElement('button');
+    importButton.textContent = 'Import';
+    importButton.style.padding = '8px 16px';
+    importButton.style.backgroundColor = '#2a6e9c';
+    importButton.style.color = 'white';
+    importButton.style.border = 'none';
+    importButton.style.borderRadius = '4px';
+    importButton.style.cursor = 'pointer';
+    importButton.style.marginRight = '10px';
+    importButton.addEventListener('click', function() {
+        const code = textArea.value.trim();
+        if (!code) {
+            alert('Please enter a shared code.');
+            return;
+        }
+
+        try {
+            // Try to import the code
+            importFromSharedCode(code);
+            // Close the modal on success
+            document.body.removeChild(modalContainer);
+        } catch (error) {
+            alert('Error importing from code: ' + error.message);
+        }
+    });
+    modalContent.appendChild(importButton);
+
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Cancel';
+    closeButton.style.padding = '8px 16px';
+    closeButton.style.backgroundColor = '#444';
+    closeButton.style.color = 'white';
+    closeButton.style.border = 'none';
+    closeButton.style.borderRadius = '4px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.addEventListener('click', function() {
+        document.body.removeChild(modalContainer);
+    });
+    modalContent.appendChild(closeButton);
+
+    // Add the modal content to the container
+    modalContainer.appendChild(modalContent);
+
+    // Add the modal container to the body
+    document.body.appendChild(modalContainer);
+
+    // Focus the text area
+    setTimeout(() => {
+        textArea.focus();
+    }, 100);
+}
+
+// Function to import from a shared code
+function importFromSharedCode(code) {
+    try {
+        // Try to decompress the code
+        let importData;
+
+        // First, check if it's a URL
+        if (code.includes('?teamset=')) {
+            // Extract the compressed data from the URL
+            const urlParts = code.split('?teamset=');
+            if (urlParts.length < 2) {
+                throw new Error('Invalid URL format. Could not find teamset parameter.');
+            }
+            const compressed = urlParts[1].split('&')[0]; // Get the teamset value, ignoring other parameters
+            importData = decompressTeamData(compressed);
+        } else {
+            // Assume it's a compressed code directly
+            importData = decompressTeamData(code);
+        }
+
+        if (!importData) {
+            throw new Error('Could not decompress the shared code. Please check that you copied it correctly.');
+        }
+
+        // Check if it's a single team set or multiple sets
+        if (importData.type === 'nikke-portrait-team-set' && importData.set) {
+            // Single team set
+            // Get current saved sets
+            let currentSets = {};
+            const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+            if (savedSetsJson) {
+                currentSets = JSON.parse(savedSetsJson);
+            }
+
+            // Add the imported set
+            const setName = importData.name || `Imported Set ${new Date().toLocaleString()}`;
+            currentSets[setName] = importData.set;
+
+            // Save back to localStorage
+            localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(currentSets));
+
+            // Show success message
+            alert(`Team set "${setName}" has been imported successfully.`);
+
+            // Refresh the saved sets panel if it's open
+            if (document.querySelector('.saved-sets-panel')) {
+                showSavedSetsPanel();
+            }
+        } else if (importData.type === 'nikke-portrait-saved-sets' && importData.sets) {
+            // Multiple team sets
+            // Get current saved sets
+            let currentSets = {};
+            const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+            if (savedSetsJson) {
+                currentSets = JSON.parse(savedSetsJson);
+            }
+
+            // Count imported sets
+            const importCount = Object.keys(importData.sets).length;
+
+            // Ask user if they want to merge or replace
+            let action = 'merge';
+            if (Object.keys(currentSets).length > 0) {
+                const userChoice = confirm(
+                    `You have ${Object.keys(currentSets).length} existing saved team sets. \n\n` +
+                    `Would you like to merge the ${importCount} imported sets with your existing sets? \n\n` +
+                    `Click OK to merge (keep both existing and imported sets). \n` +
+                    `Click Cancel to replace (delete existing sets and only keep imported sets).`
+                );
+
+                action = userChoice ? 'merge' : 'replace';
+            }
+
+            // Process based on user choice
+            if (action === 'replace') {
+                // Replace all existing sets with imported sets
+                localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(importData.sets));
+                alert(`Replaced existing saved team sets with ${importCount} imported sets.`);
+            } else {
+                // Merge imported sets with existing sets
+                const mergedSets = { ...currentSets, ...importData.sets };
+                localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(mergedSets));
+                alert(`Merged ${importCount} imported sets with your existing saved team sets.`);
+            }
+
+            // Refresh the saved sets panel if it's open
+            if (document.querySelector('.saved-sets-panel')) {
+                showSavedSetsPanel();
+            }
+        } else {
+            throw new Error('Invalid data format. This does not appear to be a valid Nikke Portrait team sets code.');
+        }
+    } catch (error) {
+        console.error('Error importing from shared code:', error);
+        alert('Error importing from shared code: ' + error.message);
+        throw error; // Re-throw to handle in the calling function
+    }
+}
+
+// Function to import from a JSON file
+function importFromJsonFile() {
     // Create a file input element
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -454,6 +792,129 @@ function importSavedTeamSets() {
 
     // Trigger the file input dialog
     fileInput.click();
+}
+
+// Function to show a dialog for selecting which team set to share
+function showShareDialog(setNames) {
+    // Create modal container
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'share-dialog-container';
+    modalContainer.style.position = 'fixed';
+    modalContainer.style.top = '0';
+    modalContainer.style.left = '0';
+    modalContainer.style.width = '100%';
+    modalContainer.style.height = '100%';
+    modalContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modalContainer.style.display = 'flex';
+    modalContainer.style.justifyContent = 'center';
+    modalContainer.style.alignItems = 'center';
+    modalContainer.style.zIndex = '9999';
+
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'share-dialog-content';
+    modalContent.style.backgroundColor = '#222';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.maxWidth = '600px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxHeight = '80vh';
+    modalContent.style.overflowY = 'auto';
+    modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+
+    // Add title
+    const title = document.createElement('h2');
+    title.textContent = 'Select Team Set to Share';
+    title.style.color = '#fff';
+    title.style.marginTop = '0';
+    title.style.marginBottom = '15px';
+    modalContent.appendChild(title);
+
+    // Add instructions
+    const instructions = document.createElement('p');
+    instructions.textContent = 'Choose which team set you want to share:';
+    instructions.style.color = '#ccc';
+    instructions.style.marginBottom = '15px';
+    modalContent.appendChild(instructions);
+
+    // Create list of sets
+    const setsList = document.createElement('div');
+    setsList.className = 'sets-list';
+    setsList.style.marginBottom = '20px';
+
+    // Add each set as a button
+    setNames.forEach(name => {
+        const setButton = document.createElement('button');
+        setButton.textContent = name;
+        setButton.style.display = 'block';
+        setButton.style.width = '100%';
+        setButton.style.padding = '10px';
+        setButton.style.marginBottom = '8px';
+        setButton.style.backgroundColor = '#333';
+        setButton.style.color = 'white';
+        setButton.style.border = '1px solid #444';
+        setButton.style.borderRadius = '4px';
+        setButton.style.cursor = 'pointer';
+        setButton.style.textAlign = 'left';
+        setButton.style.fontSize = '14px';
+
+        // Add hover effect
+        setButton.addEventListener('mouseover', function() {
+            this.style.backgroundColor = '#444';
+        });
+        setButton.addEventListener('mouseout', function() {
+            this.style.backgroundColor = '#333';
+        });
+
+        // Add click handler
+        setButton.addEventListener('click', function() {
+            // Generate shareable link for this set
+            const shareableLink = generateShareableLink(name);
+            if (shareableLink) {
+                // Copy to clipboard
+                navigator.clipboard.writeText(shareableLink)
+                    .then(() => {
+                        alert('Shareable link copied to clipboard!');
+                        // Close the modal
+                        document.body.removeChild(modalContainer);
+                    })
+                    .catch(err => {
+                        console.error('Could not copy link to clipboard:', err);
+                        // Show the link in a prompt so user can copy it manually
+                        prompt('Copy this shareable link:', shareableLink);
+                        // Close the modal
+                        document.body.removeChild(modalContainer);
+                    });
+            } else {
+                // Close the modal
+                document.body.removeChild(modalContainer);
+            }
+        });
+
+        setsList.appendChild(setButton);
+    });
+
+    modalContent.appendChild(setsList);
+
+    // Add cancel button
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.padding = '8px 16px';
+    cancelButton.style.backgroundColor = '#444';
+    cancelButton.style.color = 'white';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '4px';
+    cancelButton.style.cursor = 'pointer';
+    cancelButton.addEventListener('click', function() {
+        document.body.removeChild(modalContainer);
+    });
+    modalContent.appendChild(cancelButton);
+
+    // Add the modal content to the container
+    modalContainer.appendChild(modalContent);
+
+    // Add the modal container to the body
+    document.body.appendChild(modalContainer);
 }
 
 // Function to show the saved sets panel
