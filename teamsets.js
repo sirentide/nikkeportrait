@@ -294,6 +294,153 @@ function filterSavedSets(query, setsList, savedSets) {
     });
 }
 
+// Function to export all saved team sets to a JSON file
+function exportSavedTeamSets() {
+    // Get saved sets from localStorage
+    let savedSets = {};
+    try {
+        const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+        if (savedSetsJson) {
+            savedSets = JSON.parse(savedSetsJson);
+        }
+    } catch (error) {
+        console.error('Error parsing saved sets:', error);
+        alert('Error exporting saved team sets: ' + error.message);
+        return;
+    }
+
+    // Check if there are any saved sets
+    if (Object.keys(savedSets).length === 0) {
+        alert('No saved team sets found to export.');
+        return;
+    }
+
+    // Create export data with metadata
+    const exportData = {
+        version: '1.0',
+        type: 'nikke-portrait-saved-sets',
+        timestamp: new Date().toISOString(),
+        sets: savedSets
+    };
+
+    // Convert to JSON string
+    const jsonString = JSON.stringify(exportData, null, 2); // Pretty print with 2 spaces
+
+    // Create a Blob with the JSON data
+    const blob = new Blob([jsonString], { type: 'application/json' });
+
+    // Create a timestamp for the filename
+    const now = new Date();
+    const timestamp = now.getFullYear() +
+                     ('0' + (now.getMonth() + 1)).slice(-2) +
+                     ('0' + now.getDate()).slice(-2) + '_' +
+                     ('0' + now.getHours()).slice(-2) +
+                     ('0' + now.getMinutes()).slice(-2);
+
+    // Create a download link
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `nikke_saved_team_sets_${timestamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Clean up the URL object
+    URL.revokeObjectURL(a.href);
+
+    // Show success message
+    alert('Saved team sets exported successfully!');
+}
+
+// Function to import saved team sets from a JSON file
+function importSavedTeamSets() {
+    // Create a file input element
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    // Add event listener for file selection
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            document.body.removeChild(fileInput);
+            return;
+        }
+
+        // Read the file
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                // Parse the JSON data
+                const importData = JSON.parse(e.target.result);
+
+                // Validate the import data
+                if (!importData.type || importData.type !== 'nikke-portrait-saved-sets' || !importData.sets) {
+                    throw new Error('Invalid file format. This does not appear to be a valid Nikke Portrait saved team sets file.');
+                }
+
+                // Get current saved sets
+                let currentSets = {};
+                const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+                if (savedSetsJson) {
+                    currentSets = JSON.parse(savedSetsJson);
+                }
+
+                // Count imported sets
+                const importCount = Object.keys(importData.sets).length;
+
+                // Ask user if they want to merge or replace
+                let action = 'merge';
+                if (Object.keys(currentSets).length > 0) {
+                    const userChoice = confirm(
+                        `You have ${Object.keys(currentSets).length} existing saved team sets. \n\n` +
+                        `Would you like to merge the ${importCount} imported sets with your existing sets? \n\n` +
+                        `Click OK to merge (keep both existing and imported sets). \n` +
+                        `Click Cancel to replace (delete existing sets and only keep imported sets).`
+                    );
+
+                    action = userChoice ? 'merge' : 'replace';
+                }
+
+                // Process based on user choice
+                if (action === 'replace') {
+                    // Replace all existing sets with imported sets
+                    localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(importData.sets));
+                    alert(`Replaced existing saved team sets with ${importCount} imported sets.`);
+                } else {
+                    // Merge imported sets with existing sets
+                    const mergedSets = { ...currentSets, ...importData.sets };
+                    localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(mergedSets));
+                    alert(`Merged ${importCount} imported sets with your existing saved team sets.`);
+                }
+
+                // Refresh the saved sets panel if it's open
+                if (document.querySelector('.saved-sets-panel')) {
+                    showSavedSetsPanel();
+                }
+
+            } catch (error) {
+                console.error('Error importing saved team sets:', error);
+                alert('Error importing saved team sets: ' + error.message);
+            } finally {
+                document.body.removeChild(fileInput);
+            }
+        };
+
+        reader.onerror = function() {
+            alert('Error reading the file. Please try again.');
+            document.body.removeChild(fileInput);
+        };
+
+        reader.readAsText(file);
+    });
+
+    // Trigger the file input dialog
+    fileInput.click();
+}
+
 // Function to show the saved sets panel
 function showSavedSetsPanel() {
     // Remove existing panel if any
@@ -395,6 +542,62 @@ function showSavedSetsPanel() {
     saveForm.appendChild(saveButton);
 
     panel.appendChild(saveForm);
+
+    // Create a container for import/export buttons
+    const importExportContainer = document.createElement('div');
+    importExportContainer.className = 'import-export-container';
+    importExportContainer.style.display = 'flex';
+    importExportContainer.style.justifyContent = 'space-between';
+    importExportContainer.style.marginBottom = '15px';
+    importExportContainer.style.gap = '10px';
+
+    // Create export button
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Export All Sets';
+    exportButton.style.padding = '8px 12px';
+    exportButton.style.backgroundColor = '#2a6e9c';
+    exportButton.style.color = 'white';
+    exportButton.style.border = 'none';
+    exportButton.style.borderRadius = '4px';
+    exportButton.style.cursor = 'pointer';
+    exportButton.style.fontSize = '12px';
+    exportButton.style.flex = '1';
+    exportButton.addEventListener('click', function() {
+        exportSavedTeamSets();
+    });
+    // Add hover effects
+    exportButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#3a8ebc';
+    });
+    exportButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#2a6e9c';
+    });
+    importExportContainer.appendChild(exportButton);
+
+    // Create import button
+    const importButton = document.createElement('button');
+    importButton.textContent = 'Import Sets';
+    importButton.style.padding = '8px 12px';
+    importButton.style.backgroundColor = '#555';
+    importButton.style.color = 'white';
+    importButton.style.border = 'none';
+    importButton.style.borderRadius = '4px';
+    importButton.style.cursor = 'pointer';
+    importButton.style.fontSize = '12px';
+    importButton.style.flex = '1';
+    importButton.addEventListener('click', function() {
+        importSavedTeamSets();
+    });
+    // Add hover effects
+    importButton.addEventListener('mouseover', function() {
+        this.style.backgroundColor = '#666';
+    });
+    importButton.addEventListener('mouseout', function() {
+        this.style.backgroundColor = '#555';
+    });
+    importExportContainer.appendChild(importButton);
+
+    panel.appendChild(importExportContainer);
 
     // Create search form
     const searchForm = document.createElement('div');
