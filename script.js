@@ -26,9 +26,18 @@ window.addEventListener('DOMContentLoaded', detectOrientation);
 
 // Burst filter buttons functionality
 function toggleBurstFilter(button) {
+    const value = button.getAttribute('data-value');
+    
     // Toggle active state for this button
     button.classList.toggle('active');
-    console.log('Toggled burst filter:', button.getAttribute('data-value'), 'Active:', button.classList.contains('active'));
+    
+    // Sync checkbox state with button state
+    const checkbox = document.querySelector(`input[type="checkbox"][value="${value}"]`);
+    if (checkbox) {
+        checkbox.checked = button.classList.contains('active');
+    }
+    
+    console.log('Toggled burst filter:', value, 'Active:', button.classList.contains('active'));
 
     // Update filters
     updateFilters();
@@ -39,25 +48,49 @@ function toggleBurstFilter(button) {
 
 // Get active burst filters
 function getActiveBurstFilters() {
-    // Only select burst buttons that are active and don't have the filter-btn class
+    // Get filters from both burst buttons and checkboxes
     const activeButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
-    return Array.from(activeButtons)
-        .map(btn => btn.getAttribute('data-value'))
-        .filter(value => value !== null); // Filter out null values
+    const checkedBoxes = document.querySelectorAll('input[type="checkbox"][value^="b"]:checked, input[type="checkbox"][value="a"]:checked');
+    
+    // Combine and deduplicate filters
+    const filters = new Set([
+        ...Array.from(activeButtons).map(btn => btn.getAttribute('data-value')),
+        ...Array.from(checkedBoxes).map(box => box.value)
+    ]);
+    
+    return Array.from(filters).filter(value => value !== null);
+}
+
+// Add this new function to sync button states with checkboxes
+function syncBurstFilters() {
+    // Sync checkbox changes to buttons
+    document.querySelectorAll('input[type="checkbox"][value^="b"], input[type="checkbox"][value="a"]').forEach(checkbox => {
+        const button = document.querySelector(`.burst-btn[data-value="${checkbox.value}"]`);
+        if (button) {
+            if (checkbox.checked) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        }
+    });
 }
 
 // Filter functionality
 function updateFilters() {
-    // Get burst filters from the modern buttons
+    // Sync burst filters first
+    syncBurstFilters();
+    
+    // Get burst filters
     const burstFilters = getActiveBurstFilters();
     console.log('Active burst filters:', burstFilters);
 
     // Get checked values for each filter type
-    const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']);
-    const positionValues = getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']);
-    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']);
-    const rarityValues = getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']);
-    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']);
+    const typeValues = burstFilters.length > 0 ? burstFilters : getCheckedValues(['b1', 'b2', 'b3', 'a']);
+    const positionValues = getCheckedValues(['def', 'sp', 'atk']);
+    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']);
+    const rarityValues = getCheckedValues(['ssr', 'sr', 'r']);
+    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']);
 
     console.log('Checked filters:', {
         type: typeValues,
@@ -68,7 +101,7 @@ function updateFilters() {
     });
 
     const selectedFilters = {
-        type: burstFilters.length > 0 ? burstFilters : typeValues,
+        type: typeValues,
         position: positionValues,
         faction: factionValues,
         rarity: rarityValues,
@@ -1899,6 +1932,7 @@ function addSingleImageToToggle(imgElement) {
 
     // Make the toggle item draggable
     toggleItem.setAttribute('draggable', 'true');
+}
     toggleItem.addEventListener('dragstart', handleDragStart);
     toggleItem.addEventListener('dragover', handleDragOver);
     toggleItem.addEventListener('dragenter', handleDragEnter);
@@ -1921,7 +1955,7 @@ function addSingleImageToToggle(imgElement) {
     // If we're adding an image, clear the userClearedSelection flag
     localStorage.removeItem('userClearedSelection');
     console.log('Added image to toggle, clearing userClearedSelection flag');
-}
+
 
 // Set up checkbox styling
 function setupCheckboxStyling() {
@@ -3900,3 +3934,4 @@ function removeSelectedToggleImages() {
         }
     });
 }
+
