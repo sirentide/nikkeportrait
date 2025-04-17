@@ -128,6 +128,23 @@ function loadTeamSet(name, targetSet) {
     // Update team score
     updateTeamScore();
 
+    // Extract the custom name from the saved team set name
+    let customName = '';
+    if (name.includes(',')) {
+        // If the name has a comma, extract the part after the comma as the custom name
+        customName = name.split(',').slice(1).join(',').trim();
+    } else {
+        // If no comma, use the whole name as the custom name
+        customName = name;
+    }
+
+    // Update the team name
+    if (customName) {
+        teamNames[targetSet] = customName;
+        updateTeamTitle(targetSet);
+        console.log(`Updated team name for set ${targetSet} to "${customName}"`);
+    }
+
     // Update the team-specific toggle images
     if (typeof saveCurrentToggleImages === 'function') {
         saveCurrentToggleImages();
@@ -145,6 +162,9 @@ function loadTeamSet(name, targetSet) {
         if (typeof saveToggleTabsToLocalStorage === 'function') {
             saveToggleTabsToLocalStorage();
         }
+
+        // Save the updated team names
+        saveTeamNames();
 
         console.log(`Team set "${name}" loaded into ${targetSet === '1' ? 'Defender' : 'Attacker'} and saved to localStorage`);
     }, 100);
@@ -258,12 +278,19 @@ function filterSavedSets(query, setsList, savedSets) {
         setItem.appendChild(setInfo);
 
         // Action buttons
-        const actions = document.createElement('div');
-        actions.style.display = 'flex';
-        actions.style.gap = '10px';
+        // Create two rows of actions for better organization
+        const actionsContainer = document.createElement('div');
+        actionsContainer.style.display = 'flex';
+        actionsContainer.style.flexDirection = 'column';
+        actionsContainer.style.gap = '8px';
+
+        // First row: Load buttons
+        const loadActions = document.createElement('div');
+        loadActions.style.display = 'flex';
+        loadActions.style.gap = '10px';
 
         const loadSet1Button = document.createElement('button');
-        loadSet1Button.textContent = 'Load to SET1';
+        loadSet1Button.textContent = 'Load to Defender';
         loadSet1Button.style.flex = '1';
         loadSet1Button.style.padding = '8px';
         loadSet1Button.style.backgroundColor = '#2a6e9c';
@@ -271,13 +298,14 @@ function filterSavedSets(query, setsList, savedSets) {
         loadSet1Button.style.border = 'none';
         loadSet1Button.style.borderRadius = '4px';
         loadSet1Button.style.cursor = 'pointer';
+        loadSet1Button.style.fontSize = '12px'; // Smaller font size
         loadSet1Button.addEventListener('click', function() {
             loadTeamSet(name, '1');
         });
-        actions.appendChild(loadSet1Button);
+        loadActions.appendChild(loadSet1Button);
 
         const loadSet2Button = document.createElement('button');
-        loadSet2Button.textContent = 'Load to SET2';
+        loadSet2Button.textContent = 'Load to Attacker';
         loadSet2Button.style.flex = '1';
         loadSet2Button.style.padding = '8px';
         loadSet2Button.style.backgroundColor = '#2a6e9c';
@@ -285,25 +313,68 @@ function filterSavedSets(query, setsList, savedSets) {
         loadSet2Button.style.border = 'none';
         loadSet2Button.style.borderRadius = '4px';
         loadSet2Button.style.cursor = 'pointer';
+        loadSet2Button.style.fontSize = '12px'; // Smaller font size
         loadSet2Button.addEventListener('click', function() {
             loadTeamSet(name, '2');
         });
-        actions.appendChild(loadSet2Button);
+        loadActions.appendChild(loadSet2Button);
+
+        // Add the load actions to the container
+        actionsContainer.appendChild(loadActions);
+
+        // Second row: Import/Export/Delete buttons
+        const utilActions = document.createElement('div');
+        utilActions.style.display = 'flex';
+        utilActions.style.gap = '10px';
+
+        // Export button for this specific team set
+        const exportButton = document.createElement('button');
+        exportButton.textContent = 'Export';
+        exportButton.style.flex = '1';
+        exportButton.style.padding = '8px';
+        exportButton.style.backgroundColor = '#555';
+        exportButton.style.color = 'white';
+        exportButton.style.border = 'none';
+        exportButton.style.borderRadius = '4px';
+        exportButton.style.cursor = 'pointer';
+        exportButton.style.fontSize = '12px';
+        exportButton.addEventListener('click', function() {
+            // Generate shareable link for this team set
+            const shareableLink = generateShareableLink(name);
+            if (shareableLink) {
+                // Copy to clipboard
+                navigator.clipboard.writeText(shareableLink)
+                    .then(() => {
+                        alert('Shareable link copied to clipboard!');
+                    })
+                    .catch(err => {
+                        console.error('Could not copy link to clipboard:', err);
+                        // Show the link in a prompt so user can copy it manually
+                        prompt('Copy this shareable link:', shareableLink);
+                    });
+            }
+        });
+        utilActions.appendChild(exportButton);
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
+        deleteButton.style.flex = '1';
         deleteButton.style.padding = '8px';
         deleteButton.style.backgroundColor = '#9c2a2a';
         deleteButton.style.color = 'white';
         deleteButton.style.border = 'none';
         deleteButton.style.borderRadius = '4px';
         deleteButton.style.cursor = 'pointer';
+        deleteButton.style.fontSize = '12px';
         deleteButton.addEventListener('click', function() {
             deleteTeamSet(name);
         });
-        actions.appendChild(deleteButton);
+        utilActions.appendChild(deleteButton);
 
-        setItem.appendChild(actions);
+        // Add the utility actions to the container
+        actionsContainer.appendChild(utilActions);
+
+        setItem.appendChild(actionsContainer);
 
         setsList.appendChild(setItem);
     });
