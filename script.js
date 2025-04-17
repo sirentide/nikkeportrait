@@ -60,6 +60,56 @@ function getActiveBurstFilters() {
     return activeFilters;
 }
 
+// Helper function to determine filter type from context
+function getFilterTypeFromContext(checkbox) {
+    // Try to infer filter type from parent elements
+    const parent = checkbox.closest('.filter-box');
+    if (parent) {
+        const heading = parent.querySelector('h4');
+        if (heading) {
+            const headingText = heading.textContent.toLowerCase();
+
+            // Map heading text to filter type
+            if (headingText.includes('class')) return 'position';
+            if (headingText.includes('rarity')) return 'rarity';
+            if (headingText.includes('industry')) return 'faction';
+            if (headingText.includes('weapon')) return 'weapon';
+            if (headingText.includes('burst')) return 'type';
+        }
+    }
+
+    // Try to infer from the checkbox value
+    const value = checkbox.value.toLowerCase();
+
+    // Position/class values
+    if (['def', 'sp', 'atk', 'defender', 'supporter', 'attacker'].includes(value)) {
+        return 'position';
+    }
+
+    // Rarity values
+    if (['ssr', 'sr', 'r'].includes(value)) {
+        return 'rarity';
+    }
+
+    // Faction/industry values
+    if (['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim'].includes(value)) {
+        return 'faction';
+    }
+
+    // Weapon values
+    if (['smg', 'ar', 'snr', 'rl', 'sg', 'mg'].includes(value)) {
+        return 'weapon';
+    }
+
+    // Burst/type values
+    if (['b1', 'b2', 'b3', 'a'].includes(value)) {
+        return 'type';
+    }
+
+    // Default to null if we can't determine the type
+    return null;
+}
+
 // Filter functionality
 function updateFilters() {
     // Get burst filters from the modern buttons
@@ -67,11 +117,13 @@ function updateFilters() {
     console.log('Active burst filters:', burstFilters);
 
     // Get checked values for each filter type
-    const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']);
-    const positionValues = getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']);
-    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']);
-    const rarityValues = getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']);
-    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']);
+    const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'a']);
+    const positionValues = getCheckedValues(['def', 'sp', 'atk']);
+    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']);
+    const rarityValues = getCheckedValues(['ssr', 'sr', 'r']);
+    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']);
+
+    console.log('Position filter values:', positionValues);
 
     console.log('Checked filters:', {
         type: typeValues,
@@ -126,8 +178,16 @@ function updateFilters() {
 
     let toggleVisibleCount = 0;
     toggleItems.forEach(item => {
+        // Get attributes from the toggle item
         const attributes = getPhotoAttributes(item);
+
+        // Debug log to check attributes
+        console.debug('Toggle item attributes:', attributes);
+
+        // Check if the item matches the filters
         const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
+
+        // Update visibility
         item.style.display = isMatch ? 'flex' : 'none';
         if (isMatch) toggleVisibleCount++;
     });
@@ -287,12 +347,13 @@ function removeImageFromSelection(imgElement, imgSrc) {
             // Set flag to indicate user intentionally cleared selection
             localStorage.setItem('userClearedSelection', 'true');
             console.log('All images removed, setting userClearedSelection flag');
-
-            // Save to localStorage to ensure the flag is respected on refresh
-            saveSelectionToLocalStorage();
-            saveToggleTabsToLocalStorage();
         }
     }
+
+    // Save to localStorage to ensure the changes are preserved
+    saveSelectionToLocalStorage();
+    console.log('Saved team sets to localStorage after removing image');
+    saveToggleTabsToLocalStorage();
 }
 
 function addImageToSelection(imgElement, imgSrc) {
@@ -339,6 +400,10 @@ function addImageToSelection(imgElement, imgSrc) {
     // If we're adding an image, clear the userClearedSelection flag
     localStorage.removeItem('userClearedSelection');
     console.log('Added image, clearing userClearedSelection flag');
+
+    // Save the updated team sets to localStorage
+    saveSelectionToLocalStorage();
+    console.log('Saved team sets to localStorage after adding image');
 }
 
 // Local Storage Management
@@ -352,25 +417,43 @@ function saveSelectionToLocalStorage() {
     }
 
     window.isSavingSelection = true;
-    // Save team data for SET1 and SET2
-    let teamSets = [];
 
-    // First try to get team data from the DOM
+    // Get team data from the DOM
+    const teamSets = [];
+
+    // Check if we have team data in the DOM
     let hasTeamDataInDOM = false;
-    for (let i = 1; i <= 2; i++) {
-        const teams = document.querySelectorAll(`#teamSet${i} .team-images`);
-        const teamsData = Array.from(teams).map(team => {
-            const images = Array.from(team.querySelectorAll('.image-slot img')).map(img => ({
-                src: img.src,
-                score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
-            }));
-            if (images.length > 0) {
-                hasTeamDataInDOM = true;
-            }
-            return { images };
-        });
-        teamSets.push(teamsData);
+
+    // Process each team set
+    for (let setIndex = 1; setIndex <= 2; setIndex++) {
+        const teamSet = [];
+        const teamSetContainer = document.querySelector(`#teamSet${setIndex}`);
+
+        if (teamSetContainer) {
+            console.log(`Processing team set ${setIndex}`);
+            const teamRows = teamSetContainer.querySelectorAll('.team-images');
+            console.log(`Found ${teamRows.length} team rows in set ${setIndex}`);
+
+            teamRows.forEach((row, rowIndex) => {
+                const teamImages = Array.from(row.querySelectorAll('.image-slot img')).map(img => ({
+                    src: img.src,
+                    score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
+                }));
+
+                console.log(`Team set ${setIndex}, row ${rowIndex}: Found ${teamImages.length} images`);
+
+                if (teamImages.length > 0) {
+                    hasTeamDataInDOM = true; // We found at least one image in a team
+                }
+
+                teamSet.push({ images: teamImages });
+            });
+        }
+
+        teamSets.push(teamSet);
     }
+
+    console.log('Final team sets data to save:', JSON.stringify(teamSets));
 
     // If no team data in DOM, check localStorage
     if (!hasTeamDataInDOM) {
@@ -440,15 +523,13 @@ function saveSelectionToLocalStorage() {
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 if (savedData) {
                     const parsedData = JSON.parse(savedData);
-
-                    // Check for toggle images in different possible locations
-                    if (parsedData.toggleTabs && parsedData.toggleTabs.toggleImages &&
-                        parsedData.toggleTabs.toggleImages.length > 0) {
-                        console.log(`No toggle items in DOM, but found ${parsedData.toggleTabs.toggleImages.length} in localStorage toggleTabs`);
-                        toggleImagesData = parsedData.toggleTabs.toggleImages;
-                    } else if (parsedData.toggleImages && parsedData.toggleImages.length > 0) {
-                        console.log(`No toggle items in DOM, but found ${parsedData.toggleImages.length} in localStorage root`);
+                    if (parsedData.toggleImages && Array.isArray(parsedData.toggleImages) && parsedData.toggleImages.length > 0) {
+                        console.log(`Found ${parsedData.toggleImages.length} toggle images in localStorage, using those`);
                         toggleImagesData = parsedData.toggleImages;
+                    } else if (parsedData.toggleTabs && parsedData.toggleTabs.toggleImages &&
+                              Array.isArray(parsedData.toggleTabs.toggleImages) && parsedData.toggleTabs.toggleImages.length > 0) {
+                        console.log(`Found ${parsedData.toggleTabs.toggleImages.length} toggle images in toggleTabs, using those`);
+                        toggleImagesData = parsedData.toggleTabs.toggleImages;
                     }
                 }
             } catch (error) {
@@ -470,6 +551,8 @@ function saveSelectionToLocalStorage() {
     };
 
     console.log('Data to save:', dataToSave);
+    console.log('Team sets to save:', JSON.stringify(teamSets));
+    console.log('Current team set:', currentTeamSet);
     console.log('Toggle images count:', toggleImagesData.length);
     console.log('Toggle images data sample:', toggleImagesData.length > 0 ? toggleImagesData[0] : 'none');
 
@@ -492,6 +575,8 @@ function saveSelectionToLocalStorage() {
         window.isSavingSelection = false;
     }
 }
+
+
 
 // Save toggle tabs data to localStorage
 function saveToggleTabsToLocalStorage() {
@@ -668,6 +753,27 @@ async function loadSelectionFromLocalStorage() {
             return;
         }
 
+        // Ensure we have the currentTeamSet property
+        if (!savedData.currentTeamSet) {
+            console.log('No currentTeamSet found in saved data, defaulting to 1');
+            savedData.currentTeamSet = '1';
+        }
+
+        // Ensure we have the teamSets property
+        if (!savedData.teamSets || !Array.isArray(savedData.teamSets)) {
+            console.log('No valid teamSets found in saved data, creating empty team sets');
+            savedData.teamSets = [[], []];
+        }
+
+        // Ensure we have the correct number of team sets
+        if (savedData.teamSets.length < 2) {
+            console.log('Not enough team sets found, adding empty ones');
+            while (savedData.teamSets.length < 2) {
+                savedData.teamSets.push([]);
+            }
+        }
+
+        console.log('Processed saved data:', savedData);
         return processLoadedData(savedData);
     } catch (error) {
         console.error('Error loading selection from localStorage:', error);
@@ -947,11 +1053,15 @@ async function processLoadedData(savedData) {
         // Load team data
         if (savedData.teamSets) {
             try {
+                console.log('Found team sets in saved data:', JSON.stringify(savedData.teamSets));
+
                 // Check if there's actual data in the team sets
                 let hasTeamData = false;
-                savedData.teamSets.forEach(teamSet => {
-                    teamSet.forEach(team => {
+                savedData.teamSets.forEach((teamSet, index) => {
+                    console.log(`Checking team set ${index + 1}:`, JSON.stringify(teamSet));
+                    teamSet.forEach((team, teamIndex) => {
                         if (team.images && team.images.length > 0) {
+                            console.log(`Team set ${index + 1}, team ${teamIndex + 1} has ${team.images.length} images`);
                             hasTeamData = true;
                         }
                     });
@@ -965,6 +1075,8 @@ async function processLoadedData(savedData) {
                     }, 500);
                     return;
                 }
+
+                console.log('Team data found in saved team sets, proceeding with loading');
 
                 // Check if user has intentionally cleared their selection
                 const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
@@ -983,6 +1095,14 @@ async function processLoadedData(savedData) {
                         console.warn(`Team set container #teamSet${teamSetIndex + 1} not found`);
                         return;
                     }
+
+                    // First, clear all team slots in this team set
+                    teamSetContainer.querySelectorAll('.team-images').forEach(teamRow => {
+                        teamRow.querySelectorAll('.image-slot').forEach(slot => {
+                            slot.innerHTML = '';
+                            slot.classList.add('empty');
+                        });
+                    });
 
                     // Load each team in the team set
                     teamSet.forEach((team, teamIndex) => {
@@ -1011,6 +1131,7 @@ async function processLoadedData(savedData) {
                                 // Create and add the image
                                 const img = document.createElement('img');
                                 img.src = imgData.src;
+                                img.crossOrigin = 'anonymous'; // Add crossOrigin for canvas compatibility
 
                                 // Add to the list of team image sources
                                 allTeamImageSources.push(imgData.src);
@@ -1153,14 +1274,14 @@ async function processLoadedData(savedData) {
                         const toggleItem = document.createElement('div');
                         toggleItem.className = 'toggle-item';
 
-                        // Set data attributes
+                        // Set data attributes - ensure all attributes are lowercase for consistency
                         toggleItem.setAttribute('data-number', itemData.number || '');
                         toggleItem.setAttribute('data-name', itemData.name || '');
-                        toggleItem.setAttribute('data-type', itemData.type || '');
-                        toggleItem.setAttribute('data-position', itemData.position || '');
-                        toggleItem.setAttribute('data-faction', itemData.faction || '');
-                        toggleItem.setAttribute('data-rarity', itemData.rarity || '');
-                        toggleItem.setAttribute('data-weapon', itemData.weapon || '');
+                        toggleItem.setAttribute('data-type', (itemData.type || '').toLowerCase());
+                        toggleItem.setAttribute('data-position', (itemData.position || '').toLowerCase());
+                        toggleItem.setAttribute('data-faction', (itemData.faction || '').toLowerCase());
+                        toggleItem.setAttribute('data-rarity', (itemData.rarity || '').toLowerCase());
+                        toggleItem.setAttribute('data-weapon', (itemData.weapon || '').toLowerCase());
 
                         // Create the image element
                         const toggleImg = document.createElement('img');
@@ -1884,14 +2005,17 @@ function addSingleImageToToggle(imgElement) {
     const toggleItem = document.createElement('div');
     toggleItem.className = 'toggle-item';
 
-    // Copy data attributes from the original photo
+    // Copy data attributes from the original photo - ensure all attributes are lowercase for consistency
     toggleItem.setAttribute('data-number', photoElement.getAttribute('data-number') || '');
     toggleItem.setAttribute('data-name', photoElement.getAttribute('data-name') || '');
-    toggleItem.setAttribute('data-type', photoElement.getAttribute('data-type') || '');
-    toggleItem.setAttribute('data-position', photoElement.getAttribute('data-position') || '');
-    toggleItem.setAttribute('data-faction', photoElement.getAttribute('data-faction') || '');
-    toggleItem.setAttribute('data-rarity', photoElement.getAttribute('data-rarity') || '');
-    toggleItem.setAttribute('data-weapon', photoElement.getAttribute('data-weapon') || '');
+    toggleItem.setAttribute('data-type', (photoElement.getAttribute('data-type') || '').toLowerCase());
+    toggleItem.setAttribute('data-position', (photoElement.getAttribute('data-position') || '').toLowerCase());
+    toggleItem.setAttribute('data-faction', (photoElement.getAttribute('data-faction') || '').toLowerCase());
+    toggleItem.setAttribute('data-rarity', (photoElement.getAttribute('data-rarity') || '').toLowerCase());
+    toggleItem.setAttribute('data-weapon', (photoElement.getAttribute('data-weapon') || '').toLowerCase());
+
+    // Store the original position value for filtering (separate from dataset.position used for drag-and-drop)
+    toggleItem.setAttribute('data-original-position', (photoElement.getAttribute('data-position') || '').toLowerCase());
 
     // Store the gallery photo reference for later restoration if needed
     toggleItem.dataset.galleryPhotoId = photoElement.id || '';
@@ -1922,6 +2046,29 @@ function addSingleImageToToggle(imgElement) {
 
     // Set position attribute for drag and drop ordering
     toggleItem.dataset.position = (toggleImagesContainer.children.length - 1).toString();
+
+    // Make sure we have a valid data-original-position attribute
+    if (!toggleItem.getAttribute('data-original-position') || toggleItem.getAttribute('data-original-position') === '') {
+        // Try to extract position from the filename
+        const filename = imgSrc.split('/').pop();
+        // Look for position patterns like _atk_, _def_, _sp_ in the filename
+        const posMatch = filename.match(/_(atk|def|sp)_/i);
+        if (posMatch && posMatch[1]) {
+            const extractedPosition = posMatch[1].toLowerCase();
+            console.log('Extracted position from filename for toggle item:', extractedPosition);
+            toggleItem.setAttribute('data-original-position', extractedPosition);
+        } else {
+            // If we can't extract from filename, use the original position
+            const originalPosition = photoElement.getAttribute('data-position');
+            if (originalPosition && !/^\d+$/.test(originalPosition)) {
+                toggleItem.setAttribute('data-original-position', originalPosition.toLowerCase());
+            } else {
+                // Default to 'atk' if all else fails
+                toggleItem.setAttribute('data-original-position', 'atk');
+                console.log('Using default position "atk" for toggle item');
+            }
+        }
+    }
 
     // Save the toggle tabs state
     saveToggleTabsToLocalStorage();
@@ -2227,11 +2374,14 @@ if (typeof teamSetToggleImages === 'undefined') {
 
 // Switch team set
 function switchTeamSet(setId) {
+    console.log(`Switching to team set: ${setId}`);
+
     // Save current toggle images before switching
     saveCurrentToggleImages();
 
     // Update current team set
     currentTeamSet = setId;
+    console.log(`Current team set updated to: ${currentTeamSet}`);
 
     // Update team set tabs
     document.querySelectorAll('.tab-button.team-tab').forEach(tab => {
@@ -2247,6 +2397,7 @@ function switchTeamSet(setId) {
         if (container.id === `teamSet${setId}`) {
             container.style.display = 'flex';
             container.classList.remove('hidden');
+            console.log(`Made team set ${setId} visible`);
         } else {
             container.style.display = 'none';
             container.classList.add('hidden');
@@ -2257,7 +2408,23 @@ function switchTeamSet(setId) {
     updateToggleImageSelectionState(setId);
 
     // Save the current team set to localStorage
-    saveSelectionToLocalStorage();
+    try {
+        // First try to get existing data
+        const existingData = localStorage.getItem(STORAGE_KEY);
+        if (existingData) {
+            const parsedData = JSON.parse(existingData);
+            parsedData.currentTeamSet = setId;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
+            console.log(`Updated currentTeamSet to ${setId} in localStorage`);
+        } else {
+            // If no existing data, save everything
+            saveSelectionToLocalStorage();
+        }
+    } catch (error) {
+        console.error('Error updating team set in localStorage:', error);
+        // Fall back to saving everything
+        saveSelectionToLocalStorage();
+    }
 
     console.log(`Switched to team set: ${setId}`);
 }

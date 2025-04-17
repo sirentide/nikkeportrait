@@ -183,11 +183,11 @@
 <div class="tab-navigation">
     <div class="tab-group">
         <button class="tab-button" data-tab="gallery">Nikkes</button>
-        <button class="tab-button active" data-tab="toggleImages">My Nikkes</button>
+        <button class="tab-button active" data-tab="toggleImages">Nikke lists</button>
         <button class="tab-button import-toggle" id="importToggleBtn">Add Nikkes</button>
-        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove from My Nikkes</button>
-        <button class="tab-button export-data" id="exportToggleDataBtn">Save My Nikkes</button>
-        <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset Data</button>
+        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove Nikkes</button>
+        <button class="tab-button export-data" id="exportToggleDataBtn">Save Nikkes lists</button>
+        <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset lists</button>
     </div>
     <div class="tab-group">
         <button class="tab-button team-tab active" data-set="1">Defender</button>
@@ -1050,52 +1050,50 @@
 
 
 <!-- Filter Panel (fixed position) -->
-<div id="filterPanel" class="filter-panel" style="display: block; width: 340px; height: auto;">
+<div id="filterPanel" class="filter-panel" style="display: block; width: 240px; height: auto;">
     <div class="filter-header">
-        <h3 class="filter-title">Filter Nikkes</h3>
+        <h3 class="filter-title">Filters</h3>
         <button id="closeFilterBtn" class="close-filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { hideFilterPanel(); }, 10);">×</button>
     </div>
     <div class="filter-grid">
-        <!-- Burst filter moved to top bar -->
-        <div class="filter-box">
+        <!-- Compact filter layout -->
+        <div class="filter-box compact">
             <h4>Class</h4>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" value="def" onchange="updateFilters()"><span>Defender</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="sp" onchange="updateFilters()"><span>Supporter</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="atk" onchange="updateFilters()"><span>Attacker</span></label>
+            <div class="checkbox-group compact">
+                <label class="checkbox-label compact"><input type="checkbox" name="position" value="def" onchange="updateFilters()"><span>DEF</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="position" value="sp" onchange="updateFilters()"><span>SP</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="position" value="atk" onchange="updateFilters()"><span>ATK</span></label>
             </div>
         </div>
-        <div class="filter-box">
+        <div class="filter-box compact">
             <h4>Rarity</h4>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" value="ssr" onchange="updateFilters()"><span>SSR</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="sr" onchange="updateFilters()"><span>SR</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="r" onchange="updateFilters()"><span>R</span></label>
+            <div class="checkbox-group compact">
+                <label class="checkbox-label compact"><input type="checkbox" name="rarity" value="ssr" onchange="updateFilters()"><span>SSR</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="rarity" value="sr" onchange="updateFilters()"><span>SR</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="rarity" value="r" onchange="updateFilters()"><span>R</span></label>
             </div>
         </div>
-        <div class="filter-box">
+        <div class="filter-box compact">
             <h4>Industry</h4>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" value="elysion" onchange="updateFilters()"><span>Elysion</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="missilis" onchange="updateFilters()"><span>Missilis</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="tetra" onchange="updateFilters()"><span>Tetra</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="abnormal" onchange="updateFilters()"><span>Abnormal</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="pilgrim" onchange="updateFilters()"><span>Pilgrim</span></label>
+            <div class="checkbox-group compact">
+                <label class="checkbox-label compact"><input type="checkbox" name="faction" value="elysion" onchange="updateFilters()"><span>Elysion</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="faction" value="missilis" onchange="updateFilters()"><span>Missilis</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="faction" value="tetra" onchange="updateFilters()"><span>Tetra</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="faction" value="abnormal" onchange="updateFilters()"><span>Abnormal</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="faction" value="pilgrim" onchange="updateFilters()"><span>Pilgrim</span></label>
             </div>
         </div>
-        <div class="filter-box">
-            <h4>Weapon Type</h4>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" value="smg" onchange="updateFilters()"><span>SMG</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="ar" onchange="updateFilters()"><span>AR</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="snr" onchange="updateFilters()"><span>SNR</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="rl" onchange="updateFilters()"><span>RL</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="sg" onchange="updateFilters()"><span>SG</span></label>
-                <label class="checkbox-label"><input type="checkbox" value="mg" onchange="updateFilters()"><span>MG</span></label>
+        <div class="filter-box compact">
+            <h4>Weapon</h4>
+            <div class="checkbox-group compact">
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="smg" onchange="updateFilters()"><span>SMG</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="ar" onchange="updateFilters()"><span>AR</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="snr" onchange="updateFilters()"><span>SNR</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="rl" onchange="updateFilters()"><span>RL</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="sg" onchange="updateFilters()"><span>SG</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="mg" onchange="updateFilters()"><span>MG</span></label>
             </div>
         </div>
-        <!-- Burst Type filter removed as it's redundant with the burst filter buttons -->
-        <!-- Search box removed as it's redundant with the search in tab navigation -->
     </div>
 </div>
 
