@@ -175,14 +175,6 @@
                 <button class="burst-btn" data-value="b3">III</button>
                 <button class="burst-btn" data-value="a">A</button>
             </div>
-            <div class="search-wrapper">
-                <div class="search-bar">
-                    <input type="text" id="myNikkesSearchInput" placeholder="Type to search...">
-                </div>
-            </div>
-            <div class="filter-wrapper">
-                <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
-            </div>
         </div>
     </div>
 </div>
@@ -201,6 +193,14 @@
         <button class="tab-button team-tab active" data-set="1">Defender</button>
         <button class="tab-button team-tab" data-set="2">Attacker</button>
         <button class="tab-button saved-sets" id="savedSetsBtn">Saved Sets</button>
+        <div class="search-wrapper">
+            <div class="search-bar">
+                <input type="text" id="myNikkesSearchInput" placeholder="Search all Nikkes...">
+            </div>
+        </div>
+        <div class="filter-wrapper">
+            <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
+        </div>
     </div>
 </div>
 
@@ -1094,21 +1094,8 @@
                 <label class="checkbox-label"><input type="checkbox" value="mg" onchange="updateFilters()"><span>MG</span></label>
             </div>
         </div>
-        <div class="filter-box">
-            <h4>Burst Type</h4>
-            <div class="checkbox-group" style="display: flex; flex-direction: row; gap: 8px;">
-                <label class="checkbox-label" style="flex: 1;"><input type="checkbox" value="b1" onchange="updateFilters()"><span>Type I</span></label>
-                <label class="checkbox-label" style="flex: 1;"><input type="checkbox" value="b2" onchange="updateFilters()"><span>Type II</span></label>
-                <label class="checkbox-label" style="flex: 1;"><input type="checkbox" value="b3" onchange="updateFilters()"><span>Type III</span></label>
-                <label class="checkbox-label" style="flex: 1;"><input type="checkbox" value="a" onchange="updateFilters()"><span>Type A</span></label>
-            </div>
-        </div>
-        <div class="filter-box" style="grid-column: span 2;">
-            <h4>Search</h4>
-            <div class="search-bar" style="width: 100%;">
-                <input type="text" id="gallerySearchInput" placeholder="Type to search..." style="width: 100%;">
-            </div>
-        </div>
+        <!-- Burst Type filter removed as it's redundant with the burst filter buttons -->
+        <!-- Search box removed as it's redundant with the search in tab navigation -->
     </div>
 </div>
 

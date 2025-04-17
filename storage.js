@@ -54,15 +54,23 @@ const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {
         // Check if the attribute value is in the selected filters
         return selectedFilters[key].some(value => {
             // Skip null values
-            if (value === null) return false;
+            if (value === null || value === undefined) return false;
 
-            // Convert to lowercase for case-insensitive comparison
-            return value.toLowerCase() === attributes[key];
+            // Get lowercase versions for comparison
+            const filterValueLower = value.toLowerCase();
+            const attributeValueLower = attributes[key].toLowerCase();
+
+            // Debug log for troubleshooting
+            console.debug(`Comparing filter ${key}: ${filterValueLower} with attribute: ${attributeValueLower}`);
+
+            // Case-insensitive comparison
+            return filterValueLower === attributeValueLower;
         });
     });
 
     // Check if the photo matches the search text
-    const searchMatch = searchValue === '' || (attributes.name && attributes.name.includes(searchValue));
+    const searchMatch = searchValue === '' ||
+        (attributes.name && attributes.name.toLowerCase().includes(searchValue.toLowerCase()));
 
     // Photo matches if it passes both filter and search criteria
     return filtersMatch && searchMatch;

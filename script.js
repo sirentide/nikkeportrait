@@ -26,18 +26,16 @@ window.addEventListener('DOMContentLoaded', detectOrientation);
 
 // Burst filter buttons functionality
 function toggleBurstFilter(button) {
-    const value = button.getAttribute('data-value');
-    
     // Toggle active state for this button
     button.classList.toggle('active');
-    
-    // Sync checkbox state with button state
-    const checkbox = document.querySelector(`input[type="checkbox"][value="${value}"]`);
-    if (checkbox) {
-        checkbox.checked = button.classList.contains('active');
-    }
-    
-    console.log('Toggled burst filter:', value, 'Active:', button.classList.contains('active'));
+    const isActive = button.classList.contains('active');
+    const filterValue = button.getAttribute('data-value');
+
+    console.log(`Toggled burst filter: ${filterValue}, Active: ${isActive}`);
+
+    // Log all active burst filters for debugging
+    const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
+    console.log('All active burst filters:', Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')));
 
     // Update filters
     updateFilters();
@@ -48,49 +46,32 @@ function toggleBurstFilter(button) {
 
 // Get active burst filters
 function getActiveBurstFilters() {
-    // Get filters from both burst buttons and checkboxes
+    // Only select burst buttons that are active and don't have the filter-btn class
     const activeButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
-    const checkedBoxes = document.querySelectorAll('input[type="checkbox"][value^="b"]:checked, input[type="checkbox"][value="a"]:checked');
-    
-    // Combine and deduplicate filters
-    const filters = new Set([
-        ...Array.from(activeButtons).map(btn => btn.getAttribute('data-value')),
-        ...Array.from(checkedBoxes).map(box => box.value)
-    ]);
-    
-    return Array.from(filters).filter(value => value !== null);
-}
+    const activeFilters = Array.from(activeButtons)
+        .map(btn => {
+            const value = btn.getAttribute('data-value');
+            console.log(`Active burst button: ${value}`);
+            return value;
+        })
+        .filter(value => value !== null); // Filter out null values
 
-// Add this new function to sync button states with checkboxes
-function syncBurstFilters() {
-    // Sync checkbox changes to buttons
-    document.querySelectorAll('input[type="checkbox"][value^="b"], input[type="checkbox"][value="a"]').forEach(checkbox => {
-        const button = document.querySelector(`.burst-btn[data-value="${checkbox.value}"]`);
-        if (button) {
-            if (checkbox.checked) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        }
-    });
+    console.log('Active burst filters after processing:', activeFilters);
+    return activeFilters;
 }
 
 // Filter functionality
 function updateFilters() {
-    // Sync burst filters first
-    syncBurstFilters();
-    
-    // Get burst filters
+    // Get burst filters from the modern buttons
     const burstFilters = getActiveBurstFilters();
     console.log('Active burst filters:', burstFilters);
 
     // Get checked values for each filter type
-    const typeValues = burstFilters.length > 0 ? burstFilters : getCheckedValues(['b1', 'b2', 'b3', 'a']);
-    const positionValues = getCheckedValues(['def', 'sp', 'atk']);
-    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim']);
-    const rarityValues = getCheckedValues(['ssr', 'sr', 'r']);
-    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']);
+    const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'B1', 'B2', 'B3', 'a', 'A']);
+    const positionValues = getCheckedValues(['def', 'sp', 'atk', 'DEF', 'SP', 'ATK']);
+    const factionValues = getCheckedValues(['elysion', 'missilis', 'tetra', 'abnormal', 'pilgrim', 'ELYSION', 'MISSILIS', 'TETRA', 'ABNORMAL', 'PILGRIM']);
+    const rarityValues = getCheckedValues(['ssr', 'sr', 'r', 'SSR', 'SR', 'R']);
+    const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg', 'SMG', 'AR', 'SNR', 'RL', 'SG', 'MG']);
 
     console.log('Checked filters:', {
         type: typeValues,
@@ -100,23 +81,29 @@ function updateFilters() {
         weapon: weaponValues
     });
 
+    // Combine burst filters and checkbox filters for type
+    // This ensures both filtering methods work together
+    const combinedTypeFilters = [...new Set([...burstFilters, ...typeValues])];
+
     const selectedFilters = {
-        type: typeValues,
+        type: combinedTypeFilters,
         position: positionValues,
         faction: factionValues,
         rarity: rarityValues,
         weapon: weaponValues,
     };
 
-    // Get search value from either search input depending on which tab is active
+    console.log('Combined filters:', selectedFilters);
+
+    // Get search value from the tab navigation search input for all tabs
     let searchValue = '';
-    if (currentContentTab === 'toggleImages') {
-        const searchInput = document.getElementById('myNikkesSearchInput');
-        searchValue = searchInput ? searchInput.value.toLowerCase() : '';
-    } else {
-        const searchInput = document.getElementById('gallerySearchInput');
-        searchValue = searchInput ? searchInput.value.toLowerCase() : '';
+    const navSearchInput = document.getElementById('myNikkesSearchInput');
+
+    // Use the tab navigation search input as the primary search
+    if (navSearchInput) {
+        searchValue = navSearchInput.value.toLowerCase();
     }
+
     console.log('Search value:', searchValue);
 
     // Filter gallery photos
@@ -1814,17 +1801,11 @@ window.onload = async () => {
         }
     });
 
-    // Add event listeners to search inputs
+    // Add event listener to search input
     const myNikkesSearchInput = document.getElementById('myNikkesSearchInput');
     if (myNikkesSearchInput) {
         myNikkesSearchInput.addEventListener('input', function() {
-            updateFilters();
-        });
-    }
-
-    const gallerySearchInput = document.getElementById('gallerySearchInput');
-    if (gallerySearchInput) {
-        gallerySearchInput.addEventListener('input', function() {
+            // This search input works for all tabs
             updateFilters();
         });
     }
@@ -1932,7 +1913,6 @@ function addSingleImageToToggle(imgElement) {
 
     // Make the toggle item draggable
     toggleItem.setAttribute('draggable', 'true');
-}
     toggleItem.addEventListener('dragstart', handleDragStart);
     toggleItem.addEventListener('dragover', handleDragOver);
     toggleItem.addEventListener('dragenter', handleDragEnter);
@@ -1955,7 +1935,7 @@ function addSingleImageToToggle(imgElement) {
     // If we're adding an image, clear the userClearedSelection flag
     localStorage.removeItem('userClearedSelection');
     console.log('Added image to toggle, clearing userClearedSelection flag');
-
+}
 
 // Set up checkbox styling
 function setupCheckboxStyling() {
@@ -1968,11 +1948,24 @@ function setupCheckboxStyling() {
 
 // Ensure green borders are applied to selected images
 function ensureGreenBorders() {
+    // Check if user has intentionally cleared their selection
+    const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+    if (userClearedSelection) {
+        console.log('User intentionally cleared selection, not applying green borders');
+        return;
+    }
+
     // First, get all images in team slots
     const teamImageSources = Array.from(document.querySelectorAll('.team-images .image-slot img'))
         .map(img => img.src);
 
     console.log(`Found ${teamImageSources.length} images in team slots to apply green borders`);
+
+    // If there are no images in team slots, don't apply any green borders
+    if (teamImageSources.length === 0) {
+        console.log('No images in team slots, not applying green borders');
+        return;
+    }
 
     // Apply green borders to all selected images and images in team slots
     document.querySelectorAll('.photo img, .toggle-item img').forEach(img => {
@@ -2151,6 +2144,10 @@ function setupTabSystem() {
                 // Update team score
                 updateTeamScore();
 
+                // Don't set userClearedSelection flag when clearing a team
+                // This prevents My Nikkes images from being cleared
+                console.log('Team cleared, but keeping My Nikkes images');
+
                 // Update the team-specific toggle images
                 saveCurrentToggleImages();
 
@@ -2194,6 +2191,8 @@ function switchContentTab(tabId) {
             toggleContainer.style.display = 'none';
             toggleContainer.classList.add('hidden');
         }
+
+        // No need to sync search inputs anymore as we've removed the redundant search input
     } else if (tabId === 'toggleImages') {
         // Hide gallery container
         const galleryContainer = document.querySelector('.gallery-container');
@@ -2208,6 +2207,9 @@ function switchContentTab(tabId) {
             toggleContainer.classList.remove('hidden');
         }
     }
+
+    // Apply filters after switching tabs to ensure everything is properly filtered
+    updateFilters();
 
     // Save the current tab to localStorage
     saveSelectionToLocalStorage();
@@ -2262,6 +2264,13 @@ function switchTeamSet(setId) {
 
 // Update the selection state (green border lines) of toggle images based on the current team set
 function updateToggleImageSelectionState(setId) {
+    // Check if user has intentionally cleared their selection
+    const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+    if (userClearedSelection) {
+        console.log('User intentionally cleared selection, not updating toggle image selection state');
+        return;
+    }
+
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (!toggleImagesContainer) return;
 
@@ -2277,6 +2286,25 @@ function updateToggleImageSelectionState(setId) {
         .map(img => img.src);
 
     console.log(`Found ${teamImageSources.length} images in team set ${setId}`);
+
+    // If there are no images in the team set, don't apply any selection
+    if (teamImageSources.length === 0) {
+        console.log('No images in team set, clearing all selections');
+        // Clear all selections
+        const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'));
+        toggleItems.forEach(img => {
+            img.classList.remove('selected');
+            img.style.border = '';
+            img.style.outline = '';
+            img.style.boxShadow = '';
+            img.style.zIndex = '';
+            img.style.position = '';
+
+            // Update the selection state in localStorage
+            updateToggleImageSelectionInLocalStorage(img.src, false);
+        });
+        return;
+    }
 
     // Update the selection state of each toggle image
     const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'));
@@ -2381,11 +2409,11 @@ function saveCurrentToggleImages() {
         // Check if this image is in the current team set
         const isInTeam = teamImageSources.includes(img.src);
 
-        // Only update the selection state in localStorage without changing the visual state
-        // This prevents automatic toggling of existing images
-
-        // Update the selection state in localStorage
-        updateToggleImageSelectionInLocalStorage(img.src, isInTeam);
+        // Only update the selection state in localStorage if the image is in the team
+        // This prevents clearing selection state when a team is cleared
+        if (isInTeam) {
+            updateToggleImageSelectionInLocalStorage(img.src, isInTeam);
+        }
 
         return {
             src: img.src,
@@ -2396,7 +2424,7 @@ function saveCurrentToggleImages() {
             faction: item.getAttribute('data-faction') || '',
             rarity: item.getAttribute('data-rarity') || '',
             weapon: item.getAttribute('data-weapon') || '',
-            selected: isInTeam // Use isInTeam instead of img.classList.contains('selected')
+            selected: isInTeam // Use isInTeam for team-specific selection state
         };
     });
 
@@ -3934,4 +3962,3 @@ function removeSelectedToggleImages() {
         }
     });
 }
-
