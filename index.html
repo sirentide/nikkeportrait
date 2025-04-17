@@ -1008,10 +1008,15 @@
                     pull: true,  // Allow pulling items from this list
                     put: true   // Allow putting items into this list
                 },
-                swapThreshold: 0.5, // Reduced threshold for easier swapping on mobile
+                swapThreshold: 0.3, // Reduced threshold for easier swapping on mobile
                 swap: true, // Enable swap mode
-                forceFallback: true, // Force fallback mode for consistent behavior across devices
+                direction: 'horizontal', // Force horizontal sorting
+                invertSwap: true, // More intuitive swapping behavior
+                invertedSwapThreshold: 0.65, // Threshold for inverted swap
+                forceFallback: false, // Use native HTML5 drag and drop when possible
                 fallbackClass: 'sortable-fallback', // Class for the cloned fallback element
+                fallbackOnBody: true, // Append the clone to the body instead of the list
+                emptyInsertThreshold: 5, // Distance in pixels from empty sortable to insert drag element
                 scrollSensitivity: 80, // Increased scroll sensitivity for mobile
                 scrollSpeed: 20, // Faster scrolling when dragging near edges
                 bubbleScroll: true, // Enable bubbling of scroll events
@@ -1022,6 +1027,9 @@
                     // Store the number of slots in each team before dragging
                     document.querySelectorAll('.team-images').forEach(team => {
                         team.dataset.slotCount = team.children.length;
+
+                        // Store the original HTML structure of each team
+                        team.dataset.originalHtml = team.innerHTML;
                     });
 
                     // Add dragging class to body for global styling
@@ -1029,6 +1037,12 @@
 
                     // Add dragging class to the element being dragged
                     evt.item.classList.add('being-dragged');
+
+                    // Store the original parent of the dragged item
+                    evt.item.dataset.originalParent = evt.from.id || '';
+
+                    // Store the original index of the dragged item
+                    evt.item.dataset.originalIndex = evt.oldIndex;
 
                     // Create a drag path indicator container if it doesn't exist
                     if (!document.getElementById('dragPathIndicator')) {
@@ -1128,33 +1142,52 @@
                         pathIndicator.remove();
                     }
 
-                    // Check if any team has more than 5 slots and fix it
+                    // Fix all team slots to ensure exactly 5 slots per team
                     document.querySelectorAll('.team-images').forEach(team => {
-                        const originalCount = parseInt(team.dataset.slotCount || 5);
-                        const currentCount = team.children.length;
+                        // Get the current slots (only direct children that are image-slots)
+                        const slots = Array.from(team.children).filter(child =>
+                            child.classList && child.classList.contains('image-slot'));
 
-                        // If this team has more slots than it should
-                        if (currentCount > 5) {
-                            console.log(`Team ${team.parentNode.getAttribute('data-team')} has ${currentCount} slots, fixing...`);
+                        // Count actual image slots (not drop zone indicators or other elements)
+                        const currentCount = slots.length;
 
-                            // Remove excess slots
-                            while (team.children.length > 5) {
-                                team.removeChild(team.lastChild);
+                        // If we have the wrong number of slots, fix it
+                        if (currentCount !== 5) {
+                            console.log(`Team ${team.parentNode.getAttribute('data-team')} has ${currentCount} slots, fixing to 5...`);
+
+                            // Remove any non-image-slot elements that might have been added
+                            Array.from(team.children).forEach(child => {
+                                if (!child.classList || !child.classList.contains('image-slot')) {
+                                    team.removeChild(child);
+                                }
+                            });
+
+                            // Re-count after cleanup
+                            const cleanCount = Array.from(team.children).filter(child =>
+                                child.classList && child.classList.contains('image-slot')).length;
+
+                            // If we have too many slots
+                            if (cleanCount > 5) {
+                                // Remove excess slots
+                                while (team.children.length > 5) {
+                                    team.removeChild(team.lastChild);
+                                }
                             }
-                        }
 
-                        // If this team has fewer slots than it should
-                        if (currentCount < 5) {
-                            console.log(`Team ${team.parentNode.getAttribute('data-team')} has ${currentCount} slots, adding empty slots...`);
-
-                            // Add empty slots
-                            for (let i = currentCount; i < 5; i++) {
-                                const emptySlot = document.createElement('div');
-                                emptySlot.className = 'image-slot empty';
-                                team.appendChild(emptySlot);
+                            // If we have too few slots
+                            if (cleanCount < 5) {
+                                // Add empty slots
+                                for (let i = cleanCount; i < 5; i++) {
+                                    const emptySlot = document.createElement('div');
+                                    emptySlot.className = 'image-slot empty';
+                                    team.appendChild(emptySlot);
+                                }
                             }
                         }
                     });
+
+                    // Re-add the drop zone indicators
+                    enhanceDragDropVisualization();
 
                     // Update team scores
                     updateTeamScore();

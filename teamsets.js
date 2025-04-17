@@ -128,15 +128,30 @@ function loadTeamSet(name, targetSet) {
     // Update team score
     updateTeamScore();
 
-    // Save the selection to localStorage
-    saveSelectionToLocalStorage();
+    // Update the team-specific toggle images
+    if (typeof saveCurrentToggleImages === 'function') {
+        saveCurrentToggleImages();
+    }
+
+    // Switch to the target team set
+    switchTeamSet(targetSet);
+
+    // Save the selection to localStorage with a slight delay to ensure all updates are processed
+    setTimeout(() => {
+        // Save to main storage
+        saveSelectionToLocalStorage();
+
+        // Also update the toggle tabs storage if available
+        if (typeof saveToggleTabsToLocalStorage === 'function') {
+            saveToggleTabsToLocalStorage();
+        }
+
+        console.log(`Team set "${name}" loaded into ${targetSet === '1' ? 'Defender' : 'Attacker'} and saved to localStorage`);
+    }, 100);
 
     // Show success message
     const setName = targetSet === '1' ? 'Defender' : 'Attacker';
     alert(`Team set "${name}" has been loaded into ${setName}.`);
-
-    // Switch to the target team set
-    switchTeamSet(targetSet);
 }
 
 // Function to delete a team set

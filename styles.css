@@ -251,6 +251,8 @@ button:disabled {
     flex: 1;
     height: 60px;
     padding: 2px;
+    min-height: 60px; /* Ensure minimum height even when empty */
+    position: relative; /* For absolute positioning of children */
 }
 
 /* Image Slot */
@@ -261,11 +263,14 @@ button:disabled {
     border: 2px dashed #444;
     border-radius: 3px;
     flex-shrink: 0;
+    flex-grow: 0; /* Prevent growing */
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     touch-action: none; /* Prevent browser handling of touch events */
+    z-index: 1; /* Ensure proper stacking */
+    box-sizing: border-box; /* Include border in width/height */
 }
 
 /* Add drag handle for mobile */
@@ -865,6 +870,11 @@ body.is-dragging .image-slot.empty::after {
     background-color: rgba(66, 153, 225, 0.2) !important;
     border: 2px dashed rgba(66, 153, 225, 0.6) !important;
     box-shadow: 0 0 10px rgba(66, 153, 225, 0.4) !important;
+    width: 55px !important; /* Maintain width */
+    height: 55px !important; /* Maintain height */
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    position: relative !important;
 }
 
 .sortable-fallback {
@@ -875,6 +885,8 @@ body.is-dragging .image-slot.empty::after {
     border-radius: 3px !important;
     pointer-events: none;
     z-index: 2000;
+    width: 55px !important; /* Maintain width */
+    height: 55px !important; /* Maintain height */
 }
 
 /* Target indicator styles */
@@ -890,6 +902,84 @@ body.is-dragging .image-slot.empty::after {
     z-index: 5;
     pointer-events: none;
     animation: pulse-target 1s infinite alternate ease-in-out;
+}
+
+/* Add drop zone indicators between slots */
+.team-images {
+    position: relative;
+}
+
+.team-images .image-slot {
+    position: relative;
+}
+
+/* Create drop zone indicators between slots */
+.team-images .image-slot::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -4px; /* Position between slots */
+    width: 8px;
+    height: 100%;
+    background-color: transparent;
+    z-index: 4;
+    pointer-events: none;
+    transition: background-color 0.2s ease;
+}
+
+/* Highlight drop zones when dragging */
+body.is-dragging .team-images .image-slot::after {
+    background-color: rgba(66, 153, 225, 0.2);
+}
+
+body.is-dragging .team-images .image-slot:hover::after {
+    background-color: rgba(66, 153, 225, 0.5);
+}
+
+/* Drop zone indicators at start and end of containers */
+.drop-zone-indicator {
+    position: absolute;
+    width: 8px;
+    height: 100%;
+    background-color: transparent;
+    z-index: 4;
+    pointer-events: none;
+    transition: background-color 0.2s ease;
+}
+
+.drop-zone-indicator.start-zone {
+    left: -4px;
+}
+
+.drop-zone-indicator.end-zone {
+    right: -4px;
+}
+
+/* Highlight drop zones when dragging */
+body.is-dragging .drop-zone-indicator {
+    background-color: rgba(66, 153, 225, 0.2);
+}
+
+/* Visual indicator for the container that supports between-slot dropping */
+.supports-between-drops {
+    position: relative;
+}
+
+.supports-between-drops::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px dashed transparent;
+    pointer-events: none;
+    z-index: 3;
+    transition: border-color 0.3s ease;
+}
+
+body.is-dragging .supports-between-drops::before {
+    border-color: rgba(66, 153, 225, 0.3);
 }
 
 /* Path indicator container */
@@ -1029,6 +1119,31 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         height: 20px;
         font-size: 14px;
         background-color: rgba(66, 153, 225, 0.7);
+    }
+
+    /* Enhance drop zones for touch devices */
+    .team-images .image-slot::after {
+        width: 12px; /* Wider touch target */
+        right: -6px;
+    }
+
+    .drop-zone-indicator {
+        width: 12px; /* Wider touch target */
+    }
+
+    .drop-zone-indicator.start-zone {
+        left: -6px;
+    }
+
+    .drop-zone-indicator.end-zone {
+        right: -6px;
+    }
+
+    /* Add visual feedback for active drop zones */
+    body.is-dragging .team-images .image-slot:active::after,
+    body.is-dragging .drop-zone-indicator:active {
+        background-color: rgba(66, 153, 225, 0.8);
+        box-shadow: 0 0 8px rgba(66, 153, 225, 0.5);
     }
 
     /* Add a hint message for mobile users */

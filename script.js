@@ -1826,6 +1826,60 @@ function isMobileDevice() {
             (navigator.msMaxTouchPoints > 0));
 }
 
+// Helper function to enhance drag and drop visualization
+function enhanceDragDropVisualization() {
+    // Add visual cues for drop zones between slots
+    document.querySelectorAll('.team-images').forEach(container => {
+        // First, remove any existing drop zone indicators to prevent duplicates
+        container.querySelectorAll('.drop-zone-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+
+        // Add a class to indicate this container supports between-slot dropping
+        container.classList.add('supports-between-drops');
+
+        // Add drop zone indicators at the beginning and end of the container
+        const startDropZone = document.createElement('div');
+        startDropZone.className = 'drop-zone-indicator start-zone';
+        container.prepend(startDropZone);
+
+        const endDropZone = document.createElement('div');
+        endDropZone.className = 'drop-zone-indicator end-zone';
+        container.appendChild(endDropZone);
+
+        // Ensure we have exactly 5 image slots
+        const imageSlots = Array.from(container.children).filter(child =>
+            child.classList && child.classList.contains('image-slot'));
+
+        if (imageSlots.length !== 5) {
+            console.log(`Container has ${imageSlots.length} image slots, fixing...`);
+
+            // Remove all non-indicator elements
+            Array.from(container.children).forEach(child => {
+                if (child.classList &&
+                    !child.classList.contains('drop-zone-indicator') &&
+                    !child.classList.contains('image-slot')) {
+                    container.removeChild(child);
+                }
+            });
+
+            // Re-count image slots
+            const currentSlots = Array.from(container.children).filter(child =>
+                child.classList && child.classList.contains('image-slot')).length;
+
+            // Add empty slots if needed
+            if (currentSlots < 5) {
+                for (let i = currentSlots; i < 5; i++) {
+                    const emptySlot = document.createElement('div');
+                    emptySlot.className = 'image-slot empty';
+                    // Insert before the end drop zone
+                    container.insertBefore(emptySlot, endDropZone);
+                }
+            }
+        }
+    });
+}
+
 // Helper function to add mobile-specific classes
 function setupMobileClasses() {
     if (isMobileDevice()) {
@@ -1905,6 +1959,9 @@ window.onload = async () => {
 
     // Setup mobile-specific classes and behaviors
     setupMobileClasses();
+
+    // Enhance drag and drop visualization
+    enhanceDragDropVisualization();
 
     // Update all image sources to use GitHub URLs
     document.querySelectorAll('img').forEach(img => {
@@ -2174,6 +2231,47 @@ function setupCheckboxStyling() {
             updateFilters();
         });
     });
+}
+
+// Refresh the selected state of images based on team slots
+function refreshSelectedImages() {
+    console.log('Refreshing selected state of images');
+
+    // First, get all images in team slots
+    const teamImageSources = Array.from(document.querySelectorAll('.team-images .image-slot img'))
+        .map(img => img.src);
+
+    console.log(`Found ${teamImageSources.length} images in team slots`);
+
+    // Apply green borders to all images that are in team slots
+    document.querySelectorAll('.photo img, .toggle-item img').forEach(img => {
+        const isInTeamSlot = teamImageSources.includes(img.src);
+
+        if (isInTeamSlot) {
+            // Add selected class if not already present
+            img.classList.add('selected');
+
+            // Apply green border styling
+            img.style.border = '3px solid #00ff00';
+            img.style.outline = '1px solid #ffffff';
+            img.style.boxShadow = '0 0 8px #00ff00';
+            img.style.zIndex = '10';
+            img.style.position = 'relative';
+        } else {
+            // Remove selected class and styles
+            img.classList.remove('selected');
+            img.style.border = '';
+            img.style.outline = '';
+            img.style.boxShadow = '';
+            img.style.zIndex = '';
+            img.style.position = '';
+        }
+    });
+
+    // Update selection state in localStorage
+    updateToggleImageSelectionState(currentTeamSet);
+
+    console.log('Finished refreshing selected state of images');
 }
 
 // Ensure green borders are applied to selected images
@@ -2498,27 +2596,54 @@ function switchTeamSet(setId) {
         }
     });
 
+    // Update team score for the current team set
+    updateTeamScore();
+
     // Update the green border lines for the current team set
     updateToggleImageSelectionState(setId);
 
-    // Save the current team set to localStorage
-    try {
-        // First try to get existing data
-        const existingData = localStorage.getItem(STORAGE_KEY);
-        if (existingData) {
-            const parsedData = JSON.parse(existingData);
-            parsedData.currentTeamSet = setId;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
-            console.log(`Updated currentTeamSet to ${setId} in localStorage`);
-        } else {
-            // If no existing data, save everything
+    // Save the current team set to localStorage with a slight delay to ensure all updates are processed
+    setTimeout(() => {
+        try {
+            // First try to get existing data
+            const existingData = localStorage.getItem(STORAGE_KEY);
+            if (existingData) {
+                const parsedData = JSON.parse(existingData);
+                parsedData.currentTeamSet = setId;
+
+                // Update the team sets data to ensure it's current
+                if (parsedData.teamSets && Array.isArray(parsedData.teamSets)) {
+                    // Save team data for SET1 and SET2
+                    for (let i = 1; i <= 2; i++) {
+                        const teams = document.querySelectorAll(`#teamSet${i} .team-images`);
+                        const teamsData = Array.from(teams).map(team => ({
+                            images: Array.from(team.querySelectorAll('.image-slot img')).map(img => ({
+                                src: img.src,
+                                score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
+                            }))
+                        }));
+
+                        // Update the team set data
+                        if (i <= parsedData.teamSets.length) {
+                            parsedData.teamSets[i-1] = teamsData;
+                        } else {
+                            parsedData.teamSets.push(teamsData);
+                        }
+                    }
+                }
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
+                console.log(`Updated currentTeamSet to ${setId} and team data in localStorage`);
+            } else {
+                // If no existing data, save everything
+                saveSelectionToLocalStorage();
+            }
+        } catch (error) {
+            console.error('Error updating team set in localStorage:', error);
+            // Fall back to saving everything
             saveSelectionToLocalStorage();
         }
-    } catch (error) {
-        console.error('Error updating team set in localStorage:', error);
-        // Fall back to saving everything
-        saveSelectionToLocalStorage();
-    }
+    }, 100);
 
     console.log(`Switched to team set: ${setId}`);
 }
