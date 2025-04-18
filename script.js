@@ -3825,7 +3825,7 @@ function importFromShareableCode(code) {
         }
 
         // Confirm with the user
-        const shouldImport = confirm('This will replace your current Nikkes selection. Continue?');
+        const shouldImport = confirm('This will add the Nikkes from the shareable code to your current selection. Continue?');
         if (!shouldImport) return;
 
         // Get the toggle images container
@@ -3834,9 +3834,14 @@ function importFromShareableCode(code) {
             throw new Error('Toggle images container not found.');
         }
 
-        // Clear existing toggle images
-        toggleImagesContainer.innerHTML = '';
-        console.log('Cleared existing toggle images');
+        // Get existing toggle image sources to avoid duplicates
+        const existingToggleImageSources = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'))
+            .map(img => img.src);
+        console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
+
+        // We're not clearing existing toggle images anymore
+        // toggleImagesContainer.innerHTML = '';
+        // console.log('Cleared existing toggle images');
 
         // Process the toggle images data
         const imageSources = data.toggleImages.map(item => {
@@ -3852,13 +3857,26 @@ function importFromShareableCode(code) {
 
         console.log(`Processed ${imageSources.length} valid image sources from shareable code`);
 
+        // Filter out images that already exist in the toggle container
+        const newImageSources = imageSources.filter(src => {
+            // Check if this image source or a similar one already exists
+            return !existingToggleImageSources.some(existingSrc => {
+                // Compare the filenames to handle different URL formats
+                const existingFilename = existingSrc.split('/').pop();
+                const newFilename = src.split('/').pop();
+                return existingFilename === newFilename;
+            });
+        });
+
+        console.log(`Found ${newImageSources.length} new images to import after filtering duplicates`);
+
         // Import the toggle images
-        if (imageSources.length > 0) {
+        if (newImageSources.length > 0) {
             // Clear the userClearedSelection flag since we're loading data
             localStorage.removeItem('userClearedSelection');
             console.log('Loading data from shareable code, clearing userClearedSelection flag');
 
-            importImagesToToggleGallery(imageSources);
+            importImagesToToggleGallery(newImageSources);
 
             // After importing, ensure green borders are applied to images in team slots
             setTimeout(() => {
@@ -3867,9 +3885,9 @@ function importFromShareableCode(code) {
             }, 500);
 
             // Show success message
-            alert(`Successfully imported ${imageSources.length} images from shareable code.`);
+            alert(`Successfully imported ${newImageSources.length} new images from shareable code.`);
         } else {
-            alert('No valid image sources found in the shareable code.');
+            alert('No new images found in the shareable code. All images already exist in your collection.');
         }
     } catch (error) {
         console.error('Error importing from shareable code:', error);
