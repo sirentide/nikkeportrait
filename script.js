@@ -1949,6 +1949,39 @@ function setupMutationObserver() {
     });
 }
 
+// Function to toggle filter debug mode
+function toggleFilterDebugMode() {
+    const currentMode = localStorage.getItem('filterDebugMode') === 'true';
+    const newMode = !currentMode;
+    localStorage.setItem('filterDebugMode', newMode);
+    console.log(`Filter debug mode ${newMode ? 'enabled' : 'disabled'}`);
+
+    // Add visual indicator for debug mode
+    const debugIndicator = document.getElementById('debugModeIndicator');
+    if (debugIndicator) {
+        debugIndicator.style.display = newMode ? 'block' : 'none';
+    } else if (newMode) {
+        const indicator = document.createElement('div');
+        indicator.id = 'debugModeIndicator';
+        indicator.style.position = 'fixed';
+        indicator.style.top = '10px';
+        indicator.style.right = '10px';
+        indicator.style.backgroundColor = 'rgba(255, 0, 0, 0.7)';
+        indicator.style.color = 'white';
+        indicator.style.padding = '5px 10px';
+        indicator.style.borderRadius = '5px';
+        indicator.style.zIndex = '9999';
+        indicator.style.fontSize = '12px';
+        indicator.style.fontWeight = 'bold';
+        indicator.textContent = 'DEBUG MODE';
+        document.body.appendChild(indicator);
+    }
+
+    // Refresh filters to see debug output
+    updateFilters();
+    return newMode;
+}
+
 // Initialize
 window.onload = async () => {
     // Global variables are already initialized in storage.js

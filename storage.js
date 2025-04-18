@@ -59,30 +59,53 @@ const getCheckedValues = (values) => {
 };
 
 const getPhotoAttributes = (photo) => {
+    // Generate a unique ID for logging purposes
+    const itemId = photo.getAttribute('data-number') || Math.floor(Math.random() * 10000);
+    const itemType = photo.classList.contains('toggle-item') ? 'toggle' : 'gallery';
+    const logPrefix = `[${itemType}-${itemId}]`;
+
     // Safely get attribute with fallback to empty string if null
     const safeGetAttribute = (element, attr) => {
         const value = element.getAttribute(attr);
-        return value ? value.toLowerCase() : '';
+        const result = value ? value.toLowerCase() : '';
+        return result;
     };
 
     // Check if this is a toggle-item (which has different structure than photo)
     const isToggleItem = photo.classList.contains('toggle-item');
 
+    // Log the element we're processing
+    const debugMode = localStorage.getItem('filterDebugMode') === 'true';
+    if (debugMode) {
+        console.log(`${logPrefix} Processing element:`, photo);
+    }
+
     // Get raw attributes
     let position = safeGetAttribute(photo, 'data-position');
     let weapon = safeGetAttribute(photo, 'data-weapon');
+    let type = safeGetAttribute(photo, 'data-type');
+    let faction = safeGetAttribute(photo, 'data-faction');
+    let rarity = safeGetAttribute(photo, 'data-rarity');
+    let name = safeGetAttribute(photo, 'data-name');
+
+    if (debugMode) {
+        console.log(`${logPrefix} Raw attributes:`, {
+            position, weapon, type, faction, rarity, name,
+            originalPosition: safeGetAttribute(photo, 'data-original-position')
+        });
+    }
 
     // Special handling for toggle items
     if (isToggleItem) {
         // First, check if we have a data-original-position attribute
         const originalPosition = safeGetAttribute(photo, 'data-original-position');
         if (originalPosition && originalPosition !== '' && !/^\d+$/.test(originalPosition)) {
-            console.log('Using original position attribute:', originalPosition);
+            if (debugMode) console.log(`${logPrefix} Using original position attribute:`, originalPosition);
             position = originalPosition;
         }
         // If not, check if data-position is a number (drag-and-drop index)
         else if (/^\d+$/.test(position)) {
-            console.log('Toggle item has numeric position:', position);
+            if (debugMode) console.log(`${logPrefix} Toggle item has numeric position:`, position);
             // This is a drag-and-drop index, not a class value
             // Try to get the real position from the gallery photo reference
             const galleryPhotoId = photo.dataset.galleryPhotoId;
@@ -90,12 +113,16 @@ const getPhotoAttributes = (photo) => {
                 const galleryPhoto = document.getElementById(galleryPhotoId);
                 if (galleryPhoto) {
                     position = safeGetAttribute(galleryPhoto, 'data-position');
-                    console.log('Retrieved position from gallery photo:', position);
+                    if (debugMode) console.log(`${logPrefix} Retrieved position from gallery photo:`, position);
 
                     // Update the original-position attribute with the correct value
                     photo.setAttribute('data-original-position', position);
-                    console.log('Updated data-original-position attribute to:', position);
+                    if (debugMode) console.log(`${logPrefix} Updated data-original-position attribute to:`, position);
+                } else {
+                    if (debugMode) console.log(`${logPrefix} Gallery photo not found for ID:`, galleryPhotoId);
                 }
+            } else {
+                if (debugMode) console.log(`${logPrefix} No gallery photo ID found`);
             }
 
             // If we still don't have a valid position, try to extract it from the filename
@@ -104,23 +131,47 @@ const getPhotoAttributes = (photo) => {
                 const imgElement = photo.querySelector('img');
                 if (imgElement && imgElement.src) {
                     const filename = imgElement.src.split('/').pop();
+                    if (debugMode) console.log(`${logPrefix} Extracting position from filename:`, filename);
+
                     // Look for position patterns like _atk_, _def_, _sp_ in the filename
                     const posMatch = filename.match(/_(atk|def|sp)_/i);
                     if (posMatch && posMatch[1]) {
                         position = posMatch[1].toLowerCase();
-                        console.log('Extracted position from filename:', position);
+                        if (debugMode) console.log(`${logPrefix} Extracted position from filename:`, position);
 
                         // Update the original-position attribute with the extracted value
                         photo.setAttribute('data-original-position', position);
-                        console.log('Updated data-original-position attribute to:', position);
+                        if (debugMode) console.log(`${logPrefix} Updated data-original-position attribute to:`, position);
+                    } else {
+                        // Try a different pattern - some files might have position in a different format
+                        const parts = filename.split('_');
+                        if (parts.length > 1) {
+                            // Check each part for position keywords
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i].toLowerCase();
+                                if (part === 'atk' || part === 'def' || part === 'sp') {
+                                    position = part;
+                                    if (debugMode) console.log(`${logPrefix} Found position in filename part:`, position);
+                                    photo.setAttribute('data-original-position', position);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!position || position === '' || /^\d+$/.test(position)) {
+                            if (debugMode) console.log(`${logPrefix} Could not extract position from filename:`, filename);
+                        }
                     }
+                } else {
+                    if (debugMode) console.log(`${logPrefix} No image found to extract position from`);
                 }
             }
 
             // If we still don't have a valid position, use a default
             if (!position || position === '' || /^\d+$/.test(position)) {
                 position = 'atk'; // Default to attacker
-                console.log('Using default position "atk" for toggle item with numeric position');
+                if (debugMode) console.log(`${logPrefix} Using default position "atk" for toggle item with numeric position`);
+                photo.setAttribute('data-original-position', position);
             }
         }
     }
@@ -134,30 +185,54 @@ const getPhotoAttributes = (photo) => {
     // Position types
     const positionTypes = ['atk', 'def', 'sp'];
 
+    if (debugMode) {
+        console.log(`${logPrefix} Checking for position/weapon swaps:`, { position, weapon });
+        console.log(`${logPrefix} Valid position types:`, positionTypes);
+        console.log(`${logPrefix} Valid weapon types:`, weaponTypes);
+    }
+
     // If position contains a weapon type, it's likely swapped
     if (weaponTypes.includes(position)) {
-        console.log('Detected weapon type in position attribute:', position, weapon);
+        if (debugMode) console.log(`${logPrefix} Detected weapon type in position attribute:`, position, weapon);
         // If weapon contains a position type, swap them
         if (positionTypes.includes(weapon)) {
             correctedPosition = weapon;
             correctedWeapon = position;
-            console.log('Swapping position/weapon to:', correctedPosition, correctedWeapon);
+            if (debugMode) console.log(`${logPrefix} Swapping position/weapon to:`, correctedPosition, correctedWeapon);
         } else {
             // If weapon doesn't contain a position type, use a default position
             correctedPosition = 'atk'; // Default to attacker
-            console.log('Using default position "atk" for weapon in position:', position);
+            if (debugMode) console.log(`${logPrefix} Using default position "atk" for weapon in position:`, position);
         }
     }
 
     // If weapon contains a position type, it's likely swapped
     if (positionTypes.includes(weapon) && !positionTypes.includes(position)) {
-        console.log('Detected position type in weapon attribute:', position, weapon);
+        if (debugMode) console.log(`${logPrefix} Detected position type in weapon attribute:`, position, weapon);
         // If position doesn't contain a position type, swap them
         if (weaponTypes.includes(position)) {
             correctedPosition = weapon;
             correctedWeapon = position;
-            console.log('Swapping position/weapon to:', correctedPosition, correctedWeapon);
+            if (debugMode) console.log(`${logPrefix} Swapping position/weapon to:`, correctedPosition, correctedWeapon);
         }
+    }
+
+    // Final check to ensure we have valid values
+    if (!positionTypes.includes(correctedPosition)) {
+        if (debugMode) console.log(`${logPrefix} Final position value is invalid:`, correctedPosition);
+        correctedPosition = 'atk'; // Default to attacker
+        if (debugMode) console.log(`${logPrefix} Using default position "atk"`);
+    }
+
+    if (debugMode) {
+        console.log(`${logPrefix} Final attribute values:`, {
+            type: safeGetAttribute(photo, 'data-type'),
+            position: correctedPosition,
+            faction: safeGetAttribute(photo, 'data-faction'),
+            rarity: safeGetAttribute(photo, 'data-rarity'),
+            weapon: correctedWeapon,
+            name: safeGetAttribute(photo, 'data-name')
+        });
     }
 
     return {
@@ -173,18 +248,32 @@ const getPhotoAttributes = (photo) => {
 };
 
 const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {
+    // Generate a unique ID for logging purposes
+    const itemId = attributes.name || Math.floor(Math.random() * 10000);
+    const itemType = attributes.isToggleItem ? 'toggle' : 'gallery';
+    const logPrefix = `[${itemType}-${itemId}]`;
+
+    // Get debug mode setting
+    const debugMode = localStorage.getItem('filterDebugMode') === 'true';
+
     // Debug log for troubleshooting
-    console.debug('Checking photo with attributes:', attributes);
-    console.debug('Against filters:', selectedFilters);
+    if (debugMode) {
+        console.log(`${logPrefix} Checking item against filters:`);
+        console.log(`${logPrefix} Item attributes:`, attributes);
+        console.log(`${logPrefix} Selected filters:`, selectedFilters);
+    }
 
     // Check if the photo matches all selected filters
     const filtersMatch = Object.keys(selectedFilters).every(key => {
         // If no filters of this type are selected, it's a match
-        if (selectedFilters[key].length === 0) return true;
+        if (selectedFilters[key].length === 0) {
+            if (debugMode) console.log(`${logPrefix} No ${key} filters selected, automatic match`);
+            return true;
+        }
 
         // If the attribute is empty and filters are selected, it's not a match
         if (!attributes[key] && selectedFilters[key].length > 0) {
-            console.debug(`Filter ${key} not matching: attribute is empty`);
+            if (debugMode) console.log(`${logPrefix} Filter ${key} not matching: attribute is empty`);
             return false;
         }
 
@@ -196,29 +285,46 @@ const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {
 
             // If this is a toggle item with a numeric position, try to use the original position
             if (isToggleItem && isNumericPosition && attributes.originalPosition) {
-                console.log(`Toggle item with numeric position, using original position: ${attributes.originalPosition}`);
+                if (debugMode) console.log(`${logPrefix} Toggle item with numeric position, using original position: ${attributes.originalPosition}`);
                 attributes.position = attributes.originalPosition;
             }
 
             // Normalize position values for comparison
             const normalizedAttrValue = normalizePositionValue(attributes[key]);
-            console.log(`Checking position filter for attribute: ${attributes[key]} -> ${normalizedAttrValue}`);
-            console.log(`Selected position filters:`, selectedFilters[key]);
+            if (debugMode) {
+                console.log(`${logPrefix} Checking position filter:`);
+                console.log(`${logPrefix} Original attribute value: ${attributes[key]}`);
+                console.log(`${logPrefix} Normalized attribute value: ${normalizedAttrValue}`);
+                console.log(`${logPrefix} Selected position filters:`, selectedFilters[key]);
+            }
 
             // Check if any of the selected filters match the normalized attribute value
             const result = selectedFilters[key].some(value => {
                 if (value === null || value === undefined) return false;
                 const normalizedFilterValue = normalizePositionValue(value);
-                console.log(`Comparing position filter: ${value} -> ${normalizedFilterValue} with attribute: ${normalizedAttrValue}`);
-                return normalizedFilterValue === normalizedAttrValue;
+
+                if (debugMode) console.log(`${logPrefix} Comparing position filter: ${value} -> ${normalizedFilterValue} with attribute: ${normalizedAttrValue}`);
+
+                // Case-insensitive comparison
+                const isMatch = normalizedFilterValue.toLowerCase() === normalizedAttrValue.toLowerCase();
+
+                if (debugMode) {
+                    if (isMatch) {
+                        console.log(`${logPrefix} ✅ Position filter MATCHED: ${normalizedFilterValue} == ${normalizedAttrValue}`);
+                    } else {
+                        console.log(`${logPrefix} ❌ Position filter NOT matched: ${normalizedFilterValue} != ${normalizedAttrValue}`);
+                    }
+                }
+
+                return isMatch;
             });
 
-            console.log(`Position filter match result: ${result}`);
+            if (debugMode) console.log(`${logPrefix} Position filter match result: ${result}`);
             return result;
         }
 
         // Check if the attribute value is in the selected filters
-        return selectedFilters[key].some(value => {
+        const result = selectedFilters[key].some(value => {
             // Skip null values
             if (value === null || value === undefined) return false;
 
@@ -227,34 +333,60 @@ const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {
             const attributeValueLower = attributes[key].toLowerCase();
 
             // Debug log for troubleshooting
-            console.debug(`Comparing filter ${key}: ${filterValueLower} with attribute: ${attributeValueLower}`);
+            if (debugMode) console.log(`${logPrefix} Comparing filter ${key}: ${filterValueLower} with attribute: ${attributeValueLower}`);
 
             // Case-insensitive comparison
-            return filterValueLower === attributeValueLower;
+            const isMatch = filterValueLower === attributeValueLower;
+
+            if (debugMode) {
+                if (isMatch) {
+                    console.log(`${logPrefix} ✅ Filter ${key} MATCHED: ${filterValueLower} == ${attributeValueLower}`);
+                } else {
+                    console.log(`${logPrefix} ❌ Filter ${key} NOT matched: ${filterValueLower} != ${attributeValueLower}`);
+                }
+            }
+
+            return isMatch;
         });
+
+        if (debugMode) console.log(`${logPrefix} Filter ${key} match result: ${result}`);
+        return result;
     });
 
     // Check if the photo matches the search text
     const searchMatch = searchValue === '' ||
         (attributes.name && attributes.name.toLowerCase().includes(searchValue.toLowerCase()));
 
+    if (debugMode) {
+        if (searchValue !== '') {
+            console.log(`${logPrefix} Search text: "${searchValue}", Item name: "${attributes.name}", Match: ${searchMatch}`);
+        } else {
+            console.log(`${logPrefix} No search text, automatic match`);
+        }
+    }
+
     // Photo matches if it passes both filter and search criteria
-    return filtersMatch && searchMatch;
+    const finalResult = filtersMatch && searchMatch;
+    if (debugMode) console.log(`${logPrefix} Final match result: ${finalResult}`);
+    return finalResult;
 };
 
 // Helper function to normalize position values
 function normalizePositionValue(value) {
     if (!value) return '';
 
+    // Get debug mode setting
+    const debugMode = localStorage.getItem('filterDebugMode') === 'true';
+
     // Convert to lowercase
     value = value.toLowerCase();
-    console.log('Normalizing position value:', value);
+    if (debugMode) console.log('Normalizing position value:', value);
 
     // If value is a number, it's likely a drag-and-drop index, not a position
     if (/^\d+$/.test(value)) {
         // Try to extract position from the element's data-original-position attribute
         // This is handled in getPhotoAttributes, so we just log and return a default here
-        console.log('Position value is numeric, using default "atk"');
+        if (debugMode) console.log('Position value is numeric, using default "atk"');
         return 'atk'; // Default to attacker for numeric positions
     }
 
@@ -263,6 +395,7 @@ function normalizePositionValue(value) {
         'def': 'def',
         'defender': 'def',
         'sp': 'sp',
+        'support': 'sp',
         'supporter': 'sp',
         'atk': 'atk',
         'attacker': 'atk',
@@ -276,7 +409,7 @@ function normalizePositionValue(value) {
     };
 
     const result = positionMap[value] || value;
-    console.log('Normalized position value:', value, '->', result);
+    if (debugMode) console.log('Normalized position value:', value, '->', result);
     return result;
 }
 
