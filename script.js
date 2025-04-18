@@ -853,23 +853,43 @@ async function processLoadedData(savedData) {
         // Check if user has intentionally cleared their selection
         const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
         if (userClearedSelection) {
-            console.log('User intentionally cleared selection, not loading saved data');
-            // Clear all data structures
+            console.log('User intentionally cleared selection, not loading saved toggle images');
+            // Clear toggle images but preserve team sets
             savedData.toggleImages = [];
             savedData.toggleTabs = { toggleImages: [] };
             savedData.teamSetToggleImages = { '1': [], '2': [] };
 
-            // Clear team images from teamSets
+            // Check if there are any team sets with images before clearing them
+            let hasTeamSets = false;
             if (savedData.teamSets && Array.isArray(savedData.teamSets)) {
                 savedData.teamSets.forEach(teamSet => {
                     if (Array.isArray(teamSet)) {
                         teamSet.forEach(team => {
-                            if (team && team.images) {
-                                team.images = [];
+                            if (team && team.images && team.images.length > 0) {
+                                hasTeamSets = true;
+                                console.log('Found team images in saved data, preserving team sets');
                             }
                         });
                     }
                 });
+            }
+
+            // Only clear team images if there are no team sets with images
+            if (!hasTeamSets) {
+                console.log('No team images found in saved data, clearing team sets');
+                if (savedData.teamSets && Array.isArray(savedData.teamSets)) {
+                    savedData.teamSets.forEach(teamSet => {
+                        if (Array.isArray(teamSet)) {
+                            teamSet.forEach(team => {
+                                if (team && team.images) {
+                                    team.images = [];
+                                }
+                            });
+                        }
+                    });
+                }
+            } else {
+                console.log('Preserving team sets even when toggle images are cleared');
             }
         }
 
@@ -1148,8 +1168,9 @@ async function processLoadedData(savedData) {
                 // Check if user has intentionally cleared their selection
                 const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
                 if (userClearedSelection) {
-                    console.log('User intentionally cleared selection, not loading team data');
-                    return;
+                    // We now want to load team data even if user cleared selection
+                    console.log('User intentionally cleared selection, but still loading team data to preserve team sets');
+                    // Continue with loading team data instead of returning
                 }
 
                 // Collect all team image sources for later use
@@ -1259,11 +1280,30 @@ async function processLoadedData(savedData) {
 
                 console.log('Team data loaded successfully');
 
-                // Save the team data to ensure it's preserved
-                // But don't do it immediately to avoid race conditions
-                setTimeout(() => {
+                // Save the team data immediately to ensure it's preserved
+                // Don't use setTimeout or debounced functions to avoid race conditions
+                try {
+                    // Get the current data from localStorage
+                    const savedDataString = localStorage.getItem(STORAGE_KEY);
+                    if (savedDataString) {
+                        const currentData = JSON.parse(savedDataString);
+
+                        // Update only the teamSets property
+                        currentData.teamSets = savedData.teamSets;
+
+                        // Save immediately without debouncing
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+                        console.log('Immediately saved team sets to localStorage to ensure preservation');
+                    } else {
+                        // If no existing data, save everything immediately
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+                        console.log('Saved all data to localStorage');
+                    }
+                } catch (error) {
+                    console.error('Error saving team data immediately:', error);
+                    // Fall back to the regular save method
                     saveSelectionToLocalStorage();
-                }, 1000);
+                }
             } catch (teamError) {
                 console.error('Error loading team data:', teamError);
             }
@@ -3545,13 +3585,9 @@ function importImagesToToggleGallery(imageSources) {
 
     // Show success message
     if (importCount > 0) {
-        let message = `${importCount} image${importCount !== 1 ? 's' : ''} have been imported to your Nikkes selection!`;
-        if (notFoundCount > 0) {
-            message += `\n\nNote: ${notFoundCount} image${notFoundCount !== 1 ? 's' : ''} could not be found in the gallery. These may be from a different device or browser.`;
-        }
-        alert(message);
+        alert('Images imported!');
     } else {
-        alert('No new images were imported to your Nikkes selection.');
+        alert('No new images were imported.');
     }
 
     // Switch to toggle images tab
@@ -3885,7 +3921,7 @@ function importFromShareableCode(code) {
             }, 500);
 
             // Show success message
-            alert(`Successfully imported ${newImageSources.length} new images from shareable code.`);
+            alert(`Shareable code imported!`);
         } else {
             alert('No new images found in the shareable code. All images already exist in your collection.');
         }
@@ -4649,18 +4685,8 @@ function clearAllToggleImages() {
     // Clear toggle images
     toggleImagesContainer.innerHTML = '';
 
-    // Also clear all team slots
-    for (let i = 1; i <= 2; i++) {
-        const teamContainer = document.querySelector(`#teamSet${i}`);
-        if (teamContainer) {
-            teamContainer.querySelectorAll('.team-images .image-slot').forEach(slot => {
-                if (slot.querySelector('img')) {
-                    slot.innerHTML = '';
-                    slot.classList.add('empty');
-                }
-            });
-        }
-    }
+    // We no longer clear team slots when removing all toggle images
+    console.log('Preserving team slots when removing all toggle images');
 
     // Update team score
     updateTeamScore();
@@ -4688,6 +4714,63 @@ function checkToggleImagesEmpty() {
     if (toggleItems.length === 0) {
         // Check if user has intentionally cleared their selection
         const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+
+        // Check if there are any team sets with images before loading default data
+        let hasTeamSets = false;
+        for (let i = 1; i <= 2; i++) {
+            const teamContainer = document.querySelector(`#teamSet${i}`);
+            if (teamContainer) {
+                const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
+                if (teamImages.length > 0) {
+                    hasTeamSets = true;
+                    console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                    break;
+                }
+            }
+        }
+
+        // If there are team sets with images, don't load default data
+        if (hasTeamSets) {
+            console.log('Team sets with images found, not loading default data to preserve team sets');
+            // Ensure the userClearedSelection flag is set to prevent auto-loading
+            localStorage.setItem('userClearedSelection', 'true');
+
+            // Immediately save the current team sets to localStorage to ensure they're preserved
+            try {
+                const savedDataString = localStorage.getItem(STORAGE_KEY);
+                if (savedDataString) {
+                    const savedData = JSON.parse(savedDataString);
+
+                    // Collect current team data from DOM
+                    const currentTeamSets = [];
+                    for (let i = 1; i <= 2; i++) {
+                        const teamSet = [];
+                        const teamContainer = document.querySelector(`#teamSet${i}`);
+                        if (teamContainer) {
+                            teamContainer.querySelectorAll('.team-images').forEach(teamRow => {
+                                const team = { images: [] };
+                                teamRow.querySelectorAll('.image-slot img').forEach(img => {
+                                    team.images.push({ src: img.src });
+                                });
+                                teamSet.push(team);
+                            });
+                        }
+                        currentTeamSets.push(teamSet);
+                    }
+
+                    // Update the saved data with current team sets
+                    savedData.teamSets = currentTeamSets;
+
+                    // Save immediately without debouncing
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+                    console.log('Immediately saved team sets to localStorage to ensure preservation');
+                }
+            } catch (error) {
+                console.error('Error saving team sets to localStorage:', error);
+            }
+
+            return;
+        }
 
         if (!userClearedSelection) {
             console.log('Toggle Images tab is empty and not intentionally cleared, loading default data...');
@@ -4877,20 +4960,9 @@ function removeSelectedToggleImages() {
                         }
                     }
 
-                    // Also remove the image from any team slots
-                    for (let i = 1; i <= 2; i++) {
-                        const teamContainer = document.querySelector(`#teamSet${i}`);
-                        if (teamContainer) {
-                            teamContainer.querySelectorAll('.team-images .image-slot img').forEach(img => {
-                                if (img.src === src) {
-                                    // Remove the image from the slot
-                                    const slot = img.parentElement;
-                                    slot.innerHTML = '';
-                                    slot.classList.add('empty');
-                                }
-                            });
-                        }
-                    }
+                    // We no longer remove the image from team slots
+                    // Keep images in team slots even when removed from toggle gallery
+                    console.log(`Keeping image ${src} in team slots even though it's removed from toggle gallery`);
 
                     // Remove the toggle item
                     toggleItem.remove();
@@ -4912,19 +4984,9 @@ function removeSelectedToggleImages() {
                 try {
                     const savedData = JSON.parse(savedDataString);
 
-                    // Update teamSets to remove the selected images
-                    if (savedData.teamSets && Array.isArray(savedData.teamSets)) {
-                        savedData.teamSets.forEach(teamSet => {
-                            if (Array.isArray(teamSet)) {
-                                teamSet.forEach(team => {
-                                    if (team && team.images && Array.isArray(team.images)) {
-                                        // Filter out the removed images
-                                        team.images = team.images.filter(img => !selectedSources.includes(img.src));
-                                    }
-                                });
-                            }
-                        });
-                    }
+                    // We no longer remove images from teamSets in localStorage
+                    // This ensures team sets are preserved even when toggle images are removed
+                    console.log('Preserving team sets in localStorage when removing toggle images');
 
                     // Save the updated data back to localStorage
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
@@ -4934,12 +4996,62 @@ function removeSelectedToggleImages() {
                 }
             }
 
-            // If all toggle images are now removed, set the userClearedSelection flag
+            // Check if all toggle images are now removed
             const remainingToggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
             if (remainingToggleItems.length === 0) {
+                // Check if there are any team sets with images before setting the flag
+                let hasTeamSets = false;
+                for (let i = 1; i <= 2; i++) {
+                    const teamContainer = document.querySelector(`#teamSet${i}`);
+                    if (teamContainer) {
+                        const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
+                        if (teamImages.length > 0) {
+                            hasTeamSets = true;
+                            console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                            break;
+                        }
+                    }
+                }
+
                 // Set flag to indicate user intentionally cleared selection
                 localStorage.setItem('userClearedSelection', 'true');
                 console.log('All images removed, setting userClearedSelection flag');
+
+                // If there are team sets with images, immediately save them to localStorage
+                if (hasTeamSets) {
+                    try {
+                        const savedDataString = localStorage.getItem(STORAGE_KEY);
+                        if (savedDataString) {
+                            const savedData = JSON.parse(savedDataString);
+
+                            // Collect current team data from DOM
+                            const currentTeamSets = [];
+                            for (let i = 1; i <= 2; i++) {
+                                const teamSet = [];
+                                const teamContainer = document.querySelector(`#teamSet${i}`);
+                                if (teamContainer) {
+                                    teamContainer.querySelectorAll('.team-images').forEach(teamRow => {
+                                        const team = { images: [] };
+                                        teamRow.querySelectorAll('.image-slot img').forEach(img => {
+                                            team.images.push({ src: img.src });
+                                        });
+                                        teamSet.push(team);
+                                    });
+                                }
+                                currentTeamSets.push(teamSet);
+                            }
+
+                            // Update the saved data with current team sets
+                            savedData.teamSets = currentTeamSets;
+
+                            // Save immediately without debouncing
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+                            console.log('Immediately saved team sets to localStorage to ensure preservation');
+                        }
+                    } catch (error) {
+                        console.error('Error saving team sets to localStorage:', error);
+                    }
+                }
             }
 
             // Show success message
@@ -4969,18 +5081,8 @@ function removeSelectedToggleImages() {
             // Clear toggle images
             toggleImagesContainer.innerHTML = '';
 
-            // Also clear all team slots
-            for (let i = 1; i <= 2; i++) {
-                const teamContainer = document.querySelector(`#teamSet${i}`);
-                if (teamContainer) {
-                    teamContainer.querySelectorAll('.team-images .image-slot').forEach(slot => {
-                        if (slot.querySelector('img')) {
-                            slot.innerHTML = '';
-                            slot.classList.add('empty');
-                        }
-                    });
-                }
-            }
+            // We no longer clear team slots when removing all toggle images
+            console.log('Preserving team slots when removing all toggle images');
 
             // Update team score
             updateTeamScore();
@@ -5007,18 +5109,9 @@ function removeSelectedToggleImages() {
                     savedData.toggleTabs = { toggleImages: [] };
                     savedData.teamSetToggleImages = { '1': [], '2': [] };
 
-                    // Also clear team images from teamSets
-                    if (savedData.teamSets && Array.isArray(savedData.teamSets)) {
-                        savedData.teamSets.forEach(teamSet => {
-                            if (Array.isArray(teamSet)) {
-                                teamSet.forEach(team => {
-                                    if (team && team.images) {
-                                        team.images = [];
-                                    }
-                                });
-                            }
-                        });
-                    }
+                    // We no longer clear team images from teamSets in localStorage
+                    // This ensures team sets are preserved even when all toggle images are removed
+                    console.log('Preserving team sets in localStorage when removing all toggle images');
 
                     // Save the updated data back to localStorage
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
@@ -5030,6 +5123,56 @@ function removeSelectedToggleImages() {
 
             // Set flag to indicate user intentionally cleared selection
             localStorage.setItem('userClearedSelection', 'true');
+
+            // Check if there are any team sets with images before setting the flag
+            let hasTeamSets = false;
+            for (let i = 1; i <= 2; i++) {
+                const teamContainer = document.querySelector(`#teamSet${i}`);
+                if (teamContainer) {
+                    const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
+                    if (teamImages.length > 0) {
+                        hasTeamSets = true;
+                        console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                        break;
+                    }
+                }
+            }
+
+            // If there are team sets with images, immediately save them to localStorage
+            if (hasTeamSets) {
+                try {
+                    const savedDataString = localStorage.getItem(STORAGE_KEY);
+                    if (savedDataString) {
+                        const savedData = JSON.parse(savedDataString);
+
+                        // Collect current team data from DOM
+                        const currentTeamSets = [];
+                        for (let i = 1; i <= 2; i++) {
+                            const teamSet = [];
+                            const teamContainer = document.querySelector(`#teamSet${i}`);
+                            if (teamContainer) {
+                                teamContainer.querySelectorAll('.team-images').forEach(teamRow => {
+                                    const team = { images: [] };
+                                    teamRow.querySelectorAll('.image-slot img').forEach(img => {
+                                        team.images.push({ src: img.src });
+                                    });
+                                    teamSet.push(team);
+                                });
+                            }
+                            currentTeamSets.push(teamSet);
+                        }
+
+                        // Update the saved data with current team sets
+                        savedData.teamSets = currentTeamSets;
+
+                        // Save immediately without debouncing
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+                        console.log('Immediately saved team sets to localStorage to ensure preservation');
+                    }
+                } catch (error) {
+                    console.error('Error saving team sets to localStorage:', error);
+                }
+            }
 
             // Show success message
             alert('All images have been removed from your Nikkes selection.');
