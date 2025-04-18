@@ -3384,11 +3384,12 @@ function exportTeamSetsAsJpeg() {
     const teamSetsContainer = document.createElement('div');
     teamSetsContainer.className = 'team-sets-container';
     teamSetsContainer.style.display = 'flex';
+    teamSetsContainer.style.justifyContent = 'space-between';
     teamSetsContainer.style.flexDirection = 'row'; // Side by side
     teamSetsContainer.style.gap = '20px'; // Better spacing between sets
     teamSetsContainer.style.width = '100%';
-    teamSetsContainer.style.minWidth = '800px'; // Ensure minimum width for high resolution
-    teamSetsContainer.style.maxWidth = '1000px'; // Increased maximum width for higher resolution
+    teamSetsContainer.style.minWidth = '850px'; // Ensure minimum width for high resolution
+    teamSetsContainer.style.maxWidth = '850px'; // Increased maximum width for higher resolution
     teamSetsContainer.style.backgroundColor = '#151515'; // Slightly lighter background
     teamSetsContainer.style.padding = '20px'; // Increased padding
     teamSetsContainer.style.borderRadius = '8px';
@@ -3484,8 +3485,8 @@ function exportTeamSetsAsJpeg() {
         teamSet.style.backgroundColor = '#1e1e1e'; // Better background color
         teamSet.style.borderRadius = '8px'; // Better rounding
         teamSet.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)'; // Enhanced shadow
-        teamSet.style.minWidth = '380px'; // Minimum width for team set
-        teamSet.style.maxWidth = '480px'; // Maximum width for team set
+        teamSet.style.minWidth = '350px'; // Minimum width for team set
+        teamSet.style.maxWidth = '400px'; // Maximum width for team set
 
         // Add top label for Defender/Attacker
         const topLabel = document.createElement('div');
