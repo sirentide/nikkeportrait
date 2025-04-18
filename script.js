@@ -3423,7 +3423,7 @@ function exportTeamSetsAsJpeg() {
 
     // Add title with improved design
     const title = document.createElement('h2');
-    title.textContent = 'My Nikkes Teams';
+    title.textContent = 'Arena Battle';
     title.style.color = '#fff';
     title.style.margin = '0';
     title.style.fontSize = mediaQuery.matches ? '20px' : '24px'; // Smaller font size on mobile
