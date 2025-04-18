@@ -1201,13 +1201,22 @@
 
 
 <!-- Filter Panel (fixed position) -->
-<div id="filterPanel" class="filter-panel" style="display: block; width: 120px; height: auto;">
+<div id="filterPanel" class="filter-panel" style="display: block; width: 120px; height: auto; max-height: 90vh; overflow-y: auto;">
     <div class="filter-header">
         <h3 class="filter-title">Filters</h3>
         <button id="closeFilterBtn" class="close-filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { hideFilterPanel(); }, 5);">✕</button>
     </div>
     <div class="filter-grid">
         <!-- Compact filter layout -->
+        <div class="filter-box compact">
+            <h4>Type</h4>
+            <div class="checkbox-group compact">
+                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b1" onchange="updateFilters()"><span>I</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b2" onchange="updateFilters()"><span>II</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b3" onchange="updateFilters()"><span>III</span></label>
+                <label class="checkbox-label compact"><input type="checkbox" name="type" value="a" onchange="updateFilters()"><span>A</span></label>
+            </div>
+        </div>
         <div class="filter-box compact">
             <h4>Class</h4>
             <div class="checkbox-group compact">
