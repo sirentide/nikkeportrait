@@ -235,7 +235,8 @@ const getPhotoAttributes = (photo) => {
         });
     }
 
-    return {
+    // Create the attributes object
+    const attributes = {
         type: safeGetAttribute(photo, 'data-type'),
         position: correctedPosition,
         faction: safeGetAttribute(photo, 'data-faction'),
@@ -245,6 +246,36 @@ const getPhotoAttributes = (photo) => {
         isToggleItem: isToggleItem,
         originalPosition: safeGetAttribute(photo, 'data-original-position')
     };
+
+    // Special handling for type attribute in toggle items
+    if (isToggleItem && (!attributes.type || attributes.type === '')) {
+        // Try to extract type from the image filename
+        const img = photo.querySelector('img');
+        if (img && img.src) {
+            const filename = img.src.split('/').pop();
+
+            // Check for type indicators in the filename
+            if (filename.includes('_b1_') || filename.includes('_I_')) {
+                attributes.type = 'b1';
+                photo.setAttribute('data-type', 'b1');
+            } else if (filename.includes('_b2_') || filename.includes('_II_')) {
+                attributes.type = 'b2';
+                photo.setAttribute('data-type', 'b2');
+            } else if (filename.includes('_b3_') || filename.includes('_III_')) {
+                attributes.type = 'b3';
+                photo.setAttribute('data-type', 'b3');
+            } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                attributes.type = 'a';
+                photo.setAttribute('data-type', 'a');
+            }
+
+            if (attributes.type) {
+                console.log(`Extracted type from filename: ${attributes.type} for ${filename}`);
+            }
+        }
+    }
+
+    return attributes;
 };
 
 const isPhotoMatchingFilters = (attributes, selectedFilters, searchValue) => {

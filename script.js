@@ -37,6 +37,19 @@ function toggleBurstFilter(button) {
     const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
     console.log('All active burst filters:', Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')));
 
+    // If we're in the toggleImages tab, also check the corresponding checkbox in the filter panel
+    if (currentContentTab === 'toggleImages') {
+        // Find the corresponding checkbox in the filter panel
+        const checkbox = document.querySelector(`input[type="checkbox"][value="${filterValue}"]`);
+        if (checkbox) {
+            // Set the checkbox state to match the button state
+            checkbox.checked = isActive;
+            console.log(`Set checkbox for ${filterValue} to ${isActive}`);
+        } else {
+            console.log(`Could not find checkbox for ${filterValue}`);
+        }
+    }
+
     // Update filters
     updateFilters();
 
@@ -158,6 +171,10 @@ function updateFilters() {
 
     console.log('Search value:', searchValue);
 
+    // Determine which tab we're in
+    const isToggleTab = currentContentTab === 'toggleImages';
+    console.log('Current tab:', currentContentTab, 'Is toggle tab:', isToggleTab);
+
     // Filter gallery photos
     const photos = document.querySelectorAll('.photo');
     console.log('Updating filters, found', photos.length, 'gallery photos');
@@ -176,16 +193,38 @@ function updateFilters() {
     const toggleItems = document.querySelectorAll('.toggle-item');
     console.log('Updating filters, found', toggleItems.length, 'toggle items');
 
+    // Special handling for toggle items based on which tab we're in
     let toggleVisibleCount = 0;
     toggleItems.forEach(item => {
         // Get attributes from the toggle item
         const attributes = getPhotoAttributes(item);
 
         // Debug log to check attributes
-        console.debug('Toggle item attributes:', attributes);
+        if (localStorage.getItem('filterDebugMode') === 'true') {
+            console.log('Toggle item attributes:', attributes);
+        }
 
         // Check if the item matches the filters
-        const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
+        let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
+
+        // If we're in the toggle tab and there are burst filters active, ensure they're applied correctly
+        if (isToggleTab && combinedTypeFilters.length > 0) {
+            // Make sure the type attribute is properly set
+            if (!attributes.type && item.getAttribute('data-type')) {
+                attributes.type = item.getAttribute('data-type').toLowerCase();
+                console.log('Updated type attribute for toggle item:', attributes.type);
+            }
+
+            // Double-check the type match
+            const typeMatch = combinedTypeFilters.some(type => {
+                return attributes.type && attributes.type.includes(type.toLowerCase());
+            });
+
+            if (!typeMatch) {
+                isMatch = false;
+                console.log('Toggle item failed type filter check:', attributes.type, 'not in', combinedTypeFilters);
+            }
+        }
 
         // Update visibility
         item.style.display = isMatch ? 'flex' : 'none';
