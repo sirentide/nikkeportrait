@@ -1,6 +1,19 @@
 // Team Sets Management
 const SAVED_SETS_KEY = 'nikkePortraitSavedSets';
 
+// Import functions from storage.js if they're not already available
+if (typeof saveTeamNames !== 'function') {
+    // This will be used as a fallback if the function isn't available
+    function saveTeamNames() {
+        try {
+            localStorage.setItem('nikkeTeamNames', JSON.stringify(teamNames));
+            console.log('Saved team names:', teamNames);
+        } catch (error) {
+            console.error('Error saving team names:', error);
+        }
+    }
+}
+
 // Function to save a team set
 function saveTeamSet(name) {
     if (!name || name.trim() === '') {
@@ -174,6 +187,52 @@ function loadTeamSet(name, targetSet) {
     alert(`Team set "${name}" has been loaded into ${setName}.`);
 }
 
+// Function to rename a team set
+function renameTeamSet(oldName, newName) {
+    if (!oldName || !newName || oldName.trim() === '' || newName.trim() === '') {
+        alert('Invalid team set name');
+        return false;
+    }
+
+    // Get saved sets from localStorage
+    let savedSets = {};
+    try {
+        const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+        if (savedSetsJson) {
+            savedSets = JSON.parse(savedSetsJson);
+        }
+    } catch (error) {
+        console.error('Error parsing saved sets:', error);
+        return false;
+    }
+
+    // Check if the old name exists
+    if (!savedSets[oldName]) {
+        alert(`Team set "${oldName}" not found.`);
+        return false;
+    }
+
+    // Check if the new name already exists
+    if (savedSets[newName]) {
+        alert(`A team set with the name "${newName}" already exists.`);
+        return false;
+    }
+
+    // Rename the team set
+    savedSets[newName] = savedSets[oldName];
+    delete savedSets[oldName];
+
+    // Update the timestamp
+    savedSets[newName].timestamp = new Date().toISOString();
+
+    // Save back to localStorage
+    localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(savedSets));
+
+    // No alert message for rename operation
+    console.log(`Team set renamed from "${oldName}" to "${newName}"`);
+    return true;
+}
+
 // Function to delete a team set
 function deleteTeamSet(name) {
     // Get saved sets from localStorage
@@ -261,18 +320,163 @@ function filterSavedSets(query, setsList, savedSets) {
         // Set name and timestamp
         const setInfo = document.createElement('div');
         setInfo.style.marginBottom = '10px';
+        setInfo.style.display = 'flex';
+        setInfo.style.justifyContent = 'space-between';
+        setInfo.style.alignItems = 'center';
+
+        const nameContainer = document.createElement('div');
+        nameContainer.style.flex = '1';
 
         const setName = document.createElement('h3');
         setName.textContent = name;
         setName.style.margin = '0 0 5px 0';
-        setInfo.appendChild(setName);
+        nameContainer.appendChild(setName);
+        setInfo.appendChild(nameContainer);
+
+        // Add edit button
+        const editButton = document.createElement('button');
+        editButton.innerHTML = '✏️';
+        editButton.title = 'Edit name';
+        editButton.style.marginLeft = '10px';
+        editButton.style.padding = '5px 10px';
+        editButton.style.backgroundColor = '#444';
+        editButton.style.border = 'none';
+        editButton.style.borderRadius = '4px';
+        editButton.style.cursor = 'pointer';
+        editButton.style.fontSize = '14px';
+
+        // Add hover effect
+        editButton.addEventListener('mouseover', function() {
+            this.style.backgroundColor = '#555';
+        });
+        editButton.addEventListener('mouseout', function() {
+            this.style.backgroundColor = '#444';
+        });
+
+        // Add click handler for editing
+        editButton.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering the set item click
+
+            // Create an input field to edit the name
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = name;
+            input.style.width = '100%';
+            input.style.padding = '5px';
+            input.style.borderRadius = '4px';
+            input.style.border = '1px solid #00aaff';
+            input.style.backgroundColor = '#333';
+            input.style.color = 'white';
+            input.style.fontSize = '16px';
+
+            // Replace the name with the input field
+            nameContainer.innerHTML = '';
+            nameContainer.appendChild(input);
+            input.focus();
+            input.select();
+
+            // Handle saving the edited name
+            function saveEditedName() {
+                const newName = input.value.trim();
+                if (newName && newName !== name) {
+                    // Rename the team set in localStorage
+                    const success = renameTeamSet(name, newName);
+
+                    if (success) {
+                        // Update the name variable in the closure
+                        // This is crucial for subsequent edit operations
+                        name = newName;
+
+                        // Update all references to the name in this item
+                        setName.textContent = newName;
+
+                        // Update the load buttons to use the new name
+                        const loadButtons = setItem.querySelectorAll('button');
+                        loadButtons.forEach(button => {
+                            if (button.textContent === 'Load to Defender' ||
+                                button.textContent === 'Load to Attacker') {
+                                // Remove old event listeners
+                                const newButton = button.cloneNode(true);
+                                button.parentNode.replaceChild(newButton, button);
+
+                                // Add new event listener with updated name
+                                if (newButton.textContent === 'Load to Defender') {
+                                    newButton.addEventListener('click', function() {
+                                        loadTeamSet(newName, '1');
+                                    });
+                                } else if (newButton.textContent === 'Load to Attacker') {
+                                    newButton.addEventListener('click', function() {
+                                        loadTeamSet(newName, '2');
+                                    });
+                                }
+                            }
+                        });
+
+                        // Update the delete button to use the new name
+                        const deleteButton = setItem.querySelector('button[style*="background-color: #9c2a2a"]');
+                        if (deleteButton) {
+                            const newDeleteButton = deleteButton.cloneNode(true);
+                            deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
+                            newDeleteButton.addEventListener('click', function() {
+                                deleteTeamSet(newName);
+                            });
+                        }
+
+                        // Update the export button to use the new name
+                        const exportButton = setItem.querySelector('button[style*="background-color: #555"]');
+                        if (exportButton) {
+                            const newExportButton = exportButton.cloneNode(true);
+                            exportButton.parentNode.replaceChild(newExportButton, exportButton);
+                            newExportButton.addEventListener('click', function() {
+                                const shareableLink = generateShareableLink(newName);
+                                if (shareableLink) {
+                                    navigator.clipboard.writeText(shareableLink)
+                                        .then(() => {
+                                            alert('Shareable code copied to clipboard!');
+                                        })
+                                        .catch(err => {
+                                            console.error('Could not copy link to clipboard:', err);
+                                            prompt('Copy this shareable link:', shareableLink);
+                                        });
+                                }
+                            });
+                        }
+                    }
+
+                    // Restore the name container
+                    nameContainer.innerHTML = '';
+                    nameContainer.appendChild(setName);
+                } else {
+                    // Restore the original name
+                    nameContainer.innerHTML = '';
+                    nameContainer.appendChild(setName);
+                }
+            }
+
+            // Save on Enter key
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEditedName();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    nameContainer.innerHTML = '';
+                    nameContainer.appendChild(setName);
+                }
+            });
+
+            // Save on blur (when clicking outside)
+            input.addEventListener('blur', saveEditedName);
+        });
+
+        setInfo.appendChild(editButton);
 
         if (data.timestamp) {
             const timestamp = document.createElement('div');
             timestamp.textContent = new Date(data.timestamp).toLocaleString();
             timestamp.style.fontSize = '12px';
             timestamp.style.color = '#aaa';
-            setInfo.appendChild(timestamp);
+            nameContainer.appendChild(timestamp);
         }
 
         setItem.appendChild(setInfo);
@@ -718,8 +922,8 @@ function importFromSharedCode(code) {
             // Save back to localStorage
             localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(currentSets));
 
-            // Show success message
-            alert(`Team set "${setName}" has been imported successfully.`);
+            // No alert message for successful import
+            console.log(`Team set "${setName}" has been imported successfully.`);
 
             // Refresh the saved sets panel if it's open
             if (document.querySelector('.saved-sets-panel')) {
@@ -754,12 +958,12 @@ function importFromSharedCode(code) {
             if (action === 'replace') {
                 // Replace all existing sets with imported sets
                 localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(importData.sets));
-                alert(`Replaced existing saved team sets with ${importCount} imported sets.`);
+                console.log(`Replaced existing saved team sets with ${importCount} imported sets.`);
             } else {
                 // Merge imported sets with existing sets
                 const mergedSets = { ...currentSets, ...importData.sets };
                 localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(mergedSets));
-                alert(`Merged ${importCount} imported sets with your existing saved team sets.`);
+                console.log(`Merged ${importCount} imported sets with your existing saved team sets.`);
             }
 
             // Refresh the saved sets panel if it's open
@@ -832,12 +1036,12 @@ function importFromJsonFile() {
                 if (action === 'replace') {
                     // Replace all existing sets with imported sets
                     localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(importData.sets));
-                    alert(`Replaced existing saved team sets with ${importCount} imported sets.`);
+                    console.log(`Replaced existing saved team sets with ${importCount} imported sets.`);
                 } else {
                     // Merge imported sets with existing sets
                     const mergedSets = { ...currentSets, ...importData.sets };
                     localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(mergedSets));
-                    alert(`Merged ${importCount} imported sets with your existing saved team sets.`);
+                    console.log(`Merged ${importCount} imported sets with your existing saved team sets.`);
                 }
 
                 // Refresh the saved sets panel if it's open

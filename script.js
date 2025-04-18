@@ -3583,11 +3583,11 @@ function importImagesToToggleGallery(imageSources) {
     localStorage.removeItem('userClearedSelection');
     console.log('Imported images, clearing userClearedSelection flag');
 
-    // Show success message
+    // No alert message for successful import
     if (importCount > 0) {
-        alert('Images imported!');
+        console.log(`Images imported successfully: ${importCount} images`);
     } else {
-        alert('No new images were imported.');
+        console.log('No new images were imported.');
     }
 
     // Switch to toggle images tab
@@ -3920,8 +3920,8 @@ function importFromShareableCode(code) {
                 console.log('Updated green borders for loaded images');
             }, 500);
 
-            // Show success message
-            alert(`Shareable code imported!`);
+            // No alert message for successful import
+            console.log(`Shareable code imported successfully: ${newImageSources.length} new images`);
         } else {
             alert('No new images found in the shareable code. All images already exist in your collection.');
         }
@@ -4700,8 +4700,8 @@ function clearAllToggleImages() {
     // Also save to main storage to ensure it's updated
     saveSelectionToLocalStorage();
 
-    // Show success message
-    alert('All images have been removed from your Nikkes selection.');
+    // No alert message for successful removal
+    console.log('All images have been removed from Nikkes selection');
 }
 
 // Reset localStorage data (for debugging)
@@ -5054,8 +5054,8 @@ function removeSelectedToggleImages() {
                 }
             }
 
-            // Show success message
-            alert(`${selectedSources.length} image${selectedSources.length !== 1 ? 's' : ''} have been removed from your Nikkes selection.`);
+            // No alert message for successful removal
+            console.log(`${selectedSources.length} image${selectedSources.length !== 1 ? 's' : ''} have been removed from Nikkes selection`);
 
             // Close the modal
             modal.remove();
@@ -5174,8 +5174,8 @@ function removeSelectedToggleImages() {
                 }
             }
 
-            // Show success message
-            alert('All images have been removed from your Nikkes selection.');
+            // No alert message for successful removal
+            console.log('All images have been removed from Nikkes selection');
 
             // Close the modal
             modal.remove();
