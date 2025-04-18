@@ -30,12 +30,23 @@ function saveTeamSet(name) {
 
     // Get all teams in the current team set
     const teams = currentTeamContainer.querySelectorAll('.team-images');
-    const teamsData = Array.from(teams).map(team => ({
-        images: Array.from(team.querySelectorAll('.image-slot img')).map(img => ({
-            src: img.src,
-            score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
-        }))
-    }));
+
+    // Create an array to hold our team data
+    const teamsData = [];
+
+    // Process each team
+    teams.forEach((team) => {
+        // Get all images in this team
+        const images = Array.from(team.querySelectorAll('.image-slot img'));
+
+        // Add this team's data to our teams array
+        teamsData.push({
+            images: images.map(img => ({
+                src: img.src,
+                score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
+            }))
+        });
+    });
 
     // Get saved sets from localStorage
     let savedSets = {};
@@ -48,11 +59,14 @@ function saveTeamSet(name) {
         console.error('Error parsing saved sets:', error);
     }
 
-    // Add the new set
+    // Add the new set - ensure it's in the expected format
     savedSets[name] = {
         teams: teamsData,
         timestamp: new Date().toISOString()
     };
+
+    // Debug the saved data structure
+    console.log('Saved team set structure:', savedSets[name]);
 
     // Save back to localStorage
     localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(savedSets));
@@ -110,29 +124,87 @@ function loadTeamSet(name, targetSet) {
         const teamRow = teamRows[teamIndex];
         const slots = teamRow.querySelectorAll('.image-slot');
 
-        team.images.forEach((imgData, imgIndex) => {
-            if (imgIndex >= slots.length) return;
+        // Handle all possible data formats for maximum compatibility
+        if (Array.isArray(team)) {
+            // Ultra-compact format - just an array of IDs
+            team.forEach((id, imgIndex) => {
+                if (imgIndex >= slots.length) return;
 
-            const slot = slots[imgIndex];
-            const img = document.createElement('img');
-            img.src = imgData.src;
+                const slot = slots[imgIndex];
+                const img = document.createElement('img');
 
-            // Add click handler for removal
-            img.onclick = () => {
-                const galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
-                if (galleryImg) {
-                    toggleImageSelection(galleryImg);
-                } else {
-                    const toggleImg = document.querySelector(`.toggle-item img[src="${imgData.src}"]`);
-                    if (toggleImg) {
-                        toggleImageSelection(toggleImg);
+                // Reconstruct the full path from the ID
+                img.src = `image/${id}_name.png`;
+
+                // Add click handler for removal
+                img.onclick = () => {
+                    const galleryImg = document.querySelector(`.photo img[src="${img.src}"]`);
+                    if (galleryImg) {
+                        toggleImageSelection(galleryImg);
+                    } else {
+                        const toggleImg = document.querySelector(`.toggle-item img[src="${img.src}"]`);
+                        if (toggleImg) {
+                            toggleImageSelection(toggleImg);
+                        }
                     }
-                }
-            };
+                };
 
-            slot.appendChild(img);
-            slot.classList.remove('empty');
-        });
+                slot.appendChild(img);
+                slot.classList.remove('empty');
+            });
+        } else if (team.images) {
+            // Old format with full image data
+            team.images.forEach((imgData, imgIndex) => {
+                if (imgIndex >= slots.length) return;
+
+                const slot = slots[imgIndex];
+                const img = document.createElement('img');
+                img.src = imgData.src;
+
+                // Add click handler for removal
+                img.onclick = () => {
+                    const galleryImg = document.querySelector(`.photo img[src="${imgData.src}"]`);
+                    if (galleryImg) {
+                        toggleImageSelection(galleryImg);
+                    } else {
+                        const toggleImg = document.querySelector(`.toggle-item img[src="${imgData.src}"]`);
+                        if (toggleImg) {
+                            toggleImageSelection(toggleImg);
+                        }
+                    }
+                };
+
+                slot.appendChild(img);
+                slot.classList.remove('empty');
+            });
+        } else if (team.i) {
+            // Intermediate optimized format with just filenames
+            team.i.forEach((filename, imgIndex) => {
+                if (imgIndex >= slots.length) return;
+
+                const slot = slots[imgIndex];
+                const img = document.createElement('img');
+
+                // Reconstruct the full path
+                img.src = `image/${filename}`;
+
+                // Add click handler for removal
+                img.onclick = () => {
+                    const galleryImg = document.querySelector(`.photo img[src="${img.src}"]`);
+                    if (galleryImg) {
+                        toggleImageSelection(galleryImg);
+                    } else {
+                        const toggleImg = document.querySelector(`.toggle-item img[src="${img.src}"]`);
+                        if (toggleImg) {
+                            toggleImageSelection(toggleImg);
+                        }
+                    }
+                };
+
+                slot.appendChild(img);
+                slot.classList.remove('empty');
+            });
+        }
     });
 
     // Refresh the selected state of images
@@ -584,14 +656,57 @@ function filterSavedSets(query, setsList, savedSets) {
     });
 }
 
-// Function to compress team data for sharing
+// Function to compress team data for sharing - ultra-optimized version
 function compressTeamData(data) {
     try {
-        // Convert the data to a JSON string
-        const jsonString = JSON.stringify(data);
+        // For maximum compression, we'll use a custom format instead of JSON
+        // Format: name|team1data|team2data where team data is comma-separated IDs
 
-        // Compress using LZString
-        const compressed = LZString.compressToEncodedURIComponent(jsonString);
+        // Extract the name and teams data
+        const name = data.n || '';
+        const teams = data.t || [];
+
+        // Debug the data structure
+        console.log('Data structure to compress:', data);
+        console.log('Teams data type:', typeof teams, Array.isArray(teams));
+        if (teams.length > 0) {
+            console.log('First team type:', typeof teams[0], Array.isArray(teams[0]));
+        }
+
+        // Create a compact string representation
+        // Format: name|id1,id2,id3|id4,id5,id6
+        // Make sure each team is an array before calling join
+        const compactString = [
+            name,
+            ...teams.map(team => {
+                // Ensure team is an array before joining
+                if (Array.isArray(team)) {
+                    return team.join(',');
+                } else if (team.images) {
+                    // Handle old format with images array
+                    return team.images.map(img => {
+                        // Extract ID from image source
+                        const filename = img.src.split('/').pop();
+                        const id = filename.split('_')[0];
+                        return id;
+                    }).join(',');
+                } else if (team.i) {
+                    // Handle intermediate format
+                    return team.i.join(',');
+                } else {
+                    console.warn('Unknown team format:', team);
+                    return '';
+                }
+            })
+        ].join('|');
+
+        // Compress using LZString's most efficient method for URLs
+        const compressed = LZString.compressToEncodedURIComponent(compactString);
+
+        console.log('Original data structure size:', JSON.stringify(data).length, 'bytes');
+        console.log('Compact string size:', compactString.length, 'bytes');
+        console.log('Compressed size:', compressed.length, 'bytes');
+        console.log('Compression ratio vs JSON:', (compressed.length / JSON.stringify(data).length * 100).toFixed(2) + '%');
 
         return compressed;
     } catch (error) {
@@ -600,23 +715,49 @@ function compressTeamData(data) {
     }
 }
 
-// Function to decompress team data from a shared link
+// Function to decompress team data from a shared link - ultra-optimized version
 function decompressTeamData(compressed) {
     try {
         // Decompress using LZString
-        const jsonString = LZString.decompressFromEncodedURIComponent(compressed);
+        const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
 
-        // Parse the JSON string
-        const data = JSON.parse(jsonString);
+        if (!decompressed) {
+            throw new Error('Failed to decompress data');
+        }
 
-        return data;
+        // Check if it's our new compact format (contains pipe characters)
+        if (decompressed.includes('|')) {
+            // Parse the compact string format: name|team1data|team2data
+            const parts = decompressed.split('|');
+            const name = parts[0];
+
+            // Parse team data (arrays of IDs)
+            const teams = parts.slice(1).map(teamStr => {
+                if (!teamStr) return [];
+                return teamStr.split(',').filter(id => id.trim() !== '');
+            });
+
+            // Return in our internal format
+            return {
+                n: name,
+                t: teams
+            };
+        }
+
+        // If we get here, try to parse as JSON (for very old links)
+        try {
+            return JSON.parse(decompressed);
+        } catch (e) {
+            console.error('Not valid JSON:', e);
+            throw new Error('Invalid data format. Could not parse the shared code.');
+        }
     } catch (error) {
         console.error('Error decompressing team data:', error);
         return null;
     }
 }
 
-// Function to generate a shareable link for a team set
+// Function to generate a shareable link for a team set - ultra-optimized version
 function generateShareableLink(teamSetName) {
     // Get saved sets from localStorage
     let savedSets = {};
@@ -637,25 +778,39 @@ function generateShareableLink(teamSetName) {
         return null;
     }
 
-    // Create export data with metadata
-    const exportData = {
-        version: '1.0',
-        type: 'nikke-portrait-team-set',
-        timestamp: new Date().toISOString(),
-        name: teamSetName,
-        set: savedSets[teamSetName]
-    };
+    // Get the team data and convert to our ultra-compact format
+    const teamSet = savedSets[teamSetName];
+    const teams = teamSet.teams || [];
 
-    // Compress the data
-    const compressed = compressTeamData(exportData);
+    // Create a simple string representation of the team set
+    // Format: name|id1,id2,id3|id4,id5,id6
+    let compactString = teamSetName;
+
+    // Add each team's data
+    teams.forEach(team => {
+        // Extract IDs from the team's images
+        if (team.images && Array.isArray(team.images)) {
+            const teamIds = team.images.map(img => {
+                const filename = img.src.split('/').pop();
+                return filename.split('_')[0]; // Extract ID
+            }).join(',');
+            compactString += '|' + teamIds;
+        } else {
+            // Add an empty team if no images
+            compactString += '|';
+        }
+    });
+
+    // Compress the string directly
+    const compressed = LZString.compressToEncodedURIComponent(compactString);
     if (!compressed) {
         alert('Error compressing team data.');
         return null;
     }
 
-    // Generate the shareable link
+    // Generate the shareable link with the shortest possible parameter name
     const baseUrl = window.location.href.split('?')[0];
-    const shareableLink = `${baseUrl}?teamset=${compressed}`;
+    const shareableLink = `${baseUrl}?t=${compressed}`; // Even shorter parameter name 't'
 
     return shareableLink;
 }
@@ -848,20 +1003,35 @@ function showImportCodeModal() {
     }, 100);
 }
 
-// Function to import from a shared code
+// Function to import from a shared code - ultra-optimized version
 function importFromSharedCode(code) {
     try {
         // Try to decompress the code
         let importData;
 
-        // First, check if it's a URL
-        if (code.includes('?teamset=')) {
+        // Check if it's a URL with our ultra-compact parameter
+        if (code.includes('?t=') || code.includes('?ts=') || code.includes('?teamset=')) {
             // Extract the compressed data from the URL
-            const urlParts = code.split('?teamset=');
-            if (urlParts.length < 2) {
-                throw new Error('Invalid URL format. Could not find teamset parameter.');
+            let compressed;
+            if (code.includes('?t=')) {
+                const urlParts = code.split('?t=');
+                if (urlParts.length < 2) {
+                    throw new Error('Invalid URL format. Could not find parameter.');
+                }
+                compressed = urlParts[1].split('&')[0]; // Get the value, ignoring other parameters
+            } else if (code.includes('?ts=')) {
+                const urlParts = code.split('?ts=');
+                if (urlParts.length < 2) {
+                    throw new Error('Invalid URL format. Could not find parameter.');
+                }
+                compressed = urlParts[1].split('&')[0];
+            } else {
+                const urlParts = code.split('?teamset=');
+                if (urlParts.length < 2) {
+                    throw new Error('Invalid URL format. Could not find parameter.');
+                }
+                compressed = urlParts[1].split('&')[0];
             }
-            const compressed = urlParts[1].split('&')[0]; // Get the teamset value, ignoring other parameters
             importData = decompressTeamData(compressed);
         } else {
             // Assume it's a compressed code directly
@@ -872,73 +1042,69 @@ function importFromSharedCode(code) {
             throw new Error('Could not decompress the shared code. Please check that you copied it correctly.');
         }
 
-        // Check if it's a single team set or multiple sets
-        if (importData.type === 'nikke-portrait-team-set' && importData.set) {
-            // Single team set
-            // Get current saved sets
-            let currentSets = {};
-            const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
-            if (savedSetsJson) {
-                currentSets = JSON.parse(savedSetsJson);
+        // Get current saved sets
+        let currentSets = {};
+        const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
+        if (savedSetsJson) {
+            currentSets = JSON.parse(savedSetsJson);
+        }
+
+        // Handle our ultra-compact format
+        if (importData.n !== undefined && importData.t !== undefined) {
+            // Ultra-compact format with name and teams
+            const setName = importData.n || `Imported Set ${new Date().toLocaleString()}`;
+
+            // Convert the array of IDs back to the expected format
+            const teamsData = importData.t.map(team => {
+                // Ensure team is an array
+                const teamArray = Array.isArray(team) ? team :
+                                  (typeof team === 'string' ? team.split(',') : []);
+
+                return {
+                    images: teamArray.map(id => ({
+                        src: `image/${id}_name.png`, // Reconstruct the image path
+                        score: parseInt(id, 10) / 10 // Reconstruct the score
+                    }))
+                };
+            });
+
+            // Create the team set structure
+            currentSets[setName] = {
+                teams: teamsData,
+                timestamp: new Date().toISOString()
+            };
+        }
+        // Legacy format handling - minimal support for backward compatibility
+        else if (importData.type && (importData.set || importData.sets)) {
+            console.warn('Importing legacy format - consider updating your shared links');
+
+            if (importData.set) {
+                // Single team set
+                const setName = importData.name || `Imported Set ${new Date().toLocaleString()}`;
+                currentSets[setName] = importData.set;
+            } else if (importData.sets) {
+                // Multiple sets - just replace everything
+                currentSets = importData.sets;
             }
-
-            // Add the imported set
-            const setName = importData.name || `Imported Set ${new Date().toLocaleString()}`;
-            currentSets[setName] = importData.set;
-
-            // Save back to localStorage
-            localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(currentSets));
-
-            // No alert message for successful import
-            console.log(`Team set "${setName}" has been imported successfully.`);
-
-            // Refresh the saved sets panel if it's open
-            if (document.querySelector('.saved-sets-panel')) {
-                showSavedSetsPanel();
-            }
-        } else if (importData.type === 'nikke-portrait-saved-sets' && importData.sets) {
-            // Multiple team sets
-            // Get current saved sets
-            let currentSets = {};
-            const savedSetsJson = localStorage.getItem(SAVED_SETS_KEY);
-            if (savedSetsJson) {
-                currentSets = JSON.parse(savedSetsJson);
-            }
-
-            // Count imported sets
-            const importCount = Object.keys(importData.sets).length;
-
-            // Ask user if they want to merge or replace
-            let action = 'merge';
-            if (Object.keys(currentSets).length > 0) {
-                const userChoice = confirm(
-                    `You have ${Object.keys(currentSets).length} existing saved team sets. \n\n` +
-                    `Would you like to merge the ${importCount} imported sets with your existing sets? \n\n` +
-                    `Click OK to merge (keep both existing and imported sets). \n` +
-                    `Click Cancel to replace (delete existing sets and only keep imported sets).`
-                );
-
-                action = userChoice ? 'merge' : 'replace';
-            }
-
-            // Process based on user choice
-            if (action === 'replace') {
-                // Replace all existing sets with imported sets
-                localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(importData.sets));
-                console.log(`Replaced existing saved team sets with ${importCount} imported sets.`);
-            } else {
-                // Merge imported sets with existing sets
-                const mergedSets = { ...currentSets, ...importData.sets };
-                localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(mergedSets));
-                console.log(`Merged ${importCount} imported sets with your existing saved team sets.`);
-            }
-
-            // Refresh the saved sets panel if it's open
-            if (document.querySelector('.saved-sets-panel')) {
-                showSavedSetsPanel();
-            }
-        } else {
+        }
+        // Handle the intermediate format
+        else if (importData.v && importData.s) {
+            const setName = importData.n || `Imported Set ${new Date().toLocaleString()}`;
+            currentSets[setName] = importData.s;
+        }
+        else {
             throw new Error('Invalid data format. This does not appear to be a valid Nikke Portrait team sets code.');
+        }
+
+        // Save back to localStorage
+        localStorage.setItem(SAVED_SETS_KEY, JSON.stringify(currentSets));
+
+        // No alert message for successful import
+        console.log(`Team set has been imported successfully.`);
+
+        // Refresh the saved sets panel if it's open
+        if (document.querySelector('.saved-sets-panel')) {
+            showSavedSetsPanel();
         }
     } catch (error) {
         console.error('Error importing from shared code:', error);
@@ -1116,7 +1282,7 @@ function showShareDialog(setNames) {
                 // Copy to clipboard
                 navigator.clipboard.writeText(shareableLink)
                     .then(() => {
-                        alert('Shareable link copied to clipboard!');
+                        alert('Shareable code copied to clipboard!');
                         // Close the modal
                         document.body.removeChild(modalContainer);
                     })

@@ -3661,14 +3661,32 @@ function exportToggleImageData() {
     }
 }
 
-// Function to generate a shareable code for My Nikkes
+// Function to generate a shareable code for My Nikkes - ultra-optimized version
 function generateShareableCodeForMyNikkes(data) {
     try {
-        // Convert the data to a JSON string
-        const jsonString = JSON.stringify(data);
+        // Extract just the essential data we need - the image IDs
+        const imageIds = data.toggleImages.map(item => {
+            // Extract the ID from the image source
+            const src = item.src;
+            const filename = src.split('/').pop();
+            // Extract just the numeric part before the underscore (e.g., "100_name.png" -> "100")
+            const id = filename.split('_')[0];
+            return id;
+        });
+
+        // Create a compact string representation - just a comma-separated list of IDs
+        const compactString = imageIds.join(',');
+
+        // Log compression stats
+        const jsonSize = JSON.stringify(data).length;
+        console.log('Original JSON size:', jsonSize, 'bytes');
+        console.log('Compact string size:', compactString.length, 'bytes');
+        console.log('Size reduction:', Math.round((1 - compactString.length / jsonSize) * 100) + '%');
 
         // Compress using LZString
-        const compressed = LZString.compressToEncodedURIComponent(jsonString);
+        const compressed = LZString.compressToEncodedURIComponent(compactString);
+        console.log('Compressed size:', compressed.length, 'bytes');
+        console.log('Final compression ratio:', Math.round((compressed.length / jsonSize) * 100) + '%');
 
         return compressed;
     } catch (error) {
@@ -3842,22 +3860,61 @@ function showImportFromCodeDialog(parentModal) {
     }
 }
 
-// Function to import from a shareable code
+// Function to import from a shareable code - ultra-optimized version
 function importFromShareableCode(code) {
     try {
         // Decompress the code using LZString
-        const jsonString = LZString.decompressFromEncodedURIComponent(code);
-        if (!jsonString) {
+        const decompressed = LZString.decompressFromEncodedURIComponent(code);
+        if (!decompressed) {
             throw new Error('Invalid shareable code. Could not decompress.');
         }
 
-        // Parse the JSON data
-        const data = JSON.parse(jsonString);
-        console.log('Parsed data from shareable code:', data);
+        // Check if it's our new ultra-compact format (just comma-separated IDs)
+        let imageIds = [];
+        let data = null;
+
+        // Try to parse as JSON first (for old format)
+        try {
+            data = JSON.parse(decompressed);
+
+            // Check if it's the old format
+            if (data && data.toggleImages && Array.isArray(data.toggleImages)) {
+                // Process the toggle images data from old format
+                const imageSources = data.toggleImages.map(item => {
+                    if (typeof item === 'string') {
+                        return item; // Old format: just the URL
+                    } else if (item && item.src) {
+                        return item.src; // New format: object with src property
+                    } else {
+                        console.warn('Invalid toggle image item:', item);
+                        return null;
+                    }
+                }).filter(src => src !== null);
+
+                // Extract IDs from image sources
+                imageIds = imageSources.map(src => {
+                    const filename = src.split('/').pop();
+                    return filename.split('_')[0]; // Extract ID
+                });
+            } else {
+                throw new Error('Not a valid old format');
+            }
+        } catch (e) {
+            // Not valid JSON, try parsing as our compact format
+
+            // Check if it contains commas (our compact format)
+            if (decompressed.includes(',')) {
+                // Parse the comma-separated IDs
+                imageIds = decompressed.split(',').filter(id => id.trim() !== '');
+            } else {
+                // Single ID
+                imageIds = [decompressed];
+            }
+        }
 
         // Validate the data
-        if (!data || !data.toggleImages || !Array.isArray(data.toggleImages)) {
-            throw new Error('Invalid data format. Missing toggle images.');
+        if (!imageIds || imageIds.length === 0) {
+            throw new Error('Invalid data format. No image IDs found.');
         }
 
         // Confirm with the user
@@ -3875,23 +3932,9 @@ function importFromShareableCode(code) {
             .map(img => img.src);
         console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
 
-        // We're not clearing existing toggle images anymore
-        // toggleImagesContainer.innerHTML = '';
-        // console.log('Cleared existing toggle images');
-
-        // Process the toggle images data
-        const imageSources = data.toggleImages.map(item => {
-            if (typeof item === 'string') {
-                return item; // Old format: just the URL
-            } else if (item && item.src) {
-                return item.src; // New format: object with src property
-            } else {
-                console.warn('Invalid toggle image item:', item);
-                return null;
-            }
-        }).filter(src => src !== null);
-
-        console.log(`Processed ${imageSources.length} valid image sources from shareable code`);
+        // Convert image IDs to full image sources
+        const imageSources = imageIds.map(id => `image/${id}_name.png`);
+        console.log(`Converted ${imageSources.length} image IDs to sources`);
 
         // Filter out images that already exist in the toggle container
         const newImageSources = imageSources.filter(src => {
