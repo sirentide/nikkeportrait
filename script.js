@@ -2483,6 +2483,12 @@ function setupTabSystem() {
                 // Update team score
                 updateTeamScore();
 
+                // Clear the custom team name
+                teamNames[currentTeamSet] = '';
+                updateTeamTitle(currentTeamSet);
+                saveTeamNames();
+                console.log(`Cleared custom name for team set ${currentTeamSet}`);
+
                 // Don't set userClearedSelection flag when clearing a team
                 // This prevents My Nikkes images from being cleared
                 console.log('Team cleared, but keeping My Nikkes images');
@@ -3441,6 +3447,14 @@ function exportTeamSetsAsJpeg() {
     const teamSet1 = document.querySelector('#teamSet1').cloneNode(true);
     const teamSet2 = document.querySelector('#teamSet2').cloneNode(true);
 
+    // Disable Sortable.js functionality in the cloned team sets
+    teamSet1.querySelectorAll('.team-images, .image-slot').forEach(el => {
+        el.classList.add('no-sortable');
+    });
+    teamSet2.querySelectorAll('.team-images, .image-slot').forEach(el => {
+        el.classList.add('no-sortable');
+    });
+
     // Remove edit team name buttons from the cloned team sets
     teamSet1.querySelectorAll('.edit-team-name-btn').forEach(btn => btn.remove());
     teamSet2.querySelectorAll('.edit-team-name-btn').forEach(btn => btn.remove());
@@ -3464,6 +3478,81 @@ function exportTeamSetsAsJpeg() {
         if (controlsContainer) {
             controlsContainer.remove();
         }
+
+        // Remove drag and drop visual elements
+        teamSet.querySelectorAll('.target-indicator, .path-dot, .path-arrow, .sortable-ghost, .sortable-fallback, .being-dragged').forEach(el => {
+            el.remove();
+        });
+
+        // Remove any drag-related classes and disable drag/touch events
+        teamSet.querySelectorAll('.image-slot').forEach(slot => {
+            slot.classList.remove('drag-over', 'drag-target', 'drop-zone-highlight');
+            // Remove any inline styles related to drag and drop
+            if (slot.hasAttribute('style')) {
+                const style = slot.getAttribute('style');
+                if (style.includes('border') || style.includes('background')) {
+                    slot.removeAttribute('style');
+                }
+            }
+
+            // Add a class to hide the ::before pseudo-element (drag handle)
+            slot.classList.add('export-view');
+
+            // Disable draggable attribute
+            slot.setAttribute('draggable', 'false');
+
+            // Remove all touch and drag event listeners
+            const newSlot = slot.cloneNode(true);
+            slot.parentNode.replaceChild(newSlot, slot);
+
+            // Ensure any images inside are also not draggable
+            const img = newSlot.querySelector('img');
+            if (img) {
+                img.setAttribute('draggable', 'false');
+                img.style.pointerEvents = 'none'; // Prevent touch/click events
+            }
+        });
+
+        // Add a style element to hide the image-slot::before pseudo-element
+        const styleElement = document.createElement('style');
+        styleElement.setAttribute('data-export-view', 'true'); // Add data attribute for easier identification
+        styleElement.textContent = `
+            .export-view::before {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+
+            .export-view {
+                touch-action: none !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                -webkit-user-drag: none !important;
+            }
+
+            .export-view img {
+                pointer-events: none !important;
+                user-select: none !important;
+                -webkit-user-drag: none !important;
+            }
+
+            .no-sortable {
+                touch-action: none !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                -webkit-user-drag: none !important;
+                cursor: default !important;
+            }
+
+            /* Hide the 'tap and hold to drag' text */
+            .team-row::after {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                content: '' !important;
+            }
+        `;
+        document.head.appendChild(styleElement);
     });
 
     // Make both team sets visible
@@ -3732,6 +3821,12 @@ function exportTeamSetsAsJpeg() {
     // Add the export container to the body
     document.body.appendChild(exportContainer);
 
+    // Remove any drag path indicators that might be in the DOM
+    const dragPathIndicator = document.getElementById('dragPathIndicator');
+    if (dragPathIndicator) {
+        dragPathIndicator.remove();
+    }
+
     // Add event listener to export button
     exportButton.addEventListener('click', function() {
         // Show loading indicator
@@ -3897,6 +3992,11 @@ function exportTeamSetsAsJpeg() {
 
         // Remove after animation completes
         setTimeout(() => {
+            // Remove the style element we added for hiding image-slot::before
+            const exportStyleElement = document.querySelector('style[data-export-view="true"]');
+            if (exportStyleElement) {
+                exportStyleElement.remove();
+            }
             document.body.removeChild(exportContainer);
         }, 300);
     });
