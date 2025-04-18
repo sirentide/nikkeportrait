@@ -3661,21 +3661,33 @@ function exportToggleImageData() {
     }
 }
 
-// Function to generate a shareable code for My Nikkes - ultra-optimized version
+// Function to generate a shareable code for My Nikkes - optimized version with metadata
 function generateShareableCodeForMyNikkes(data) {
     try {
-        // Extract just the essential data we need - the image IDs
-        const imageIds = data.toggleImages.map(item => {
+        // Extract essential data with metadata
+        const compactItems = data.toggleImages.map(item => {
             // Extract the ID from the image source
             const src = item.src;
             const filename = src.split('/').pop();
             // Extract just the numeric part before the underscore (e.g., "100_name.png" -> "100")
             const id = filename.split('_')[0];
-            return id;
+
+            // Create a compact representation with essential metadata
+            // Format: id|type|faction|rarity|position|weapon|name
+            // Use empty string for null/undefined values
+            return [
+                id,
+                item.type || '',
+                item.faction || '',
+                item.rarity || '',
+                item.position || '',
+                item.weapon || '',
+                item.name || ''
+            ].join('|');
         });
 
-        // Create a compact string representation - just a comma-separated list of IDs
-        const compactString = imageIds.join(',');
+        // Join all items with a special separator (~ is rarely used in filenames)
+        const compactString = compactItems.join('~');
 
         // Log compression stats
         const jsonSize = JSON.stringify(data).length;
@@ -3869,8 +3881,8 @@ function importFromShareableCode(code) {
             throw new Error('Invalid shareable code. Could not decompress.');
         }
 
-        // Check if it's our new ultra-compact format (just comma-separated IDs)
-        let imageIds = [];
+        // Check if it's our new format with metadata or old format
+        let imageData = [];
         let data = null;
 
         // Try to parse as JSON first (for old format)
@@ -3880,41 +3892,101 @@ function importFromShareableCode(code) {
             // Check if it's the old format
             if (data && data.toggleImages && Array.isArray(data.toggleImages)) {
                 // Process the toggle images data from old format
-                const imageSources = data.toggleImages.map(item => {
+                imageData = data.toggleImages.map(item => {
                     if (typeof item === 'string') {
-                        return item; // Old format: just the URL
+                        // Old format: just the URL
+                        const filename = item.split('/').pop();
+                        const id = filename.split('_')[0];
+                        return {
+                            id: id,
+                            src: item,
+                            type: '',
+                            faction: '',
+                            rarity: '',
+                            position: '',
+                            weapon: '',
+                            name: ''
+                        };
                     } else if (item && item.src) {
-                        return item.src; // New format: object with src property
+                        // New format: object with src property
+                        const filename = item.src.split('/').pop();
+                        const id = filename.split('_')[0];
+                        return {
+                            id: id,
+                            src: item.src,
+                            type: item.type || '',
+                            faction: item.faction || '',
+                            rarity: item.rarity || '',
+                            position: item.position || '',
+                            weapon: item.weapon || '',
+                            name: item.name || ''
+                        };
                     } else {
                         console.warn('Invalid toggle image item:', item);
                         return null;
                     }
-                }).filter(src => src !== null);
-
-                // Extract IDs from image sources
-                imageIds = imageSources.map(src => {
-                    const filename = src.split('/').pop();
-                    return filename.split('_')[0]; // Extract ID
-                });
+                }).filter(item => item !== null);
             } else {
                 throw new Error('Not a valid old format');
             }
         } catch (e) {
             // Not valid JSON, try parsing as our compact format
 
-            // Check if it contains commas (our compact format)
-            if (decompressed.includes(',')) {
+            // Check if it contains our item separator (~)
+            if (decompressed.includes('~')) {
+                // Parse the items (format: id|type|faction|rarity|position|weapon|name)
+                const items = decompressed.split('~').filter(item => item.trim() !== '');
+
+                imageData = items.map(item => {
+                    const parts = item.split('|');
+                    const id = parts[0] || '';
+                    return {
+                        id: id,
+                        src: `image/${id}_name.png`,
+                        type: parts[1] || '',
+                        faction: parts[2] || '',
+                        rarity: parts[3] || '',
+                        position: parts[4] || '',
+                        weapon: parts[5] || '',
+                        name: parts[6] || ''
+                    };
+                });
+            }
+            // Check for older compact format (comma-separated IDs)
+            else if (decompressed.includes(',')) {
                 // Parse the comma-separated IDs
-                imageIds = decompressed.split(',').filter(id => id.trim() !== '');
-            } else {
-                // Single ID
-                imageIds = [decompressed];
+                const ids = decompressed.split(',').filter(id => id.trim() !== '');
+
+                imageData = ids.map(id => ({
+                    id: id,
+                    src: `image/${id}_name.png`,
+                    type: '',
+                    faction: '',
+                    rarity: '',
+                    position: '',
+                    weapon: '',
+                    name: ''
+                }));
+            }
+            // Single ID
+            else if (decompressed.trim() !== '') {
+                const id = decompressed.trim();
+                imageData = [{
+                    id: id,
+                    src: `image/${id}_name.png`,
+                    type: '',
+                    faction: '',
+                    rarity: '',
+                    position: '',
+                    weapon: '',
+                    name: ''
+                }];
             }
         }
 
         // Validate the data
-        if (!imageIds || imageIds.length === 0) {
-            throw new Error('Invalid data format. No image IDs found.');
+        if (!imageData || imageData.length === 0) {
+            throw new Error('Invalid data format. No image data found.');
         }
 
         // Confirm with the user
@@ -3932,9 +4004,9 @@ function importFromShareableCode(code) {
             .map(img => img.src);
         console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
 
-        // Convert image IDs to full image sources
-        const imageSources = imageIds.map(id => `image/${id}_name.png`);
-        console.log(`Converted ${imageSources.length} image IDs to sources`);
+        // Prepare image sources with metadata
+        const imageSources = imageData.map(item => item.src);
+        console.log(`Prepared ${imageSources.length} image sources with metadata`);
 
         // Filter out images that already exist in the toggle container
         const newImageSources = imageSources.filter(src => {
@@ -3949,13 +4021,26 @@ function importFromShareableCode(code) {
 
         console.log(`Found ${newImageSources.length} new images to import after filtering duplicates`);
 
-        // Import the toggle images
-        if (newImageSources.length > 0) {
+        // Find new images to import with their metadata
+        const newImageData = imageData.filter(item => {
+            return !existingToggleImageSources.some(existingSrc => {
+                // Compare the filenames to handle different URL formats
+                const existingFilename = existingSrc.split('/').pop();
+                const newFilename = item.src.split('/').pop();
+                return existingFilename === newFilename;
+            });
+        });
+
+        console.log(`Found ${newImageData.length} new images with metadata to import`);
+
+        // Import the toggle images with metadata
+        if (newImageData.length > 0) {
             // Clear the userClearedSelection flag since we're loading data
             localStorage.removeItem('userClearedSelection');
             console.log('Loading data from shareable code, clearing userClearedSelection flag');
 
-            importImagesToToggleGallery(newImageSources);
+            // Custom import function that preserves metadata
+            importImagesWithMetadata(newImageData);
 
             // After importing, ensure green borders are applied to images in team slots
             setTimeout(() => {
@@ -3964,7 +4049,7 @@ function importFromShareableCode(code) {
             }, 500);
 
             // No alert message for successful import
-            console.log(`Shareable code imported successfully: ${newImageSources.length} new images`);
+            console.log(`Shareable code imported successfully: ${newImageData.length} new images`);
         } else {
             alert('No new images found in the shareable code. All images already exist in your collection.');
         }
@@ -3972,6 +4057,103 @@ function importFromShareableCode(code) {
         console.error('Error importing from shareable code:', error);
         alert(`Error importing from shareable code: ${error.message}`);
     }
+}
+
+// Function to import images with metadata
+function importImagesWithMetadata(imageDataArray) {
+    const toggleImagesContainer = document.querySelector('#toggleImages');
+    if (!toggleImagesContainer) {
+        console.error('Toggle images container not found');
+        return;
+    }
+
+    // Process the image data array
+
+    // Import count for success message
+    let importCount = 0;
+
+    // Add each new image to toggle images
+    imageDataArray.forEach(imageData => {
+        // Create a toggle item
+        const toggleItem = document.createElement('div');
+        toggleItem.className = 'toggle-item';
+
+        // Set data attributes from the metadata
+        if (imageData.type) toggleItem.setAttribute('data-type', imageData.type);
+        if (imageData.position) toggleItem.setAttribute('data-position', imageData.position);
+        if (imageData.faction) toggleItem.setAttribute('data-faction', imageData.faction);
+        if (imageData.rarity) toggleItem.setAttribute('data-rarity', imageData.rarity);
+        if (imageData.weapon) toggleItem.setAttribute('data-weapon', imageData.weapon);
+        if (imageData.name) toggleItem.setAttribute('data-name', imageData.name);
+        if (imageData.id) toggleItem.setAttribute('data-number', imageData.id);
+
+        // Find the original photo in the gallery if possible
+        const galleryPhoto = Array.from(document.querySelectorAll('.gallery .photo'))
+            .find(photo => {
+                const img = photo.querySelector('img');
+                if (img) {
+                    const filename = img.src.split('/').pop();
+                    const photoId = filename.split('_')[0];
+                    return photoId === imageData.id;
+                }
+                return false;
+            });
+
+        if (galleryPhoto) {
+            // Hide the gallery photo
+            galleryPhoto.style.display = 'none';
+            toggleItem.dataset.galleryPhotoId = galleryPhoto.id || '';
+        }
+
+        // Create the image element
+        const toggleImg = document.createElement('img');
+        toggleImg.crossOrigin = 'anonymous'; // Add crossOrigin for canvas compatibility
+        toggleImg.src = getGitHubUrl(imageData.src); // Use GitHub URL
+        toggleImg.dataset.original = imageData.src;
+
+        // Add click handler for selection
+        toggleImg.addEventListener('click', function() {
+            toggleImageSelection(this);
+        });
+
+        // Add to toggle container
+        toggleItem.appendChild(toggleImg);
+        toggleImagesContainer.appendChild(toggleItem);
+
+        // Make the toggle item draggable
+        toggleItem.setAttribute('draggable', 'true');
+        toggleItem.addEventListener('dragstart', handleDragStart);
+        toggleItem.addEventListener('dragover', handleDragOver);
+        toggleItem.addEventListener('dragenter', handleDragEnter);
+        toggleItem.addEventListener('dragleave', handleDragLeave);
+        toggleItem.addEventListener('drop', handleDrop);
+        toggleItem.addEventListener('dragend', handleDragEnd);
+
+        // Set position attribute for drag and drop ordering
+        toggleItem.dataset.position = (toggleImagesContainer.children.length - 1).toString();
+
+        importCount++;
+    });
+
+    // Save the toggle tabs state
+    saveToggleTabsToLocalStorage();
+
+    // Save the imported images to the current team set
+    saveCurrentToggleImages();
+
+    // If we're importing images, clear the userClearedSelection flag
+    localStorage.removeItem('userClearedSelection');
+    console.log('Imported images with metadata, clearing userClearedSelection flag');
+
+    // No alert message for successful import
+    if (importCount > 0) {
+        console.log(`Images imported successfully with metadata: ${importCount} images`);
+    } else {
+        console.log('No new images were imported.');
+    }
+
+    // Switch to toggle images tab
+    switchContentTab('toggleImages');
 }
 
 // Export Team Sets as JPEG
