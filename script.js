@@ -37,8 +37,8 @@ function toggleBurstFilter(button) {
     const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
     console.log('All active burst filters:', Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')));
 
-    // If we're in the toggleImages tab, also check the corresponding checkbox in the filter panel
-    if (currentContentTab === 'toggleImages') {
+    // If we're in the toggleImages or gallery tab, also check the corresponding checkbox in the filter panel
+    if (currentContentTab === 'toggleImages' || currentContentTab === 'gallery') {
         // Find the corresponding checkbox in the filter panel
         const checkbox = document.querySelector(`input[type="checkbox"][value="${filterValue}"]`);
         if (checkbox) {
@@ -173,7 +173,8 @@ function updateFilters() {
 
     // Determine which tab we're in
     const isToggleTab = currentContentTab === 'toggleImages';
-    console.log('Current tab:', currentContentTab, 'Is toggle tab:', isToggleTab);
+    const isGalleryTab = currentContentTab === 'gallery';
+    console.log('Current tab:', currentContentTab, 'Is toggle tab:', isToggleTab, 'Is gallery tab:', isGalleryTab);
 
     // Filter gallery photos
     const photos = document.querySelectorAll('.photo');
@@ -182,7 +183,34 @@ function updateFilters() {
     let galleryVisibleCount = 0;
     photos.forEach(photo => {
         const attributes = getPhotoAttributes(photo);
-        const isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
+
+        // Debug log to check attributes
+        if (localStorage.getItem('filterDebugMode') === 'true') {
+            console.log('Gallery photo attributes:', attributes);
+        }
+
+        // Check if the photo matches the filters
+        let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
+
+        // If we're in the gallery tab and there are burst filters active, ensure they're applied correctly
+        if (isGalleryTab && combinedTypeFilters.length > 0) {
+            // Make sure the type attribute is properly set
+            if (!attributes.type && photo.getAttribute('data-type')) {
+                attributes.type = photo.getAttribute('data-type').toLowerCase();
+                console.log('Updated type attribute for gallery photo:', attributes.type);
+            }
+
+            // Double-check the type match
+            const typeMatch = combinedTypeFilters.some(type => {
+                return attributes.type && attributes.type.includes(type.toLowerCase());
+            });
+
+            if (!typeMatch) {
+                isMatch = false;
+                console.log('Gallery photo failed type filter check:', attributes.type, 'not in', combinedTypeFilters);
+            }
+        }
+
         photo.style.display = isMatch ? 'flex' : 'none';
         if (isMatch) galleryVisibleCount++;
     });
@@ -1667,13 +1695,21 @@ function handleDragOver(e) {
     const mouseX = e.clientX;
     const mouseY = e.clientY;
 
+    // Get the container's bounding rect to determine edges
+    const containerRect = toggleImagesContainer.getBoundingClientRect();
+
+    // Check if we're near the left edge of the container
+    const isNearLeftEdge = mouseX < containerRect.left + 40; // 40px threshold
+
+    // Check if we're near the right edge of the container
+    const isNearRightEdge = mouseX > containerRect.right - 40; // 40px threshold
+
     // Get all items except the one being dragged
     const items = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item:not(.dragging)'));
 
-    // If there are no other items, show placeholder at the end
+    // If there are no other items, show placeholder at the beginning
     if (items.length === 0) {
         // Position placeholder at the beginning of the container
-        const containerRect = toggleImagesContainer.getBoundingClientRect();
         dropPlaceholder.style.display = 'block';
         dropPlaceholder.style.position = 'absolute';
         dropPlaceholder.style.top = `${containerRect.top + 10}px`;
@@ -1681,6 +1717,41 @@ function handleDragOver(e) {
 
         // Hide the indicator
         dropIndicator.style.display = 'none';
+        return false;
+    }
+
+    // Special handling for edges
+    if (isNearLeftEdge) {
+        // Show indicator at the left edge of the first item
+        const firstItem = items[0];
+        const firstRect = firstItem.getBoundingClientRect();
+
+        dropIndicator.style.display = 'block';
+        dropIndicator.style.height = `${firstRect.height}px`;
+        dropIndicator.style.left = `${firstRect.left - 2}px`;
+        dropIndicator.style.top = `${firstRect.top}px`;
+        dropIndicator.style.animation = 'pulse 1s infinite';
+        dropIndicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+
+        // Hide the placeholder
+        dropPlaceholder.style.display = 'none';
+        return false;
+    }
+
+    if (isNearRightEdge) {
+        // Show indicator at the right edge of the last item
+        const lastItem = items[items.length - 1];
+        const lastRect = lastItem.getBoundingClientRect();
+
+        dropIndicator.style.display = 'block';
+        dropIndicator.style.height = `${lastRect.height}px`;
+        dropIndicator.style.left = `${lastRect.right - 2}px`;
+        dropIndicator.style.top = `${lastRect.top}px`;
+        dropIndicator.style.animation = 'pulse 1s infinite';
+        dropIndicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+
+        // Hide the placeholder
+        dropPlaceholder.style.display = 'none';
         return false;
     }
 
@@ -1709,29 +1780,47 @@ function handleDragOver(e) {
 
     // If we found a closest item
     if (closestItem && closestRect) {
-        // Determine if we should insert before or after based on mouse position
-        const insertBefore = mouseX < closestRect.left + closestRect.width / 2;
+        // Get the row this item is in (for multi-row layouts)
+        const itemRow = Math.floor((closestRect.top - containerRect.top) / closestRect.height);
+
+        // Get all items in the same row
+        const itemsInSameRow = items.filter(item => {
+            const itemRect = item.getBoundingClientRect();
+            const row = Math.floor((itemRect.top - containerRect.top) / itemRect.height);
+            return row === itemRow;
+        });
+
+        // Sort items in this row by their x position
+        itemsInSameRow.sort((a, b) => {
+            const rectA = a.getBoundingClientRect();
+            const rectB = b.getBoundingClientRect();
+            return rectA.left - rectB.left;
+        });
+
+        // Find where in this row the mouse is positioned
+        const mousePositionInRow = itemsInSameRow.findIndex(item => {
+            const rect = item.getBoundingClientRect();
+            return mouseX < rect.left + rect.width / 2;
+        });
 
         // Show the drop indicator
         dropIndicator.style.display = 'block';
         dropIndicator.style.height = `${closestRect.height}px`;
+        dropIndicator.style.animation = 'pulse 1s infinite';
+        dropIndicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
 
-        if (insertBefore) {
-            // Position indicator at the left edge of the closest item
-            dropIndicator.style.left = `${closestRect.left - 2}px`;
-            dropIndicator.style.top = `${closestRect.top}px`;
-
-            // Add a pulsing animation to make it more visible
-            dropIndicator.style.animation = 'pulse 1s infinite';
-            dropIndicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+        if (mousePositionInRow === -1) {
+            // Mouse is after the last item in this row
+            const lastItemInRow = itemsInSameRow[itemsInSameRow.length - 1];
+            const lastRect = lastItemInRow.getBoundingClientRect();
+            dropIndicator.style.left = `${lastRect.right - 2}px`;
+            dropIndicator.style.top = `${lastRect.top}px`;
         } else {
-            // Position indicator at the right edge of the closest item
-            dropIndicator.style.left = `${closestRect.right - 2}px`;
-            dropIndicator.style.top = `${closestRect.top}px`;
-
-            // Add a pulsing animation to make it more visible
-            dropIndicator.style.animation = 'pulse 1s infinite';
-            dropIndicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+            // Mouse is before or at an item in this row
+            const targetItem = itemsInSameRow[mousePositionInRow];
+            const targetRect = targetItem.getBoundingClientRect();
+            dropIndicator.style.left = `${targetRect.left - 2}px`;
+            dropIndicator.style.top = `${targetRect.top}px`;
         }
 
         // Hide the placeholder
@@ -1784,9 +1873,40 @@ function handleDrop(e) {
         return false;
     }
 
-    // Find the item we're hovering over based on mouse position
+    // Get the container's bounding rect to determine edges
+    const containerRect = toggleImagesContainer.getBoundingClientRect();
+
+    // Check if we're near the left edge of the container
+    const isNearLeftEdge = mouseX < containerRect.left + 40; // 40px threshold
+
+    // Check if we're near the right edge of the container
+    const isNearRightEdge = mouseX > containerRect.right - 40; // 40px threshold
+
+    // If we're near the left edge, insert at the beginning
+    if (isNearLeftEdge) {
+        console.log('Near left edge, inserting at beginning');
+        const firstItem = items[0];
+        if (firstItem) {
+            toggleImagesContainer.insertBefore(draggedItem, firstItem);
+        } else {
+            toggleImagesContainer.appendChild(draggedItem);
+        }
+        updateToggleImagesPositions();
+        return false;
+    }
+
+    // If we're near the right edge, append to the end
+    if (isNearRightEdge) {
+        console.log('Near right edge, appending to end');
+        toggleImagesContainer.appendChild(draggedItem);
+        updateToggleImagesPositions();
+        return false;
+    }
+
+    // For positions not near edges, find the closest item
     let closestItem = null;
     let closestDistance = Infinity;
+    let closestRect = null;
 
     items.forEach(item => {
         const rect = item.getBoundingClientRect();
@@ -1802,20 +1922,43 @@ function handleDrop(e) {
         if (distance < closestDistance) {
             closestDistance = distance;
             closestItem = item;
+            closestRect = rect;
         }
     });
 
     // If we found a closest item
-    if (closestItem) {
-        const rect = closestItem.getBoundingClientRect();
+    if (closestItem && closestRect) {
+        // Get the row this item is in (for multi-row layouts)
+        const itemRow = Math.floor((closestRect.top - containerRect.top) / closestRect.height);
 
-        // Determine if we should insert before or after based on mouse position
-        if (mouseX < rect.left + rect.width / 2) {
-            // Insert before
-            toggleImagesContainer.insertBefore(draggedItem, closestItem);
+        // Get all items in the same row
+        const itemsInSameRow = items.filter(item => {
+            const itemRect = item.getBoundingClientRect();
+            const row = Math.floor((itemRect.top - containerRect.top) / itemRect.height);
+            return row === itemRow;
+        });
+
+        // Sort items in this row by their x position
+        itemsInSameRow.sort((a, b) => {
+            const rectA = a.getBoundingClientRect();
+            const rectB = b.getBoundingClientRect();
+            return rectA.left - rectB.left;
+        });
+
+        // Find where in this row the mouse is positioned
+        const mousePositionInRow = itemsInSameRow.findIndex(item => {
+            const rect = item.getBoundingClientRect();
+            return mouseX < rect.left + rect.width / 2;
+        });
+
+        if (mousePositionInRow === -1) {
+            // Mouse is after the last item in this row
+            const lastItemInRow = itemsInSameRow[itemsInSameRow.length - 1];
+            toggleImagesContainer.insertBefore(draggedItem, lastItemInRow.nextSibling);
         } else {
-            // Insert after
-            toggleImagesContainer.insertBefore(draggedItem, closestItem.nextSibling);
+            // Mouse is before or at an item in this row
+            const targetItem = itemsInSameRow[mousePositionInRow];
+            toggleImagesContainer.insertBefore(draggedItem, targetItem);
         }
     } else {
         // If no close item found or we're at the end, append to the end
@@ -2122,12 +2265,22 @@ window.onload = async () => {
         }
     });
 
-    // Make sure all buttons have proper event handlers
+    // Make sure all burst filter buttons have proper event handlers
     document.querySelectorAll('.burst-btn').forEach(btn => {
         // Remove existing event listeners to prevent duplicates
         const dataValue = btn.getAttribute('data-value');
         if (dataValue) {
             // This is a burst filter button
+            btn.onclick = function() {
+                toggleBurstFilter(this);
+            };
+        }
+    });
+
+    // Add event listeners to the gallery burst filter buttons
+    document.querySelectorAll('.gallery-header .burst-filter-buttons .burst-btn').forEach(btn => {
+        const dataValue = btn.getAttribute('data-value');
+        if (dataValue) {
             btn.onclick = function() {
                 toggleBurstFilter(this);
             };
@@ -2992,6 +3145,7 @@ function importToggleImages() {
                 <button id="importSelectedBtn">Import Selected</button>
                 <button id="importAllBtn">Import All</button>
                 <button id="loadToggleDataBtn">Load from File</button>
+                <button id="importFromCodeBtn">Import from Code</button>
                 <button id="cancelImportBtn">Cancel</button>
             </div>
             <div id="noImagesMessage" class="no-images-message"></div>
@@ -3191,6 +3345,17 @@ function importToggleImages() {
             document.body.appendChild(fileInput);
             fileInput.click();
             document.body.removeChild(fileInput);
+        });
+    }
+
+    const importFromCodeBtn = modal.querySelector('#importFromCodeBtn');
+    if (importFromCodeBtn) {
+        importFromCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Show the import from code dialog
+            showImportFromCodeDialog(modal);
         });
     }
 
@@ -3416,27 +3581,300 @@ function exportToggleImageData() {
             faction: item.getAttribute('data-faction'),
             rarity: item.getAttribute('data-rarity'),
             weapon: item.getAttribute('data-weapon'),
-            selected: img.classList.contains('selected')
+            selected: img.classList.contains('selected'),
+            order: item.dataset.position || '0' // Include order for drag-and-drop positioning
         };
     });
 
     const exportData = {
+        version: '1.0',
+        type: 'nikke-portrait-my-nikkes',
+        timestamp: new Date().toISOString(),
         toggleImages: toggleImagesData
     };
 
-    // Convert to JSON
-    const jsonData = JSON.stringify(exportData, null, 2);
+    // Ask user if they want to export as JSON file or generate a shareable code
+    const exportType = confirm(
+        'How would you like to export your My Nikkes selection?\n\n' +
+        'Click OK to generate a shareable code (good for Discord).\n' +
+        'Click Cancel to download as a JSON file (good for backup).'
+    );
 
-    // Create a blob and download link
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'my_nikkes.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (exportType) {
+        // Generate shareable code
+        const shareableCode = generateShareableCodeForMyNikkes(exportData);
+        if (shareableCode) {
+            // Show the code in a dialog
+            showShareableCodeDialog(shareableCode);
+        }
+    } else {
+        // Export as JSON file
+        // Convert to JSON string
+        const jsonData = JSON.stringify(exportData, null, 2);
+
+        // Create a blob and download link
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my_nikkes.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Function to generate a shareable code for My Nikkes
+function generateShareableCodeForMyNikkes(data) {
+    try {
+        // Convert the data to a JSON string
+        const jsonString = JSON.stringify(data);
+
+        // Compress using LZString
+        const compressed = LZString.compressToEncodedURIComponent(jsonString);
+
+        return compressed;
+    } catch (error) {
+        console.error('Error generating shareable code:', error);
+        alert('Error generating shareable code: ' + error.message);
+        return null;
+    }
+}
+
+// Helper function to show a temporary message
+function showTemporaryMessage(text, duration = 1500) {
+    const message = document.createElement('div');
+    message.textContent = text;
+    message.style.position = 'absolute';
+    message.style.top = '50%';
+    message.style.left = '50%';
+    message.style.transform = 'translate(-50%, -50%)';
+    message.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    message.style.color = 'white';
+    message.style.padding = '10px 20px';
+    message.style.borderRadius = '5px';
+    message.style.zIndex = '9999';
+    message.style.fontSize = '16px';
+    message.style.fontWeight = 'bold';
+    document.body.appendChild(message);
+
+    // Remove the message after the specified duration
+    setTimeout(() => {
+        document.body.removeChild(message);
+    }, duration);
+}
+
+// Function to show the shareable code in a dialog
+function showShareableCodeDialog(code) {
+    // First, try to copy the code to clipboard automatically
+    navigator.clipboard.writeText(code)
+        .then(() => {
+            console.log('Shareable code automatically copied to clipboard');
+            showTemporaryMessage('Copied!'); // Show a temporary message
+        })
+        .catch(err => {
+            console.error('Could not automatically copy code to clipboard:', err);
+            // We'll let the user copy manually via the button
+        });
+
+    // Create a modal for the shareable code
+    const modal = document.createElement('div');
+    modal.className = 'import-modal';
+    modal.innerHTML = `
+        <div class="import-modal-content">
+            <h2>Shareable Code for My Nikkes</h2>
+            <p>Shareable code copied to clipboard!</p>
+            <textarea id="shareableCodeArea" style="width: 100%; height: 100px; margin: 10px 0; padding: 10px; background-color: #333; color: white; border: 1px solid #555; border-radius: 5px;">${code}</textarea>
+            <div class="import-controls">
+                <button id="copyCodeBtn">Copy to Clipboard</button>
+                <button id="closeCodeDialogBtn">Close</button>
+            </div>
+        </div>
+    `;
+
+    // Add the modal to the body
+    document.body.appendChild(modal);
+
+    // Add event handlers for buttons
+    const copyCodeBtn = modal.querySelector('#copyCodeBtn');
+    if (copyCodeBtn) {
+        copyCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Get the code from the textarea
+            const codeArea = modal.querySelector('#shareableCodeArea');
+            if (codeArea) {
+                // Select the text
+                codeArea.select();
+                codeArea.setSelectionRange(0, 99999); // For mobile devices
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(codeArea.value)
+                    .then(() => {
+                        showTemporaryMessage('Copied!'); // Show a temporary message
+                    })
+                    .catch(err => {
+                        console.error('Could not copy code to clipboard:', err);
+                        // Fallback for browsers that don't support clipboard API
+                        try {
+                            codeArea.select();
+                            codeArea.setSelectionRange(0, 99999);
+                            document.execCommand('copy');
+                            showTemporaryMessage('Copied!'); // Show a temporary message
+                        } catch (e) {
+                            alert('Could not copy to clipboard. Please copy manually.');
+                        }
+                    });
+            }
+        });
+    }
+
+    const closeCodeDialogBtn = modal.querySelector('#closeCodeDialogBtn');
+    if (closeCodeDialogBtn) {
+        closeCodeDialogBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Close the modal
+            modal.remove();
+        });
+    }
+
+    // Select the text in the textarea for easy manual copying
+    setTimeout(() => {
+        const codeArea = modal.querySelector('#shareableCodeArea');
+        if (codeArea) {
+            codeArea.select();
+            codeArea.setSelectionRange(0, 99999); // For mobile devices
+        }
+    }, 100);
+}
+
+// Function to show the import from code dialog
+function showImportFromCodeDialog(parentModal) {
+    // Create a modal for the import from code dialog
+    const modal = document.createElement('div');
+    modal.className = 'import-modal';
+    modal.innerHTML = `
+        <div class="import-modal-content">
+            <h2>Import My Nikkes from Code</h2>
+            <p>Paste the shareable code below:</p>
+            <textarea id="importCodeArea" style="width: 100%; height: 100px; margin: 10px 0; padding: 10px; background-color: #333; color: white; border: 1px solid #555; border-radius: 5px;"></textarea>
+            <div class="import-controls">
+                <button id="importCodeBtn">Import</button>
+                <button id="cancelImportCodeBtn">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    // Add the modal to the body
+    document.body.appendChild(modal);
+
+    // Add event handlers for buttons
+    const importCodeBtn = modal.querySelector('#importCodeBtn');
+    if (importCodeBtn) {
+        importCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Get the code from the textarea
+            const codeArea = modal.querySelector('#importCodeArea');
+            if (codeArea && codeArea.value.trim()) {
+                // Import from the shareable code
+                importFromShareableCode(codeArea.value.trim());
+
+                // Close both modals
+                modal.remove();
+                if (parentModal) parentModal.remove();
+            } else {
+                alert('Please enter a valid shareable code.');
+            }
+        });
+    }
+
+    const cancelImportCodeBtn = modal.querySelector('#cancelImportCodeBtn');
+    if (cancelImportCodeBtn) {
+        cancelImportCodeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Close the modal
+            modal.remove();
+        });
+    }
+}
+
+// Function to import from a shareable code
+function importFromShareableCode(code) {
+    try {
+        // Decompress the code using LZString
+        const jsonString = LZString.decompressFromEncodedURIComponent(code);
+        if (!jsonString) {
+            throw new Error('Invalid shareable code. Could not decompress.');
+        }
+
+        // Parse the JSON data
+        const data = JSON.parse(jsonString);
+        console.log('Parsed data from shareable code:', data);
+
+        // Validate the data
+        if (!data || !data.toggleImages || !Array.isArray(data.toggleImages)) {
+            throw new Error('Invalid data format. Missing toggle images.');
+        }
+
+        // Confirm with the user
+        const shouldImport = confirm('This will replace your current Nikkes selection. Continue?');
+        if (!shouldImport) return;
+
+        // Get the toggle images container
+        const toggleImagesContainer = document.querySelector('#toggleImages');
+        if (!toggleImagesContainer) {
+            throw new Error('Toggle images container not found.');
+        }
+
+        // Clear existing toggle images
+        toggleImagesContainer.innerHTML = '';
+        console.log('Cleared existing toggle images');
+
+        // Process the toggle images data
+        const imageSources = data.toggleImages.map(item => {
+            if (typeof item === 'string') {
+                return item; // Old format: just the URL
+            } else if (item && item.src) {
+                return item.src; // New format: object with src property
+            } else {
+                console.warn('Invalid toggle image item:', item);
+                return null;
+            }
+        }).filter(src => src !== null);
+
+        console.log(`Processed ${imageSources.length} valid image sources from shareable code`);
+
+        // Import the toggle images
+        if (imageSources.length > 0) {
+            // Clear the userClearedSelection flag since we're loading data
+            localStorage.removeItem('userClearedSelection');
+            console.log('Loading data from shareable code, clearing userClearedSelection flag');
+
+            importImagesToToggleGallery(imageSources);
+
+            // After importing, ensure green borders are applied to images in team slots
+            setTimeout(() => {
+                updateToggleImageSelectionState(currentTeamSet);
+                console.log('Updated green borders for loaded images');
+            }, 500);
+
+            // Show success message
+            alert(`Successfully imported ${imageSources.length} images from shareable code.`);
+        } else {
+            alert('No valid image sources found in the shareable code.');
+        }
+    } catch (error) {
+        console.error('Error importing from shareable code:', error);
+        alert(`Error importing from shareable code: ${error.message}`);
+    }
 }
 
 // Export Team Sets as JPEG

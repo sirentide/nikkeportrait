@@ -345,7 +345,7 @@ function filterSavedSets(query, setsList, savedSets) {
                 // Copy to clipboard
                 navigator.clipboard.writeText(shareableLink)
                     .then(() => {
-                        alert('Shareable link copied to clipboard!');
+                        alert('Shareable code copied to clipboard!');
                     })
                     .catch(err => {
                         console.error('Could not copy link to clipboard:', err);

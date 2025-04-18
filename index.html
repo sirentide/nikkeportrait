@@ -213,7 +213,15 @@
 
 <!-- Gallery Container -->
     <div class="gallery-container hidden">
-        <h2 class="gallery-title">Nikkes</h2>
+        <div class="gallery-header">
+            <h2 class="gallery-title">Nikkes</h2>
+            <div class="burst-filter-buttons">
+                <button class="burst-btn" data-value="b1">I</button>
+                <button class="burst-btn" data-value="b2">II</button>
+                <button class="burst-btn" data-value="b3">III</button>
+                <button class="burst-btn" data-value="a">A</button>
+            </div>
+        </div>
         <!-- Gallery -->
         <div class="gallery">
 
@@ -1060,68 +1068,107 @@
                     // Get the target element (where the item would be dropped)
                     const targetEl = evt.related;
 
-                    // Only add indicator if we're over a valid target
-                    if (targetEl && targetEl.classList.contains('image-slot')) {
+                    // Get the container
+                    const container = evt.to;
+
+                    // Get mouse position
+                    const mouseX = originalEvent.touches ?
+                        originalEvent.touches[0].clientX : originalEvent.clientX;
+                    const mouseY = originalEvent.touches ?
+                        originalEvent.touches[0].clientY : originalEvent.clientY;
+
+                    // Get the container's bounding rect
+                    const containerRect = container.getBoundingClientRect();
+
+                    // Check if we're near the left edge of the container
+                    const isNearLeftEdge = mouseX < containerRect.left + 40; // 40px threshold
+
+                    // Check if we're near the right edge of the container
+                    const isNearRightEdge = mouseX > containerRect.right - 40; // 40px threshold
+
+                    // Get all slots in this container
+                    const slots = Array.from(container.querySelectorAll('.image-slot'));
+
+                    // Special handling for edges
+                    if (isNearLeftEdge && slots.length > 0) {
+                        // Target the first slot
+                        const firstSlot = slots[0];
+                        // Create and add the target indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = 'target-indicator';
+                        indicator.style.borderColor = 'rgba(0, 170, 255, 0.8)';
+                        indicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+                        firstSlot.appendChild(indicator);
+                    } else if (isNearRightEdge && slots.length > 0) {
+                        // Target the last slot
+                        const lastSlot = slots[slots.length - 1];
+                        // Create and add the target indicator
+                        const indicator = document.createElement('div');
+                        indicator.className = 'target-indicator';
+                        indicator.style.borderColor = 'rgba(0, 170, 255, 0.8)';
+                        indicator.style.boxShadow = '0 0 10px 2px rgba(0, 170, 255, 0.8)';
+                        lastSlot.appendChild(indicator);
+                    } else if (targetEl && targetEl.classList.contains('image-slot')) {
                         // Create and add the target indicator
                         const indicator = document.createElement('div');
                         indicator.className = 'target-indicator';
                         targetEl.appendChild(indicator);
+                    }
 
-                        // Update the path indicator if we have touch or mouse position
-                        if (originalEvent.touches || originalEvent.clientX) {
-                            const pathIndicator = document.getElementById('dragPathIndicator');
-                            if (pathIndicator) {
-                                // Get current position
-                                const clientX = originalEvent.touches ?
-                                    originalEvent.touches[0].clientX : originalEvent.clientX;
-                                const clientY = originalEvent.touches ?
-                                    originalEvent.touches[0].clientY : originalEvent.clientY;
+                    // Update the path indicator if we have touch or mouse position
+                    if ((originalEvent.touches || originalEvent.clientX) && targetEl) {
+                        const pathIndicator = document.getElementById('dragPathIndicator');
+                        if (pathIndicator) {
+                            // Get current position
+                            const clientX = originalEvent.touches ?
+                                originalEvent.touches[0].clientX : originalEvent.clientX;
+                            const clientY = originalEvent.touches ?
+                                originalEvent.touches[0].clientY : originalEvent.clientY;
 
-                                // Get target position
-                                const targetRect = targetEl.getBoundingClientRect();
-                                const targetX = targetRect.left + targetRect.width / 2;
-                                const targetY = targetRect.top + targetRect.height / 2;
+                            // Get target position
+                            const targetRect = targetEl.getBoundingClientRect();
+                            const targetX = targetRect.left + targetRect.width / 2;
+                            const targetY = targetRect.top + targetRect.height / 2;
 
-                                // Draw path indicator
-                                const pathDot = document.createElement('div');
-                                pathDot.className = 'path-dot';
-                                pathDot.style.left = clientX + 'px';
-                                pathDot.style.top = clientY + 'px';
-                                pathIndicator.appendChild(pathDot);
+                            // Draw path indicator
+                            const pathDot = document.createElement('div');
+                            pathDot.className = 'path-dot';
+                            pathDot.style.left = clientX + 'px';
+                            pathDot.style.top = clientY + 'px';
+                            pathIndicator.appendChild(pathDot);
 
-                                // Draw arrow to target
-                                const arrow = document.createElement('div');
-                                arrow.className = 'path-arrow';
+                            // Draw arrow to target
+                            const arrow = document.createElement('div');
+                            arrow.className = 'path-arrow';
 
-                                // Calculate angle for arrow
-                                const angle = Math.atan2(targetY - clientY, targetX - clientX) * 180 / Math.PI;
-                                arrow.style.transform = `rotate(${angle}deg)`;
+                            // Calculate angle for arrow
+                            const angle = Math.atan2(targetY - clientY, targetX - clientX) * 180 / Math.PI;
+                            arrow.style.transform = `rotate(${angle}deg)`;
 
-                                // Position arrow
-                                arrow.style.left = clientX + 'px';
-                                arrow.style.top = clientY + 'px';
-                                arrow.style.width = Math.sqrt(
-                                    Math.pow(targetX - clientX, 2) +
-                                    Math.pow(targetY - clientY, 2)
-                                ) + 'px';
+                            // Position arrow
+                            arrow.style.left = clientX + 'px';
+                            arrow.style.top = clientY + 'px';
+                            arrow.style.width = Math.sqrt(
+                                Math.pow(targetX - clientX, 2) +
+                                Math.pow(targetY - clientY, 2)
+                            ) + 'px';
 
-                                pathIndicator.appendChild(arrow);
+                            pathIndicator.appendChild(arrow);
 
-                                // Clean up old dots/arrows (keep only the most recent few)
-                                const maxIndicators = 3;
-                                const dots = pathIndicator.querySelectorAll('.path-dot');
-                                const arrows = pathIndicator.querySelectorAll('.path-arrow');
+                            // Clean up old dots/arrows (keep only the most recent few)
+                            const maxIndicators = 3;
+                            const dots = pathIndicator.querySelectorAll('.path-dot');
+                            const arrows = pathIndicator.querySelectorAll('.path-arrow');
 
-                                if (dots.length > maxIndicators) {
-                                    for (let i = 0; i < dots.length - maxIndicators; i++) {
-                                        dots[i].remove();
-                                    }
+                            if (dots.length > maxIndicators) {
+                                for (let i = 0; i < dots.length - maxIndicators; i++) {
+                                    dots[i].remove();
                                 }
+                            }
 
-                                if (arrows.length > maxIndicators) {
-                                    for (let i = 0; i < arrows.length - maxIndicators; i++) {
-                                        arrows[i].remove();
-                                    }
+                            if (arrows.length > maxIndicators) {
+                                for (let i = 0; i < arrows.length - maxIndicators; i++) {
+                                    arrows[i].remove();
                                 }
                             }
                         }
