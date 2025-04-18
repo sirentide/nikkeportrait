@@ -3398,26 +3398,38 @@ function exportTeamSetsAsJpeg() {
     // Make it responsive
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     if (mediaQuery.matches) {
+        // Mobile-specific styles for the export container
+        exportContainer.style.padding = '5px';
+        exportContainer.style.justifyContent = 'flex-start';
+
+        // Mobile-specific styles for the team sets container
         teamSetsContainer.style.flexDirection = 'column';
-        teamSetsContainer.style.gap = '12px'; // Increased gap for vertical layout
+        teamSetsContainer.style.gap = '15px'; // Increased gap for vertical layout
+        teamSetsContainer.style.minWidth = 'unset'; // Remove minimum width constraint
+        teamSetsContainer.style.maxWidth = '100%'; // Allow full width
+        teamSetsContainer.style.width = '95%'; // Set width to 95% of viewport to ensure margins
+        teamSetsContainer.style.padding = '12px'; // Reduced padding
+        teamSetsContainer.style.marginTop = '10px'; // Add some margin at the top
+        teamSetsContainer.style.overflowX = 'hidden'; // Prevent horizontal scrolling
+        teamSetsContainer.style.boxSizing = 'border-box'; // Ensure padding is included in width
     }
 
     // Create a header container for the title with improved design
     const headerContainer = document.createElement('div');
     headerContainer.style.width = '100%';
     headerContainer.style.textAlign = 'center';
-    headerContainer.style.marginBottom = '10px';
+    headerContainer.style.marginBottom = mediaQuery.matches ? '5px' : '10px'; // Reduced margin on mobile
 
     // Add title with improved design
     const title = document.createElement('h2');
     title.textContent = 'My Nikkes Teams';
     title.style.color = '#fff';
     title.style.margin = '0';
-    title.style.fontSize = '24px'; // Increased font size
+    title.style.fontSize = mediaQuery.matches ? '20px' : '24px'; // Smaller font size on mobile
     title.style.fontWeight = '600'; // Semi-bold
-    title.style.padding = '10px 0'; // Increased padding
+    title.style.padding = mediaQuery.matches ? '8px 0' : '10px 0'; // Reduced padding on mobile
     title.style.letterSpacing = '0.5px'; // Slight letter spacing for better readability
-    title.style.marginBottom = '15px'; // Added margin
+    title.style.marginBottom = mediaQuery.matches ? '10px' : '15px'; // Reduced margin on mobile
     title.style.textShadow = '0 2px 4px rgba(0,0,0,0.3)'; // Add text shadow for better visibility
     headerContainer.appendChild(title);
 
@@ -3502,7 +3514,7 @@ function exportTeamSetsAsJpeg() {
             const bottomLabel = document.createElement('div');
             bottomLabel.textContent = customName;
             bottomLabel.style.position = 'absolute';
-            bottomLabel.style.bottom = '0';
+            bottomLabel.style.bottom = '0%';
             bottomLabel.style.left = '50%'; // Center horizontally
             bottomLabel.style.transform = 'translateX(-50%)'; // Center horizontally
             bottomLabel.style.fontSize = '16px'; // Slightly smaller than top label
@@ -3523,30 +3535,58 @@ function exportTeamSetsAsJpeg() {
 
         // Make responsive
         if (mediaQuery.matches) {
-            teamSet.style.width = '100%';
-            teamSet.style.minWidth = '300px'; // Smaller minimum width on mobile
-            teamSet.style.maxWidth = '100%'; // Allow full width on mobile
+
+            teamSetsContainer.style.gap = '5px'; // Increased gap for vertical layout
+            teamSetsContainer.style.minWidth = '350px'; // Remove minimum width constraint
+            teamSetsContainer.style.maxWidth = '380px';
+            teamSetsContainer.style.minHeight = '690px';
+            teamSet.style.width = '480px';
+            teamSet.style.left = '0%';
+            teamSet.style.top = '10px';
+            teamSet.style.minWidth = '340px'; // Remove minimum width constraint on mobile
+            teamSet.style.maxWidth = '360px'; // Allow full width on mobile
+            teamSet.style.paddingBottom = '40px'; // Extra padding at bottom for custom name label on mobile
+            teamSet.style.boxSizing = 'border-box'; // Ensure padding is included in width
+            teamSet.style.transform = 'scale(0.95)'; // Slightly scale down to ensure it fits
+            teamSet.style.transformOrigin = 'center top'; // Scale from center top
+
+            // Adjust top label for mobile
+            if (topLabel) {
+                topLabel.style.fontSize = '16px'; // Smaller font size on mobile
+                topLabel.style.padding = '5px 15px'; // Smaller padding on mobile
+            }
+
+            // Adjust bottom label for mobile
+            const bottomLabel = teamSet.querySelector('div:last-child:not(.team-row)');
+            if (bottomLabel && customName) {
+                bottomLabel.style.fontSize = '14px'; // Smaller font size on mobile
+                bottomLabel.style.padding = '4px 12px'; // Smaller padding on mobile
+                bottomLabel.style.maxWidth = '85%'; // Narrower on mobile
+            }
         }
 
         // Redesign team rows with better proportions
         const teamRows = teamSet.querySelectorAll('.team-row');
         teamRows.forEach(row => {
-            row.style.height = '50px'; // Increased height for higher resolution
-            row.style.marginBottom = '8px'; // Increased margin
-            row.style.padding = '5px 8px'; // Increased padding
+            row.style.height = mediaQuery.matches ? '45px' : '50px'; // Smaller height on mobile
+            row.style.marginBottom = mediaQuery.matches ? '6px' : '8px'; // Smaller margin on mobile
+            row.style.padding = mediaQuery.matches ? '4px 6px' : '5px 8px'; // Smaller padding on mobile
             row.style.backgroundColor = '#252525'; // Better background
             row.style.borderRadius = '6px'; // Better rounding
             row.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)'; // Enhanced shadow
-            row.style.maxWidth = '440px'; // Adjusted width to match team set
+            row.style.maxWidth = mediaQuery.matches ? '100%' : '440px'; // Full width on mobile
+            row.style.width = mediaQuery.matches ? '100%' : 'auto'; // Full width on mobile
             row.style.display = 'flex'; // Ensure flex display
             row.style.alignItems = 'center'; // Center items vertically
+            row.style.boxSizing = 'border-box'; // Ensure padding is included in width
 
             // Redesign image slots with better proportions
             const imageSlots = row.querySelectorAll('.image-slot');
             imageSlots.forEach(slot => {
-                slot.style.width = '42px'; // Increased size for higher resolution
-                slot.style.height = '42px'; // Increased size for higher resolution
-                slot.style.margin = '0 2px'; // Increased horizontal margin
+                // Adjust size based on device
+                slot.style.width = mediaQuery.matches ? '36px' : '42px'; // Smaller on mobile
+                slot.style.height = mediaQuery.matches ? '36px' : '42px'; // Smaller on mobile
+                slot.style.margin = mediaQuery.matches ? '0 1px' : '0 2px'; // Smaller margin on mobile
                 slot.style.border = '1px solid #444'; // Better border
                 slot.style.borderRadius = '4px'; // Rounded corners
                 slot.style.overflow = 'hidden'; // Hide overflow
@@ -3563,44 +3603,47 @@ function exportTeamSetsAsJpeg() {
             // Redesign team images container with better proportions
             const teamImages = row.querySelector('.team-images');
             if (teamImages) {
-                teamImages.style.height = '42px'; // Match image slot height
-                teamImages.style.gap = '3px'; // Increased spacing
-                teamImages.style.marginLeft = '6px'; // Increased margin
-                teamImages.style.marginRight = '6px'; // Increased margin
+                teamImages.style.height = mediaQuery.matches ? '36px' : '42px'; // Match image slot height
+                teamImages.style.gap = mediaQuery.matches ? '2px' : '3px'; // Smaller gap on mobile
+                teamImages.style.marginLeft = mediaQuery.matches ? '4px' : '6px'; // Smaller margin on mobile
+                teamImages.style.marginRight = mediaQuery.matches ? '4px' : '6px'; // Smaller margin on mobile
                 teamImages.style.display = 'flex'; // Ensure flex display
                 teamImages.style.alignItems = 'center'; // Center items vertically
                 teamImages.style.flex = '1'; // Take available space
+                teamImages.style.justifyContent = 'center'; // Center items horizontally
             }
 
             // Redesign team label with better proportions
             const teamLabel = row.querySelector('.team-label');
             if (teamLabel) {
-                teamLabel.style.width = '32px'; // Increased width
-                teamLabel.style.height = '32px'; // Square shape
-                teamLabel.style.fontSize = '14px'; // Increased font size
+                teamLabel.style.width = mediaQuery.matches ? '28px' : '32px'; // Smaller on mobile
+                teamLabel.style.height = mediaQuery.matches ? '28px' : '32px'; // Smaller on mobile
+                teamLabel.style.fontSize = mediaQuery.matches ? '12px' : '14px'; // Smaller font on mobile
                 teamLabel.style.fontWeight = '600'; // Semi-bold
                 teamLabel.style.padding = '0'; // No padding
                 teamLabel.style.display = 'flex';
                 teamLabel.style.alignItems = 'center';
                 teamLabel.style.justifyContent = 'center';
-                teamLabel.style.marginRight = '8px'; // Increased margin
+                teamLabel.style.marginRight = mediaQuery.matches ? '6px' : '8px'; // Smaller margin on mobile
                 teamLabel.style.backgroundColor = '#333'; // Background color
                 teamLabel.style.borderRadius = '4px'; // Rounded corners
                 teamLabel.style.color = '#fff'; // Text color
+                teamLabel.style.flexShrink = '0'; // Prevent shrinking
             }
 
             // Redesign team score with better proportions
             const teamScore = row.querySelector('.team-score');
             if (teamScore) {
-                teamScore.style.width = '60px'; // Increased width
-                teamScore.style.fontSize = '14px'; // Increased font size
+                teamScore.style.width = mediaQuery.matches ? '50px' : '60px'; // Smaller width on mobile
+                teamScore.style.fontSize = mediaQuery.matches ? '12px' : '14px'; // Smaller font on mobile
                 teamScore.style.fontWeight = '500'; // Medium weight
-                teamScore.style.padding = '0 6px'; // Increased padding
+                teamScore.style.padding = mediaQuery.matches ? '0 4px' : '0 6px'; // Smaller padding on mobile
                 teamScore.style.display = 'flex';
                 teamScore.style.alignItems = 'center';
                 teamScore.style.justifyContent = 'flex-end'; // Right align
                 teamScore.style.marginLeft = 'auto'; // Push to the right
                 teamScore.style.borderRadius = '3px'; // Rounded corners
+                teamScore.style.flexShrink = '0'; // Prevent shrinking
 
                 // Keep the color but add a subtle background
                 const currentColor = teamScore.style.color;
@@ -3627,22 +3670,24 @@ function exportTeamSetsAsJpeg() {
     const buttonsContainer = document.createElement('div');
     buttonsContainer.style.display = 'flex';
     buttonsContainer.style.justifyContent = 'center';
-    buttonsContainer.style.gap = '10px'; // Better spacing
-    buttonsContainer.style.marginTop = '12px'; // Better margin
+    buttonsContainer.style.gap = mediaQuery.matches ? '8px' : '10px'; // Reduced spacing on mobile
+    buttonsContainer.style.marginTop = mediaQuery.matches ? '10px' : '12px'; // Reduced margin on mobile
+    buttonsContainer.style.flexWrap = mediaQuery.matches ? 'wrap' : 'nowrap'; // Allow wrapping on mobile
 
     // Add export button with improved design
     const exportButton = document.createElement('button');
     exportButton.textContent = 'Export as JPEG';
-    exportButton.style.padding = '8px 16px'; // Better padding
+    exportButton.style.padding = mediaQuery.matches ? '6px 12px' : '8px 16px'; // Smaller padding on mobile
     exportButton.style.backgroundColor = '#2a6ed1'; // Blue color
     exportButton.style.color = '#fff';
     exportButton.style.border = 'none';
     exportButton.style.borderRadius = '4px';
     exportButton.style.cursor = 'pointer';
-    exportButton.style.fontSize = '13px'; // Better font size
+    exportButton.style.fontSize = mediaQuery.matches ? '12px' : '13px'; // Smaller font on mobile
     exportButton.style.fontWeight = '500'; // Medium weight
     exportButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'; // Subtle shadow
     exportButton.style.transition = 'background-color 0.2s'; // Smooth hover transition
+    exportButton.style.margin = mediaQuery.matches ? '3px' : '0'; // Add margin on mobile for wrapped buttons
     // Add hover effect
     exportButton.onmouseover = function() { this.style.backgroundColor = '#3a7ee1'; };
     exportButton.onmouseout = function() { this.style.backgroundColor = '#2a6ed1'; };
@@ -3651,16 +3696,17 @@ function exportTeamSetsAsJpeg() {
     // Add close button with improved design
     const closeButton = document.createElement('button');
     closeButton.textContent = 'Close';
-    closeButton.style.padding = '8px 16px'; // Better padding
+    closeButton.style.padding = mediaQuery.matches ? '6px 12px' : '8px 16px'; // Smaller padding on mobile
     closeButton.style.backgroundColor = '#444'; // Gray color
     closeButton.style.color = '#fff';
     closeButton.style.border = 'none';
     closeButton.style.borderRadius = '4px';
     closeButton.style.cursor = 'pointer';
-    closeButton.style.fontSize = '13px'; // Better font size
+    closeButton.style.fontSize = mediaQuery.matches ? '12px' : '13px'; // Smaller font on mobile
     closeButton.style.fontWeight = '500'; // Medium weight
     closeButton.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'; // Subtle shadow
     closeButton.style.transition = 'background-color 0.2s'; // Smooth hover transition
+    closeButton.style.margin = mediaQuery.matches ? '3px' : '0'; // Add margin on mobile for wrapped buttons
     // Add hover effect
     closeButton.onmouseover = function() { this.style.backgroundColor = '#555'; };
     closeButton.onmouseout = function() { this.style.backgroundColor = '#444'; };
@@ -3676,9 +3722,10 @@ function exportTeamSetsAsJpeg() {
     const footerText = document.createElement('div');
     footerText.textContent = 'Nikkes Arena • Team Builder';
     footerText.style.color = '#666';
-    footerText.style.fontSize = '10px';
-    footerText.style.marginTop = '8px';
+    footerText.style.fontSize = mediaQuery.matches ? '9px' : '10px'; // Smaller font on mobile
+    footerText.style.marginTop = mediaQuery.matches ? '6px' : '8px'; // Reduced margin on mobile
     footerText.style.textAlign = 'center';
+    footerText.style.padding = mediaQuery.matches ? '0 5px 5px' : '0'; // Add bottom padding on mobile
     exportContainer.appendChild(footerText);
 
     // Add the export container to the body

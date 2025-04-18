@@ -738,7 +738,7 @@ body.is-dragging .image-slot.empty::after {
     .team-sets-container {
         flex-direction: column;
         padding: 10px;
-        gap: 5px;
+        gap: 10px; /* Increased gap for better separation */
     }
 
     .export-container {
@@ -779,6 +779,18 @@ body.is-dragging .image-slot.empty::after {
         width: 100px;
         padding: 3px 5px;
         font-size: 11px;
+    }
+
+    /* Ensure proper spacing between team sets on mobile */
+    .export-container .fixed-team-container {
+        margin-bottom: 20px; /* Increased margin for better separation */
+        padding-bottom: 40px; /* Extra padding for the bottom label */
+    }
+
+    /* Ensure the title is properly sized on mobile */
+    .export-container h2 {
+        font-size: 20px; /* Slightly smaller title on mobile */
+        margin-bottom: 15px;
     }
 }
 
