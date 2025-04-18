@@ -681,75 +681,42 @@ function exportSavedTeamSets() {
         return;
     }
 
-    // Ask user if they want to export as JSON file or generate a shareable link
-    const exportType = confirm(
-        'How would you like to export your team sets?\n\n' +
-        'Click OK to generate a shareable link (good for Discord).\n' +
-        'Click Cancel to download as a JSON file (good for backup).'
-    );
+    // Export as JSON file directly (removed shareable code option since it's available per team set)
+    // Create export data with metadata
+    const exportData = {
+        version: '1.0',
+        type: 'nikke-portrait-saved-sets',
+        timestamp: new Date().toISOString(),
+        sets: savedSets
+    };
 
-    if (exportType) {
-        // User chose to generate a shareable link
-        // If there are multiple sets, ask which one to share
-        const setNames = Object.keys(savedSets);
+    // Convert to JSON string
+    const jsonString = JSON.stringify(exportData, null, 2); // Pretty print with 2 spaces
 
-        if (setNames.length === 1) {
-            // Only one set, share it directly
-            const shareableLink = generateShareableLink(setNames[0]);
-            if (shareableLink) {
-                // Copy to clipboard
-                navigator.clipboard.writeText(shareableLink)
-                    .then(() => {
-                        alert('Shareable link copied to clipboard!');
-                    })
-                    .catch(err => {
-                        console.error('Could not copy link to clipboard:', err);
-                        // Show the link in a prompt so user can copy it manually
-                        prompt('Copy this shareable link:', shareableLink);
-                    });
-            }
-        } else {
-            // Multiple sets, create a dialog to select which one to share
-            showShareDialog(setNames);
-        }
-    } else {
-        // User chose to download as JSON file
-        // Create export data with metadata
-        const exportData = {
-            version: '1.0',
-            type: 'nikke-portrait-saved-sets',
-            timestamp: new Date().toISOString(),
-            sets: savedSets
-        };
+    // Create a Blob with the JSON data
+    const blob = new Blob([jsonString], { type: 'application/json' });
 
-        // Convert to JSON string
-        const jsonString = JSON.stringify(exportData, null, 2); // Pretty print with 2 spaces
+    // Create a timestamp for the filename
+    const now = new Date();
+    const timestamp = now.getFullYear() +
+                     ('0' + (now.getMonth() + 1)).slice(-2) +
+                     ('0' + now.getDate()).slice(-2) + '_' +
+                     ('0' + now.getHours()).slice(-2) +
+                     ('0' + now.getMinutes()).slice(-2);
 
-        // Create a Blob with the JSON data
-        const blob = new Blob([jsonString], { type: 'application/json' });
+    // Create a download link
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `nikke_saved_team_sets_${timestamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-        // Create a timestamp for the filename
-        const now = new Date();
-        const timestamp = now.getFullYear() +
-                         ('0' + (now.getMonth() + 1)).slice(-2) +
-                         ('0' + now.getDate()).slice(-2) + '_' +
-                         ('0' + now.getHours()).slice(-2) +
-                         ('0' + now.getMinutes()).slice(-2);
+    // Clean up the URL object
+    URL.revokeObjectURL(a.href);
 
-        // Create a download link
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `nikke_saved_team_sets_${timestamp}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        // Clean up the URL object
-        URL.revokeObjectURL(a.href);
-
-        // Show success message
-        alert('Saved team sets exported successfully as JSON file!');
-    }
+    // Show success message
+    console.log('Saved team sets exported successfully as JSON file');
 }
 
 // Function to import saved team sets from a JSON file or shared code
