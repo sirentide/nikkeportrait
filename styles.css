@@ -632,13 +632,36 @@ body.is-dragging .image-slot.empty::after {
 .gallery-title, .toggle-title, .team-title {
     color: #fff;
     font-size: 18px;
-    margin: 0 0 15px 0;
-    padding: 15px 10px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 0;
+    padding: 15px 10px;
     text-align: center;
     display: block;
     width: 100%;
+}
+
+/* Toggle Header */
+.toggle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     background-color: rgba(17, 17, 17, 0.8);
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.toggle-header .toggle-title {
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    text-align: left;
+}
+
+.toggle-header .burst-filter-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
 }
 
 /* Team Title Container */
@@ -1701,9 +1724,9 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
 }
 
 .burst-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
     background-color: #333;
     color: white;
     border: none;
@@ -1713,12 +1736,15 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    min-width: 36px;
+    font-size: 14px;
+    min-width: 32px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .burst-btn:hover {
     background-color: #444;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .filter-wrapper {
@@ -1748,7 +1774,8 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
 
 .burst-btn.active {
     background-color: #2a6496;
-    box-shadow: 0 0 8px rgba(42, 100, 150, 0.8);
+    box-shadow: 0 0 8px rgba(42, 100, 150, 0.8), 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
 }
 
 /* Search */
@@ -1844,7 +1871,7 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
 
     .top-controls-wrapper {
         position: fixed;
-        top: 300px; /* Adjusted to match reduced team container height */
+        top: 30vh; /* Align with the top of toggle-container */
         left: 0;
         width: 100%;
         flex-direction: row;
@@ -1852,7 +1879,7 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         justify-content: space-between;
         margin-bottom: 0;
         padding: 5px;
-        z-index: 940;
+        z-index: 925; /* Between toggle-container and filter panel */
         background-color: rgba(17, 17, 17, 0.9); /* Add background for better visibility */
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         height: 40px; /* Fixed height for consistency */
@@ -1884,23 +1911,23 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     }
 
     .filter-panel {
-        width: 45% !important;
+        width: 80% !important;
+        max-width: 150px !important;
         max-height: 75vh !important;
         padding: 14px !important;
-        max-width: 45vw !important;
-        width: 300px !important;
         font-size: 0.9em !important;
-        left: 7.5% !important;
-        right: auto !important;
+        left: auto !important;
+        right: 10px !important;
         top: 50px !important;
         margin: 0 !important;
-        transform: translateY(-100vh) !important; /* Start off-screen from top */
+        transform: translateX(100vw) !important; /* Start off-screen from right */
         display: block !important; /* Always in the DOM */
         border-radius: 14px !important;
+        z-index: 9999 !important; /* Ensure it's above everything */
     }
 
     .filter-panel.visible {
-        transform: translateY(0) !important;
+        transform: translateX(0) !important;
         opacity: 1 !important;
     }
 
@@ -2053,8 +2080,9 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         left: 0;
         right: 0;
         margin: 0 auto 0;
-        z-index: 1200;
+        z-index: 920; /* Lower z-index to prevent overlap with filter panel */
         padding: 0; /* Remove padding to accommodate search-filter-container */
+        overflow: hidden; /* Prevent content from spilling out */
     }
 
     /* Tab Navigation for mobile */
@@ -2063,6 +2091,12 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         flex-direction: column;
         padding: 0;
         background-color: rgba(34, 34, 34, 0.95);
+        z-index: 940; /* Ensure it's above other elements but below filter panel */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
     }
 
     /* Adjust search and filter for mobile */
@@ -2121,14 +2155,16 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         left: 0;
         right: 0;
         width: 100%;
-        max-height: 35vh; /* Reduced height to save space */
+        max-height: 30vh; /* Further reduced height to save space */
         margin: 0;
         padding: 8px 5px;
         border-radius: 0 0 10px 10px; /* Round only bottom corners */
-        z-index: 950; /* Above most content but below search */
+        z-index: 930; /* Adjusted z-index to prevent overlap */
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        min-width: unset; /* Remove min-width constraint for mobile */
+        max-width: 100%; /* Ensure it doesn't exceed screen width */
     }
 
     #selectedContainer, #selectedContainer1, #selectedContainer2 {
@@ -2166,12 +2202,29 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     /* Smaller title on mobile */
     .gallery-title, .toggle-title, .team-title {
         font-size: 16px;
-        margin: 0 0 8px 0;
-        padding: 10px 5px 8px;
+        margin: 0;
+        padding: 10px 5px;
         display: block;
         text-align: center;
         width: 100%;
-        background-color: rgba(17, 17, 17, 0.9);
+    }
+
+    /* Toggle Header for mobile */
+    .toggle-header {
+        padding: 8px 10px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .toggle-header .toggle-title {
+        font-size: 16px;
+        width: auto;
+        flex: 1;
+    }
+
+    .toggle-header .burst-filter-buttons {
+        gap: 5px;
+        margin-left: 5px;
     }
 
     /* Smaller team labels and scores on mobile */
@@ -2226,6 +2279,9 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         padding: 10px;
         justify-content: center;
         border-radius: 0 0 8px 8px; /* Round only bottom corners */
+        overflow-y: auto; /* Ensure scrolling works */
+        height: calc(100% - 50px); /* Account for header */
+        max-height: calc(100% - 50px); /* Ensure it doesn't overflow */
     }
 
     .toggle-item {

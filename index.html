@@ -173,9 +173,8 @@
 <!-- Tab System for My Nikkes -->
 <div class="toggle-tabs-container">
     <div class="toggle-container" id="toggleImagesContainer">
-        <h2 class="toggle-title">My Nikkes</h2>
-        <div class="toggle-images" id="toggleImages"></div>
-        <div class="search-filter-container">
+        <div class="toggle-header">
+            <h2 class="toggle-title">My Nikkes</h2>
             <div class="burst-filter-buttons">
                 <button class="burst-btn" data-value="b1">I</button>
                 <button class="burst-btn" data-value="b2">II</button>
@@ -183,6 +182,7 @@
                 <button class="burst-btn" data-value="a">A</button>
             </div>
         </div>
+        <div class="toggle-images" id="toggleImages"></div>
     </div>
 </div>
 
@@ -190,9 +190,9 @@
 <div class="tab-navigation">
     <div class="tab-group">
         <button class="tab-button" data-tab="gallery">Nikkes</button>
-        <button class="tab-button active" data-tab="toggleImages">Nikke lists</button>
-        <button class="tab-button import-toggle" id="importToggleBtn">Add Nikkes</button>
-        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove Nikkes</button>
+        <button class="tab-button active" data-tab="toggleImages">My Nikke lists</button>
+        <button class="tab-button import-toggle" id="importToggleBtn">Add lists</button>
+        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove lists</button>
         <button class="tab-button export-data" id="exportToggleDataBtn">Save Nikkes lists</button>
         <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset Site Data</button>
     </div>
@@ -207,7 +207,6 @@
         </div>
         <div class="filter-wrapper">
             <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
-            <button id="debugBtn" class="burst-btn debug-btn" onclick="event.stopPropagation(); event.preventDefault(); toggleFilterDebugMode();" title="Toggle Debug Mode"><i class="debug-icon">🐞</i></button>
         </div>
     </div>
 </div>
@@ -1209,15 +1208,7 @@
     </div>
     <div class="filter-grid">
         <!-- Compact filter layout -->
-        <div class="filter-box compact">
-            <h4>Type</h4>
-            <div class="checkbox-group compact">
-                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b1" onchange="updateFilters()"><span>I</span></label>
-                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b2" onchange="updateFilters()"><span>II</span></label>
-                <label class="checkbox-label compact"><input type="checkbox" name="type" value="b3" onchange="updateFilters()"><span>III</span></label>
-                <label class="checkbox-label compact"><input type="checkbox" name="type" value="a" onchange="updateFilters()"><span>A</span></label>
-            </div>
-        </div>
+
         <div class="filter-box compact">
             <h4>Class</h4>
             <div class="checkbox-group compact">
