@@ -1390,4 +1390,36 @@ function showSavedSetsPanel() {
 
     // Add the panel to the body
     document.body.appendChild(panel);
+
+    // Add click outside functionality to close the panel
+    // Use a flag to prevent the panel from closing immediately when it's opened
+    let justOpened = true;
+    setTimeout(() => {
+        justOpened = false;
+    }, 100);
+
+    // Use setTimeout to ensure this event listener is added after any other click events
+    setTimeout(() => {
+        document.addEventListener('click', function closeOnClickOutside(e) {
+            // Check if the panel still exists in the DOM
+            const currentPanel = document.querySelector('.saved-sets-panel');
+            if (!currentPanel) {
+                // Panel is already gone, remove the event listener
+                document.removeEventListener('click', closeOnClickOutside);
+                return;
+            }
+
+            // Check if the panel just opened (to prevent immediate closing)
+            if (justOpened) {
+                return;
+            }
+
+            // Check if the click was outside the panel
+            if (!currentPanel.contains(e.target) && e.target !== document.querySelector('#savedSetsBtn')) {
+                // Click was outside the panel and not on the button that opened it
+                currentPanel.remove();
+                document.removeEventListener('click', closeOnClickOutside);
+            }
+        });
+    }, 10);
 }
