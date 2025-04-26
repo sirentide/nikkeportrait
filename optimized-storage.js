@@ -1,12 +1,13 @@
 // Optimized storage functions for nikkeportrait
 
-// Storage keys
-const STORAGE_KEY = 'nikkePortraitData';
-const TOGGLE_TABS_KEY = 'nikkeToggleTabsData';
+// Use storage keys from storage.js
+// STORAGE_KEY and TOGGLE_TABS_KEY are already defined in storage.js
 
 // Cache for localStorage data to avoid repeated parsing
-let cachedStorageData = null;
-let isSavingData = false;
+// Note: cachedStorageData is already declared in storage.js
+// let cachedStorageData = null;
+// Note: isSavingData is already declared in storage.js
+// let isSavingData = false;
 
 // Debounce function to prevent excessive save operations
 function debounce(func, wait) {
@@ -24,11 +25,11 @@ function getStorageData() {
     if (cachedStorageData !== null) {
         return cachedStorageData;
     }
-    
+
     try {
         const dataString = localStorage.getItem(STORAGE_KEY);
         if (!dataString) return null;
-        
+
         // Parse and cache the data
         cachedStorageData = JSON.parse(dataString);
         return cachedStorageData;
@@ -42,16 +43,16 @@ function getStorageData() {
 function saveStorageData(data) {
     // Prevent saving if already in progress
     if (isSavingData) return false;
-    
+
     isSavingData = true;
     try {
         // Update the cache
         cachedStorageData = data;
-        
+
         // Save to localStorage
         const jsonString = JSON.stringify(data);
         localStorage.setItem(STORAGE_KEY, jsonString);
-        
+
         console.log('Successfully saved data to localStorage, size:', jsonString.length, 'bytes');
         return true;
     } catch (error) {
@@ -70,7 +71,7 @@ function clearStorageCache() {
 // Optimized saveSelectionToLocalStorage function
 function saveSelectionToLocalStorage() {
     console.log('Saving selection to localStorage...');
-    
+
     // Use the debounced save function to prevent excessive saves
     debouncedSaveSelectionToLocalStorage();
 }
@@ -78,7 +79,7 @@ function saveSelectionToLocalStorage() {
 // The actual save function that will be debounced
 const debouncedSaveSelectionToLocalStorage = debounce(() => {
     console.log('Executing debounced save...');
-    
+
     // Avoid infinite recursion
     if (window.isSavingSelection) {
         console.log('Already saving selection, skipping to avoid recursion');
@@ -180,7 +181,7 @@ const debouncedSaveSelectionToLocalStorage = debounce(() => {
                     if (existingData.toggleImages && Array.isArray(existingData.toggleImages)) {
                         console.log(`Found ${existingData.toggleImages.length} toggle images in localStorage, using those`);
                         toggleImagesData = existingData.toggleImages;
-                    } else if (existingData.toggleTabs && existingData.toggleTabs.toggleImages && 
+                    } else if (existingData.toggleTabs && existingData.toggleTabs.toggleImages &&
                               Array.isArray(existingData.toggleTabs.toggleImages)) {
                         console.log(`Found ${existingData.toggleTabs.toggleImages.length} toggle images in toggleTabs, using those`);
                         toggleImagesData = existingData.toggleTabs.toggleImages;
@@ -214,7 +215,7 @@ const debouncedSaveSelectionToLocalStorage = debounce(() => {
 // Optimized saveToggleTabsToLocalStorage function
 function saveToggleTabsToLocalStorage() {
     console.log('Saving toggle tabs to localStorage...');
-    
+
     // Use the debounced save function
     debouncedSaveToggleTabsToLocalStorage();
 }
@@ -222,7 +223,7 @@ function saveToggleTabsToLocalStorage() {
 // The actual save function that will be debounced
 const debouncedSaveToggleTabsToLocalStorage = debounce(() => {
     console.log('Executing debounced toggle tabs save...');
-    
+
     try {
         const toggleTabs = {};
 
@@ -255,7 +256,7 @@ const debouncedSaveToggleTabsToLocalStorage = debounce(() => {
                 // If no toggle items in DOM, check if we have them in localStorage
                 const existingData = getStorageData();
                 if (existingData) {
-                    if (existingData.toggleTabs && existingData.toggleTabs.toggleImages && 
+                    if (existingData.toggleTabs && existingData.toggleTabs.toggleImages &&
                         Array.isArray(existingData.toggleTabs.toggleImages)) {
                         console.log(`Found ${existingData.toggleTabs.toggleImages.length} toggle images in toggleTabs, using those`);
                         toggleTabs.toggleImages = existingData.toggleTabs.toggleImages;
@@ -300,10 +301,10 @@ const debouncedSaveToggleTabsToLocalStorage = debounce(() => {
 async function loadSelectionFromLocalStorage() {
     try {
         console.log('Attempting to load data from localStorage key:', STORAGE_KEY);
-        
+
         // Use the cached data if available
         const savedData = getStorageData();
-        
+
         if (!savedData) {
             console.log('No saved data found in localStorage');
             // Try to load default data

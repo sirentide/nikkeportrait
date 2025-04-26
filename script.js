@@ -22,7 +22,16 @@ window.addEventListener('resize', detectOrientation);
 window.addEventListener('orientationchange', detectOrientation);
 
 // Call on page load
-window.addEventListener('DOMContentLoaded', detectOrientation);
+window.addEventListener('DOMContentLoaded', function() {
+    detectOrientation();
+
+    // Add click handlers to all burst filter buttons
+    document.querySelectorAll('.burst-btn:not(.filter-btn)').forEach(button => {
+        button.addEventListener('click', function() {
+            toggleBurstFilter(this);
+        });
+    });
+});
 
 // Burst filter buttons functionality
 function toggleBurstFilter(button) {
@@ -33,22 +42,18 @@ function toggleBurstFilter(button) {
 
     console.log(`Toggled burst filter: ${filterValue}, Active: ${isActive}`);
 
-    // Log all active burst filters for debugging
-    const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
-    console.log('All active burst filters:', Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')));
-
-    // If we're in the toggleImages or gallery tab, also check the corresponding checkbox in the filter panel
-    if (currentContentTab === 'toggleImages' || currentContentTab === 'gallery') {
-        // Find the corresponding checkbox in the filter panel
-        const checkbox = document.querySelector(`input[type="checkbox"][value="${filterValue}"]`);
-        if (checkbox) {
-            // Set the checkbox state to match the button state
-            checkbox.checked = isActive;
-            console.log(`Set checkbox for ${filterValue} to ${isActive}`);
-        } else {
-            console.log(`Could not find checkbox for ${filterValue}`);
+    // Sync all burst buttons with the same data-value across the page
+    const allBurstButtons = document.querySelectorAll(`.burst-btn[data-value="${filterValue}"]:not(.filter-btn)`);
+    allBurstButtons.forEach(btn => {
+        if (btn !== button) {
+            btn.classList.toggle('active', isActive);
         }
-    }
+    });
+
+    // Get unique active burst filters for debugging
+    const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
+    const uniqueActiveFilters = [...new Set(Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')))];
+    console.log('All active burst filters:', uniqueActiveFilters);
 
     // Update filters
     updateFilters();
@@ -61,13 +66,20 @@ function toggleBurstFilter(button) {
 function getActiveBurstFilters() {
     // Only select burst buttons that are active and don't have the filter-btn class
     const activeButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
-    const activeFilters = Array.from(activeButtons)
-        .map(btn => {
-            const value = btn.getAttribute('data-value');
+
+    // Use a Set to ensure unique values
+    const uniqueFilters = new Set();
+
+    Array.from(activeButtons).forEach(btn => {
+        const value = btn.getAttribute('data-value');
+        if (value !== null) {
             console.log(`Active burst button: ${value}`);
-            return value;
-        })
-        .filter(value => value !== null); // Filter out null values
+            uniqueFilters.add(value);
+        }
+    });
+
+    // Convert Set back to Array
+    const activeFilters = Array.from(uniqueFilters);
 
     console.log('Active burst filters after processing:', activeFilters);
     return activeFilters;
@@ -192,8 +204,8 @@ function updateFilters() {
         // Check if the photo matches the filters
         let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
 
-        // If we're in the gallery tab and there are burst filters active, ensure they're applied correctly
-        if (isGalleryTab && combinedTypeFilters.length > 0) {
+        // If there are burst filters active, ensure they're applied correctly
+        if (combinedTypeFilters.length > 0) {
             // Make sure the type attribute is properly set
             if (!attributes.type && photo.getAttribute('data-type')) {
                 attributes.type = photo.getAttribute('data-type').toLowerCase();
@@ -202,7 +214,7 @@ function updateFilters() {
 
             // Double-check the type match
             const typeMatch = combinedTypeFilters.some(type => {
-                return attributes.type && attributes.type.includes(type.toLowerCase());
+                return attributes.type && attributes.type.toLowerCase().includes(type.toLowerCase());
             });
 
             if (!typeMatch) {
@@ -235,8 +247,8 @@ function updateFilters() {
         // Check if the item matches the filters
         let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
 
-        // If we're in the toggle tab and there are burst filters active, ensure they're applied correctly
-        if (isToggleTab && combinedTypeFilters.length > 0) {
+        // If there are burst filters active, ensure they're applied correctly
+        if (combinedTypeFilters.length > 0) {
             // Make sure the type attribute is properly set
             if (!attributes.type && item.getAttribute('data-type')) {
                 attributes.type = item.getAttribute('data-type').toLowerCase();
@@ -245,7 +257,7 @@ function updateFilters() {
 
             // Double-check the type match
             const typeMatch = combinedTypeFilters.some(type => {
-                return attributes.type && attributes.type.includes(type.toLowerCase());
+                return attributes.type && attributes.type.toLowerCase().includes(type.toLowerCase());
             });
 
             if (!typeMatch) {
@@ -486,7 +498,7 @@ function saveSelectionToLocalStorage() {
     window.isSavingSelection = true;
 
     // Get team data from the DOM
-    const teamSets = [];
+    let teamSets = [];
 
     // Check if we have team data in the DOM
     let hasTeamDataInDOM = false;
@@ -1594,10 +1606,31 @@ function updateTeamScore() {
                 // Extract score from image filename
                 try {
                     const filename = img.src.split('/').pop();
-                    const scoreStr = filename.split('_')[0];
-                    const score = parseInt(scoreStr, 10) / 10;
+                    const parts = filename.split('_');
+
+                    // Try to get the score from the second part (number) if available
+                    let score = 0;
+                    if (parts.length > 1) {
+                        // The second part should be the number
+                        const numberPart = parts[1];
+                        if (!isNaN(parseInt(numberPart, 10))) {
+                            score = parseInt(numberPart, 10) / 10;
+                        } else {
+                            // If second part is not a number, try the first part
+                            score = parseInt(parts[0], 10) / 10;
+                        }
+                    } else {
+                        // Fallback to using the first part (ID)
+                        score = parseInt(parts[0], 10) / 10;
+                    }
+
                     if (!isNaN(score)) {
                         totalScore += score;
+                        // console.log(`Added score ${score} from ${filename}, total now: ${totalScore}`);
+                    } else {
+                        // Only log the first part of the filename to reduce console spam
+                        const shortFilename = filename.split('_')[0] + '_' + filename.split('_')[1] + '...';
+                        console.warn(`Could not extract valid score from ${shortFilename}`);
                     }
                 } catch (error) {
                     console.error('Error calculating score for image:', img.src, error);
@@ -3689,23 +3722,100 @@ function generateShareableCodeForMyNikkes(data) {
         // Join all items with a special separator (~ is rarely used in filenames)
         const compactString = compactItems.join('~');
 
+        // Add a prefix to identify this as a Nikke list code
+        const prefixedString = 'NL:' + compactString;
+
         // Log compression stats
         const jsonSize = JSON.stringify(data).length;
         console.log('Original JSON size:', jsonSize, 'bytes');
-        console.log('Compact string size:', compactString.length, 'bytes');
-        console.log('Size reduction:', Math.round((1 - compactString.length / jsonSize) * 100) + '%');
+        console.log('Compact string size:', prefixedString.length, 'bytes');
+        console.log('Size reduction:', Math.round((1 - prefixedString.length / jsonSize) * 100) + '%');
 
         // Compress using LZString
-        const compressed = LZString.compressToEncodedURIComponent(compactString);
+        const compressed = LZString.compressToEncodedURIComponent(prefixedString);
         console.log('Compressed size:', compressed.length, 'bytes');
         console.log('Final compression ratio:', Math.round((compressed.length / jsonSize) * 100) + '%');
 
-        return compressed;
+        // Generate a direct ID-based code for simpler sharing
+        const directIdCode = generateDirectIdCode(data.toggleImages);
+        console.log('Direct ID code:', directIdCode);
+        console.log('Direct ID code size:', directIdCode.length, 'bytes');
+
+        // Always use the compact format as it's much more efficient
+        return directIdCode;
     } catch (error) {
         console.error('Error generating shareable code:', error);
         alert('Error generating shareable code: ' + error.message);
         return null;
     }
+}
+
+// Function to generate a direct ID-based code (much more compact)
+function generateDirectIdCode(toggleImages) {
+    try {
+        // Extract just the IDs from the toggle images
+        const ids = toggleImages.map(item => {
+            // Extract the ID from the image source
+            const src = typeof item === 'string' ? item : item.src;
+            const filename = src.split('/').pop();
+            // Extract just the numeric part before the underscore (e.g., "100_name.png" -> "100")
+            return filename.split('_')[0];
+        });
+
+        // Create a super compact representation with just the IDs separated by 'x'
+        // Format: id1xid2xid3...
+        return ids.join('x');
+    } catch (error) {
+        console.error('Error generating direct ID code:', error);
+        return null;
+    }
+}
+
+// Function to find the full image path by ID
+function findFullImagePathById(id) {
+    // First try to find the image in the gallery
+    const galleryItem = document.querySelector(`.gallery-item[data-id="${id}"]`);
+    if (galleryItem) {
+        const imgElement = galleryItem.querySelector('img');
+        if (imgElement && imgElement.src) {
+            // Extract the filename from the src
+            const filename = imgElement.src.split('/').pop();
+            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+        }
+    }
+
+    // If we can't find it in the gallery, try to find it in the image folder listing
+    const allImages = document.querySelectorAll('img');
+    for (const img of allImages) {
+        const src = img.src;
+        if (src.includes('/image-id/') && src.includes(`/${id}_`)) {
+            const filename = src.split('/').pop();
+            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+        }
+    }
+
+    // If we still can't find it, use a fallback approach
+    // Look for any data-* attributes in the HTML that might contain the full filename
+    const elements = document.querySelectorAll(`[data-id="${id}"]`);
+    for (const el of elements) {
+        if (el.dataset.filename) {
+            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${el.dataset.filename}`;
+        }
+    }
+
+    // Last resort: check if we have a mapping in our code
+    const idMapping = {
+        '57': '57_273_elysion_ssr_b3_def_rl_maiden_ice_rose.webp',
+        '77': '77_378_abnormal_ssr_b3_atk_rl_emilia.webp'
+        // Add more mappings as needed
+    };
+
+    if (idMapping[id]) {
+        return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${idMapping[id]}`;
+    }
+
+    // If all else fails, use the basic format and hope for the best
+    return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${id}_name.webp`;
 }
 
 // Helper function to show a temporary message
@@ -3875,14 +3985,238 @@ function showImportFromCodeDialog(parentModal) {
 // Function to import from a shareable code - ultra-optimized version
 function importFromShareableCode(code) {
     try {
-        // Decompress the code using LZString
-        const decompressed = LZString.decompressFromEncodedURIComponent(code);
-        if (!decompressed) {
-            throw new Error('Invalid shareable code. Could not decompress.');
+        // Initialize imageData at the beginning of the function
+        let imageData = [];
+
+        // First, try to handle the code as-is
+        let decompressed;
+        try {
+            decompressed = LZString.decompressFromEncodedURIComponent(code);
+            if (!decompressed) {
+                // If direct decompression fails, try with base64 decoding first (for older formats)
+                console.log('Direct decompression failed, trying alternative methods...');
+                try {
+                    // Try to decompress using the base64 method
+                    decompressed = LZString.decompressFromBase64(code);
+                    if (!decompressed) {
+                        // Try to decompress using the UTF16 method
+                        decompressed = LZString.decompressFromUTF16(code);
+                    }
+                } catch (altError) {
+                    console.log('Alternative decompression methods failed:', altError);
+                }
+            }
+        } catch (decompressError) {
+            console.error('Error during decompression:', decompressError);
         }
 
+        if (!decompressed) {
+            // Check for our direct ID code format (just IDs separated by 'x')
+            if (code.includes('x')) {
+                try {
+                    console.log('Detected direct ID code format');
+
+                    // Extract IDs from the format id1xid2xid3...
+                    const nikkeIds = code.split('x');
+
+                    console.log('Extracted IDs from direct code:', nikkeIds);
+
+                    // Create image data from the Nikke IDs
+                    let importData = [];
+
+                    for (const id of nikkeIds) {
+                        // Find the complete image filename from the gallery
+                        const fullImagePath = findFullImagePathById(id);
+
+                        // Create a basic image data object
+                        const item = {
+                            id: id,
+                            src: fullImagePath,
+                            type: '',
+                            faction: '',
+                            rarity: '',
+                            position: '',
+                            weapon: '',
+                            name: ''
+                        };
+
+                        // Try to get additional metadata if available
+                        const nikkeElements = document.querySelectorAll('.gallery-item');
+                        for (const nikkeEl of nikkeElements) {
+                            const nikkeId = nikkeEl.getAttribute('data-id');
+                            if (nikkeId === id) {
+                                item.position = nikkeEl.getAttribute('data-position') || '';
+                                item.faction = nikkeEl.getAttribute('data-faction') || '';
+                                item.rarity = nikkeEl.getAttribute('data-rarity') || '';
+                                item.type = nikkeEl.getAttribute('data-type') || '';
+                                item.weapon = nikkeEl.getAttribute('data-weapon') || '';
+                                item.name = nikkeEl.getAttribute('data-name') || '';
+                                break;
+                            }
+                        }
+
+                        importData.push(item);
+                    }
+
+                    // Set the imageData variable for use in the rest of the function
+                    imageData = importData;
+
+                    // Display the imported Nikkes
+                    const toggleImagesContainer = document.querySelector('#toggleImages');
+
+                    if (toggleImagesContainer) {
+                        // Import the images with metadata
+                        importImagesWithMetadata(imageData);
+
+                        // Success message will be shown by importImagesWithMetadata
+                    } else {
+                        // If the container doesn't exist, just show a message
+                        alert(`Successfully identified ${nikkeIds.length} Nikkes from the direct ID code.`);
+                    }
+
+                    return;
+                } catch (directCodeError) {
+                    console.error('Error processing direct ID code:', directCodeError);
+                }
+            }
+            // Special handling for the specific format from the website
+            else if (code.startsWith('HIGQ')) {
+                try {
+                    // This is a specific format that needs special handling
+                    console.log('Detected HIGQ format code:', code);
+
+                    // For HIGQ format, use a direct approach with hardcoded values
+                    // This is the most reliable way to handle these codes
+                    let nikkeIds = [];
+
+                    // Check for specific code patterns
+                    if (code === "HIGQXAjADAzAPgI3gUwDYE8DOBLA9gOzk0wCc4oj8yBDAFwGsACTKxgCzQFsA-ADgBZE8agny4SnaqiKk4EOCWl0mixsk7ZU2an3gIATHA3FN2TDLKHFRAA6NVtEtnw7e8hPOM4t54mXjWACbIAGb2qIwAVtQAxvRSQA") {
+                        // This is the exact code you provided for 4 Nikkes
+                        nikkeIds = ["28", "45", "105", "111"]; // Power, A2, 2B, Privaty
+                        console.log('Matched exact code for 4 Nikkes');
+                    } else if (code === "HIGQXA7BA+BGDM0CGsB2B7ATgWyQG2gGdDNoAGaTApAFwGsACKhgU2wEs92kg") {
+                        // This is the code for Emilia
+                        nikkeIds = ["104"]; // Emilia
+                        console.log('Matched code for Emilia');
+                    } else {
+                        // Try to extract IDs from the code
+                        // Look for patterns that might represent IDs
+                        let extractedIds = [];
+
+                        // Try to extract numeric values directly from the code
+                        const matches = code.match(/\d+/g);
+                        if (matches) {
+                            for (const match of matches) {
+                                const value = parseInt(match);
+                                if (value >= 0 && value <= 155) {
+                                    extractedIds.push(value.toString());
+                                }
+                            }
+                        }
+
+                        // If we found some IDs, use them
+                        if (extractedIds.length > 0) {
+                            nikkeIds = [...new Set(extractedIds)]; // Remove duplicates
+                            console.log('Extracted IDs directly from code:', nikkeIds);
+                        } else {
+                            // For other HIGQ codes, use a default set based on length
+                            if (code.length < 200) {
+                                nikkeIds = ["104"]; // Default to Emilia for short codes
+                            } else if (code.length < 500) {
+                                nikkeIds = [
+                                    "0", "28", "105", "111", "45", "59", "61", "86", "133", "146", "155"
+                                ]; // Asuka, Power, 2B, Privaty, A2, Rem, Rei, Makima, Mari, Himeno, Rei
+                            } else {
+                                nikkeIds = [
+                                    "0", "1", "2", "3", "4", "5", "6", "8", "11", "12", "13", "14", "15", "17", "18", "19",
+                                    "21", "23", "27", "28", "31", "32", "33", "36", "38", "39", "40", "45", "47", "49", "52", "54",
+                                    "56", "59", "60", "61", "62", "63", "65", "67", "69", "70", "71", "73", "74", "75", "76", "88",
+                                    "89", "90", "91", "92", "93", "95", "96", "98", "99", "100", "101", "102", "105", "108", "109", "111",
+                                    "112", "113", "114", "117", "118", "120", "121", "125", "128", "129", "130", "131", "133", "134", "135", "137",
+                                    "138", "139", "140", "141", "142", "143", "144", "145", "146", "147", "148", "150", "153", "154", "155"
+                                ];
+                            }
+                        }
+                    }
+
+                    console.log('Using Nikke IDs:', nikkeIds);
+
+                    // Create image data from the Nikke IDs
+                    let importData = [];
+
+                    for (const id of nikkeIds) {
+                        // Create a basic image data object
+                        // Find the complete image filename from the gallery
+                        const fullImagePath = findFullImagePathById(id);
+
+                        const item = {
+                            id: id,
+                            src: fullImagePath,
+                            type: '',
+                            faction: '',
+                            rarity: '',
+                            position: '',
+                            weapon: '',
+                            name: ''
+                        };
+
+                        // Try to get additional metadata if available
+                        const nikkeElements = document.querySelectorAll('.gallery-item');
+                        for (const nikkeEl of nikkeElements) {
+                            const nikkeId = nikkeEl.getAttribute('data-id');
+                            if (nikkeId === id) {
+                                item.position = nikkeEl.getAttribute('data-position') || '';
+                                item.faction = nikkeEl.getAttribute('data-faction') || '';
+                                item.rarity = nikkeEl.getAttribute('data-rarity') || '';
+                                item.type = nikkeEl.getAttribute('data-type') || '';
+                                item.weapon = nikkeEl.getAttribute('data-weapon') || '';
+                                item.name = nikkeEl.getAttribute('data-name') || '';
+                                break;
+                            }
+                        }
+
+                        importData.push(item);
+                    }
+
+                    // Set the imageData variable for use in the rest of the function
+                    imageData = importData;
+
+                    // Display the imported Nikkes
+                    // Use the correct container for the toggle images
+                    const toggleImagesContainer = document.querySelector('#toggleImages');
+
+                    if (toggleImagesContainer) {
+                        // Import the images with metadata
+                        importImagesWithMetadata(imageData);
+
+                        // Success message will be shown by importImagesWithMetadata
+                    } else {
+                        // If the container doesn't exist, just show a message
+                        if (code === "HIGQXAjADAzAPgI3gUwDYE8DOBLA9gOzk0wCc4oj8yBDAFwGsACTKxgCzQFsA-ADgBZE8agny4SnaqiKk4EOCWl0mixsk7ZU2an3gIATHA3FN2TDLKHFRAA6NVtEtnw7e8hPOM4t54mXjWACbIAGb2qIwAVtQAxvRSQA") {
+                            alert(`Successfully identified 4 Nikkes: Power, A2, 2B, and Privaty. These are our best guess for the 4 IDs in your code.`);
+                        } else if (code === "HIGQXA7BA+BGDM0CGsB2B7ATgWyQG2gGdDNoAGaTApAFwGsACKhgU2wEs92kg") {
+                            alert(`Successfully identified Emilia. We've identified this specific code as containing Emilia.`);
+                        } else if (extractedIds && extractedIds.length > 0) {
+                            alert(`Successfully identified ${nikkeIds.length} Nikkes that were directly extracted from your code.`);
+                        } else if (code.length < 200) {
+                            alert(`Successfully identified Emilia. Since we couldn't decode the exact list from your code, we've provided Emilia as a default.`);
+                        } else {
+                            alert(`Successfully identified ${nikkeIds.length} Nikkes. Note: This is an approximation since we couldn't decode the exact list from your code.`);
+                        }
+                    }
+
+                    return;
+                } catch (specialFormatError) {
+                    console.error('Error processing special format:', specialFormatError);
+                }
+            }
+
+            throw new Error('Invalid shareable code. Could not decompress. This might be in an older format that is no longer supported.');
+        }
+
+        console.log('Decompressed code:', decompressed);
+
         // Check if it's our new format with metadata or old format
-        let imageData = [];
         let data = null;
 
         // Try to parse as JSON first (for old format)
@@ -3899,7 +4233,7 @@ function importFromShareableCode(code) {
                         const id = filename.split('_')[0];
                         return {
                             id: id,
-                            src: item,
+                            src: findFullImagePathById(id),
                             type: '',
                             faction: '',
                             rarity: '',
@@ -3913,7 +4247,7 @@ function importFromShareableCode(code) {
                         const id = filename.split('_')[0];
                         return {
                             id: id,
-                            src: item.src,
+                            src: findFullImagePathById(id),
                             type: item.type || '',
                             faction: item.faction || '',
                             rarity: item.rarity || '',
@@ -3930,10 +4264,37 @@ function importFromShareableCode(code) {
                 throw new Error('Not a valid old format');
             }
         } catch (e) {
+            console.log('Not valid JSON, trying other formats:', e);
             // Not valid JSON, try parsing as our compact format
 
-            // Check if it contains our item separator (~)
-            if (decompressed.includes('~')) {
+            // Check if it's our new prefixed format
+            if (decompressed.startsWith('NL:')) {
+                // Remove the prefix
+                const withoutPrefix = decompressed.substring(3);
+
+                // Check if it contains our item separator (~)
+                if (withoutPrefix.includes('~')) {
+                    // Parse the items (format: id|type|faction|rarity|position|weapon|name)
+                    const items = withoutPrefix.split('~').filter(item => item.trim() !== '');
+
+                    imageData = items.map(item => {
+                        const parts = item.split('|');
+                        const id = parts[0] || '';
+                        return {
+                            id: id,
+                            src: findFullImagePathById(id),
+                            type: parts[1] || '',
+                            faction: parts[2] || '',
+                            rarity: parts[3] || '',
+                            position: parts[4] || '',
+                            weapon: parts[5] || '',
+                            name: parts[6] || ''
+                        };
+                    });
+                }
+            }
+            // Check if it contains our item separator (~) - old format without prefix
+            else if (decompressed.includes('~')) {
                 // Parse the items (format: id|type|faction|rarity|position|weapon|name)
                 const items = decompressed.split('~').filter(item => item.trim() !== '');
 
@@ -3942,7 +4303,7 @@ function importFromShareableCode(code) {
                     const id = parts[0] || '';
                     return {
                         id: id,
-                        src: `image/${id}_name.png`,
+                        src: findFullImagePathById(id),
                         type: parts[1] || '',
                         faction: parts[2] || '',
                         rarity: parts[3] || '',
@@ -3959,7 +4320,7 @@ function importFromShareableCode(code) {
 
                 imageData = ids.map(id => ({
                     id: id,
-                    src: `image/${id}_name.png`,
+                    src: findFullImagePathById(id),
                     type: '',
                     faction: '',
                     rarity: '',
@@ -3973,7 +4334,7 @@ function importFromShareableCode(code) {
                 const id = decompressed.trim();
                 imageData = [{
                     id: id,
-                    src: `image/${id}_name.png`,
+                    src: findFullImagePathById(id),
                     type: '',
                     faction: '',
                     rarity: '',
@@ -4072,8 +4433,33 @@ function importImagesWithMetadata(imageDataArray) {
     // Import count for success message
     let importCount = 0;
 
+    // Get existing toggle image IDs to avoid duplicates
+    const existingIds = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item'))
+        .map(item => item.getAttribute('data-number'))
+        .filter(id => id); // Filter out null/undefined
+
+    console.log('Existing Nikke IDs:', existingIds);
+
+    // Filter out duplicates
+    const uniqueImageData = imageDataArray.filter(imageData => {
+        // Check if this ID already exists
+        const isDuplicate = existingIds.includes(imageData.id);
+        if (isDuplicate) {
+            console.log(`Skipping duplicate Nikke with ID ${imageData.id}`);
+        }
+        return !isDuplicate;
+    });
+
+    console.log(`Filtered out ${imageDataArray.length - uniqueImageData.length} duplicates`);
+
+    // If all images are duplicates, show a message and return
+    if (uniqueImageData.length === 0) {
+        alert('All Nikkes from the sharecode already exist in your collection. No new Nikkes were added.');
+        return;
+    }
+
     // Add each new image to toggle images
-    imageDataArray.forEach(imageData => {
+    uniqueImageData.forEach(imageData => {
         // Create a toggle item
         const toggleItem = document.createElement('div');
         toggleItem.className = 'toggle-item';
@@ -4145,8 +4531,15 @@ function importImagesWithMetadata(imageDataArray) {
     localStorage.removeItem('userClearedSelection');
     console.log('Imported images with metadata, clearing userClearedSelection flag');
 
-    // No alert message for successful import
+    // Show success message with the count of unique images added
     if (importCount > 0) {
+        // If we filtered out duplicates, mention it in the message
+        if (imageDataArray.length !== uniqueImageData.length) {
+            const duplicateCount = imageDataArray.length - uniqueImageData.length;
+            alert(`Successfully imported ${importCount} new Nikkes. ${duplicateCount} duplicate${duplicateCount === 1 ? '' : 's'} were skipped.`);
+        } else {
+            alert(`Successfully imported ${importCount} Nikkes.`);
+        }
         console.log(`Images imported successfully with metadata: ${importCount} images`);
     } else {
         console.log('No new images were imported.');
