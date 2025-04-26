@@ -7,9 +7,9 @@ function detectOrientation() {
     const isPhone = window.innerWidth <= 768;
     const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
 
-    console.log(`Device orientation: ${isPortrait ? 'Portrait' : 'Landscape'}`);
-    console.log(`Device type: ${isPhone ? 'Phone' : isTablet ? 'Tablet/iPad' : 'Desktop'}`);
-    console.log(`Screen dimensions: ${window.innerWidth}x${window.innerHeight}`);
+    // console.log(`Device orientation: ${isPortrait ? 'Portrait' : 'Landscape'}`);
+    // console.log(`Device type: ${isPhone ? 'Phone' : isTablet ? 'Tablet/iPad' : 'Desktop'}`);
+    // console.log(`Screen dimensions: ${window.innerWidth}x${window.innerHeight}`);
 
     // Add classes to body for easier CSS targeting
     document.body.classList.remove('portrait', 'landscape', 'phone', 'tablet', 'desktop');
@@ -27,7 +27,12 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // Add click handlers to all burst filter buttons
     document.querySelectorAll('.burst-btn:not(.filter-btn)').forEach(button => {
-        button.addEventListener('click', function() {
+        // Remove any existing click handlers to prevent duplicates
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+
+        // Add the click handler
+        newButton.addEventListener('click', function() {
             toggleBurstFilter(this);
         });
     });
@@ -40,7 +45,7 @@ function toggleBurstFilter(button) {
     const isActive = button.classList.contains('active');
     const filterValue = button.getAttribute('data-value');
 
-    console.log(`Toggled burst filter: ${filterValue}, Active: ${isActive}`);
+    // console.log(`Toggled burst filter: ${filterValue}, Active: ${isActive}`);
 
     // Sync all burst buttons with the same data-value across the page
     const allBurstButtons = document.querySelectorAll(`.burst-btn[data-value="${filterValue}"]:not(.filter-btn)`);
@@ -53,7 +58,7 @@ function toggleBurstFilter(button) {
     // Get unique active burst filters for debugging
     const allActiveButtons = document.querySelectorAll('.burst-btn.active:not(.filter-btn)');
     const uniqueActiveFilters = [...new Set(Array.from(allActiveButtons).map(btn => btn.getAttribute('data-value')))];
-    console.log('All active burst filters:', uniqueActiveFilters);
+    // console.log('All active burst filters:', uniqueActiveFilters);
 
     // Update filters
     updateFilters();
@@ -73,7 +78,7 @@ function getActiveBurstFilters() {
     Array.from(activeButtons).forEach(btn => {
         const value = btn.getAttribute('data-value');
         if (value !== null) {
-            console.log(`Active burst button: ${value}`);
+            // console.log(`Active burst button: ${value}`);
             uniqueFilters.add(value);
         }
     });
@@ -81,7 +86,7 @@ function getActiveBurstFilters() {
     // Convert Set back to Array
     const activeFilters = Array.from(uniqueFilters);
 
-    console.log('Active burst filters after processing:', activeFilters);
+    // console.log('Active burst filters after processing:', activeFilters);
     return activeFilters;
 }
 
@@ -135,12 +140,20 @@ function getFilterTypeFromContext(checkbox) {
     return null;
 }
 
-// Filter functionality
+// Filter functionality - Simplified to use the implementation in filter.js
 function updateFilters() {
     // Get burst filters from the modern buttons
     const burstFilters = getActiveBurstFilters();
-    console.log('Active burst filters:', burstFilters);
+    // console.log('Active burst filters:', burstFilters);
 
+    // If filter.js has its own updateFilters function, call it
+    if (typeof window.filterJsUpdateFilters === 'function') {
+        // console.log('Calling filter.js updateFilters');
+        window.filterJsUpdateFilters();
+        return;
+    }
+
+    // Fallback implementation if filter.js is not loaded
     // Get checked values for each filter type
     const typeValues = getCheckedValues(['b1', 'b2', 'b3', 'a']);
     const positionValues = getCheckedValues(['def', 'sp', 'atk']);
@@ -148,18 +161,7 @@ function updateFilters() {
     const rarityValues = getCheckedValues(['ssr', 'sr', 'r']);
     const weaponValues = getCheckedValues(['smg', 'ar', 'snr', 'rl', 'sg', 'mg']);
 
-    console.log('Position filter values:', positionValues);
-
-    console.log('Checked filters:', {
-        type: typeValues,
-        position: positionValues,
-        faction: factionValues,
-        rarity: rarityValues,
-        weapon: weaponValues
-    });
-
     // Combine burst filters and checkbox filters for type
-    // This ensures both filtering methods work together
     const combinedTypeFilters = [...new Set([...burstFilters, ...typeValues])];
 
     const selectedFilters = {
@@ -170,108 +172,38 @@ function updateFilters() {
         weapon: weaponValues,
     };
 
-    console.log('Combined filters:', selectedFilters);
+    // console.log('Combined filters:', selectedFilters);
 
-    // Get search value from the tab navigation search input for all tabs
+    // Get search value from the tab navigation search input
     let searchValue = '';
     const navSearchInput = document.getElementById('myNikkesSearchInput');
-
-    // Use the tab navigation search input as the primary search
     if (navSearchInput) {
         searchValue = navSearchInput.value.toLowerCase();
     }
 
-    console.log('Search value:', searchValue);
-
-    // Determine which tab we're in
-    const isToggleTab = currentContentTab === 'toggleImages';
-    const isGalleryTab = currentContentTab === 'gallery';
-    console.log('Current tab:', currentContentTab, 'Is toggle tab:', isToggleTab, 'Is gallery tab:', isGalleryTab);
-
-    // Filter gallery photos
+    // Apply filters to gallery photos
     const photos = document.querySelectorAll('.photo');
-    console.log('Updating filters, found', photos.length, 'gallery photos');
-
     let galleryVisibleCount = 0;
+
     photos.forEach(photo => {
         const attributes = getPhotoAttributes(photo);
-
-        // Debug log to check attributes
-        if (localStorage.getItem('filterDebugMode') === 'true') {
-            console.log('Gallery photo attributes:', attributes);
-        }
-
-        // Check if the photo matches the filters
         let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
-
-        // If there are burst filters active, ensure they're applied correctly
-        if (combinedTypeFilters.length > 0) {
-            // Make sure the type attribute is properly set
-            if (!attributes.type && photo.getAttribute('data-type')) {
-                attributes.type = photo.getAttribute('data-type').toLowerCase();
-                console.log('Updated type attribute for gallery photo:', attributes.type);
-            }
-
-            // Double-check the type match
-            const typeMatch = combinedTypeFilters.some(type => {
-                return attributes.type && attributes.type.toLowerCase().includes(type.toLowerCase());
-            });
-
-            if (!typeMatch) {
-                isMatch = false;
-                console.log('Gallery photo failed type filter check:', attributes.type, 'not in', combinedTypeFilters);
-            }
-        }
-
         photo.style.display = isMatch ? 'flex' : 'none';
         if (isMatch) galleryVisibleCount++;
     });
 
-    console.log('Visible gallery photos after filtering:', galleryVisibleCount);
-
-    // Filter toggle items
+    // Apply filters to toggle items
     const toggleItems = document.querySelectorAll('.toggle-item');
-    console.log('Updating filters, found', toggleItems.length, 'toggle items');
-
-    // Special handling for toggle items based on which tab we're in
     let toggleVisibleCount = 0;
+
     toggleItems.forEach(item => {
-        // Get attributes from the toggle item
         const attributes = getPhotoAttributes(item);
-
-        // Debug log to check attributes
-        if (localStorage.getItem('filterDebugMode') === 'true') {
-            console.log('Toggle item attributes:', attributes);
-        }
-
-        // Check if the item matches the filters
         let isMatch = isPhotoMatchingFilters(attributes, selectedFilters, searchValue);
-
-        // If there are burst filters active, ensure they're applied correctly
-        if (combinedTypeFilters.length > 0) {
-            // Make sure the type attribute is properly set
-            if (!attributes.type && item.getAttribute('data-type')) {
-                attributes.type = item.getAttribute('data-type').toLowerCase();
-                console.log('Updated type attribute for toggle item:', attributes.type);
-            }
-
-            // Double-check the type match
-            const typeMatch = combinedTypeFilters.some(type => {
-                return attributes.type && attributes.type.toLowerCase().includes(type.toLowerCase());
-            });
-
-            if (!typeMatch) {
-                isMatch = false;
-                console.log('Toggle item failed type filter check:', attributes.type, 'not in', combinedTypeFilters);
-            }
-        }
-
-        // Update visibility
         item.style.display = isMatch ? 'flex' : 'none';
         if (isMatch) toggleVisibleCount++;
     });
 
-    console.log('Visible toggle items after filtering:', toggleVisibleCount);
+    // console.log(`Filtered: Gallery: ${galleryVisibleCount}/${photos.length}, Toggle: ${toggleVisibleCount}/${toggleItems.length}`);
 }
 
 // Function to organize images
@@ -311,7 +243,7 @@ function toggleImageSelection(imgElement) {
     const imgSrc = imgElement.src;
     const isSelected = imgElement.classList.contains('selected');
 
-    console.log('Toggle image selection:', imgSrc, 'isSelected:', isSelected);
+    // console.log('Toggle image selection:', imgSrc, 'isSelected:', isSelected);
 
     // Check if we're in gallery tab or one of the toggle tabs
     if (currentContentTab === 'gallery') {
@@ -320,12 +252,13 @@ function toggleImageSelection(imgElement) {
         const imageInTeamSlot = Array.from(currentTeamContainer.querySelectorAll('.team-images .image-slot img'))
             .some(img => img.src === imgSrc);
 
-        console.log('Image in team slot:', imageInTeamSlot);
+        // console.log('Image in team slot:', imageInTeamSlot);
 
         if (isSelected || imageInTeamSlot) {
             removeImageFromSelection(imgElement, imgSrc);
         } else {
-            addImageToSelection(imgElement, imgSrc);
+            // When in gallery tab, only add to team set, not to My Nikke List
+            addImageToTeamSetOnly(imgElement, imgSrc);
         }
 
         updateTeamScore();
@@ -362,6 +295,17 @@ function toggleImageSelection(imgElement) {
             }
         }
 
+        // Find and update the toggle item in the toggle images container
+        const toggleItem = imgElement.closest('.toggle-item');
+        if (toggleItem) {
+            // Make sure the toggle item is properly marked as selected/unselected
+            if (isSelected) {
+                imgElement.classList.remove('selected');
+            } else {
+                imgElement.classList.add('selected');
+            }
+        }
+
         // Save toggle tabs state
         saveToggleTabsToLocalStorage();
 
@@ -371,14 +315,19 @@ function toggleImageSelection(imgElement) {
 
     applyProtectionToGalleryAndSelected();
 
-    // Check if all toggle images have been removed
-    const toggleImagesContainer = document.querySelector('#toggleImages');
-    if (toggleImagesContainer) {
-        const remainingToggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
-        if (remainingToggleItems.length === 0) {
-            // Set flag to indicate user intentionally cleared selection
-            localStorage.setItem('userClearedSelection', 'true');
-            console.log('All images removed through toggle, setting userClearedSelection flag');
+    // Only check if all toggle images are removed when we're removing an image
+    // This prevents the flag from being set incorrectly when adding images
+    if (isSelected) {
+        const toggleImagesContainer = document.querySelector('#toggleImages');
+        if (toggleImagesContainer) {
+            const remainingToggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
+            if (remainingToggleItems.length === 0) {
+                // Set flag to indicate user intentionally cleared selection
+                localStorage.setItem('userClearedSelection', 'true');
+                // Also set flag to prevent default data from loading
+                localStorage.setItem('preventDefaultDataLoad', 'true');
+                // console.log('All images removed through toggle, setting userClearedSelection and preventDefaultDataLoad flags');
+            }
         }
     }
 
@@ -389,6 +338,11 @@ function toggleImageSelection(imgElement) {
     // Save to localStorage
     saveSelectionToLocalStorage();
     saveToggleTabsToLocalStorage();
+
+    // Save team set data if available
+    if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.saveTeamSetData === 'function') {
+        window.teamStorage.saveTeamSetData();
+    }
 }
 
 function removeImageFromSelection(imgElement, imgSrc) {
@@ -416,23 +370,121 @@ function removeImageFromSelection(imgElement, imgSrc) {
     // Check if all toggle images have been removed
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (toggleImagesContainer) {
-        const remainingToggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
-
         // Only update the selection state in localStorage for the specific image
         // This prevents automatic toggling of existing images
         updateToggleImageSelectionInLocalStorage(imgSrc, false);
 
-        if (remainingToggleItems.length === 0) {
-            // Set flag to indicate user intentionally cleared selection
-            localStorage.setItem('userClearedSelection', 'true');
-            console.log('All images removed, setting userClearedSelection flag');
-        }
+        // Also update any matching toggle images in the toggle container
+        const toggleImages = toggleImagesContainer.querySelectorAll('.toggle-item img');
+        toggleImages.forEach(img => {
+            if (img.src === imgSrc) {
+                img.classList.remove('selected');
+                img.style.border = '';
+                img.style.outline = '';
+                img.style.boxShadow = '';
+                img.style.zIndex = '';
+                img.style.position = '';
+                // console.log(`Updated toggle image selection state for ${imgSrc}`);
+            }
+        });
+
+        // Only check remaining toggle items after the current operation is complete
+        // This ensures we get an accurate count
+        setTimeout(() => {
+            const remainingToggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
+            if (remainingToggleItems.length === 0) {
+                // Set flag to indicate user intentionally cleared selection
+                localStorage.setItem('userClearedSelection', 'true');
+                // Also set flag to prevent default data from loading
+                localStorage.setItem('preventDefaultDataLoad', 'true');
+                // console.log('All images removed, setting userClearedSelection and preventDefaultDataLoad flags');
+            }
+        }, 0);
     }
+
+    // Update the toggle images selection state
+    updateToggleImageSelectionState(currentTeamSet);
 
     // Save to localStorage to ensure the changes are preserved
     saveSelectionToLocalStorage();
-    console.log('Saved team sets to localStorage after removing image');
+    // console.log('Saved team sets to localStorage after removing image');
     saveToggleTabsToLocalStorage();
+}
+
+// Function to add an image to team set only (not to My Nikke List)
+function addImageToTeamSetOnly(imgElement, imgSrc) {
+    // Only add to the current team set
+    const currentTeamContainer = document.querySelector(`#teamSet${currentTeamSet}`);
+    const teamRows = currentTeamContainer.querySelectorAll('.team-images');
+
+    for (const teamRow of teamRows) {
+        const emptySlot = teamRow.querySelector('.image-slot.empty');
+        if (emptySlot) {
+            const selectedImg = document.createElement('img');
+            selectedImg.crossOrigin = 'anonymous'; // Add crossOrigin for canvas compatibility
+
+            // Get the original src attribute if it's an element, otherwise use the imgSrc directly
+            const originalSrc = imgElement.getAttribute ? imgElement.getAttribute('src') : imgSrc;
+
+            // Use GitHub URL if available
+            if (typeof getGitHubUrl === 'function') {
+                selectedImg.src = getGitHubUrl(originalSrc);
+            } else {
+                selectedImg.src = originalSrc;
+            }
+            // console.log(`Adding image to team set only: ${originalSrc} -> ${selectedImg.src}`);
+
+            // Copy data attributes from the original image if available
+            if (imgElement.dataset) {
+                Object.keys(imgElement.dataset).forEach(key => {
+                    selectedImg.dataset[key] = imgElement.dataset[key];
+                });
+            }
+
+            // Add click handler for removal
+            selectedImg.onclick = () => {
+                toggleImageSelection(imgElement);
+            };
+
+            emptySlot.appendChild(selectedImg);
+            emptySlot.classList.remove('empty');
+            imgElement.classList.add('selected');
+            // Apply green border styles
+            imgElement.style.border = '3px solid #00ff00';
+            imgElement.style.outline = '1px solid #ffffff';
+            imgElement.style.boxShadow = '0 0 8px #00ff00';
+            imgElement.style.zIndex = '10';
+            imgElement.style.position = 'relative';
+
+            // Do NOT add to My Nikkes List
+            // This is the key difference from addImageToSelection
+
+            break;
+        }
+    }
+
+    // Update team score
+    updateTeamScore();
+
+    // If we're adding an image, clear the userClearedSelection and preventDefaultDataLoad flags
+    localStorage.removeItem('userClearedSelection');
+    localStorage.removeItem('preventDefaultDataLoad');
+    // console.log('Added image to team set only, clearing userClearedSelection and preventDefaultDataLoad flags');
+
+    // Save the updated team sets to localStorage
+    saveSelectionToLocalStorage();
+    // console.log('Saved team sets to localStorage after adding image to team set only');
+
+    // Update the toggle images selection state
+    updateToggleImageSelectionState(currentTeamSet);
+
+    // Save toggle tabs state
+    saveToggleTabsToLocalStorage();
+
+    // Save team set data if available
+    if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.saveTeamSetData === 'function') {
+        window.teamStorage.saveTeamSetData();
+    }
 }
 
 function addImageToSelection(imgElement, imgSrc) {
@@ -448,8 +500,21 @@ function addImageToSelection(imgElement, imgSrc) {
 
             // Get the original src attribute if it's an element, otherwise use the imgSrc directly
             const originalSrc = imgElement.getAttribute ? imgElement.getAttribute('src') : imgSrc;
-            selectedImg.src = getGitHubUrl(originalSrc); // Use GitHub URL
-            console.log(`Adding image to selection: ${originalSrc} -> ${selectedImg.src}`);
+
+            // Use GitHub URL if available
+            if (typeof getGitHubUrl === 'function') {
+                selectedImg.src = getGitHubUrl(originalSrc);
+            } else {
+                selectedImg.src = originalSrc;
+            }
+            // console.log(`Adding image to selection: ${originalSrc} -> ${selectedImg.src}`);
+
+            // Copy data attributes from the original image if available
+            if (imgElement.dataset) {
+                Object.keys(imgElement.dataset).forEach(key => {
+                    selectedImg.dataset[key] = imgElement.dataset[key];
+                });
+            }
 
             // Add click handler for removal
             selectedImg.onclick = () => {
@@ -476,22 +541,93 @@ function addImageToSelection(imgElement, imgSrc) {
     // Update team score
     updateTeamScore();
 
-    // If we're adding an image, clear the userClearedSelection flag
+    // If we're adding an image, clear the userClearedSelection and preventDefaultDataLoad flags
     localStorage.removeItem('userClearedSelection');
-    console.log('Added image, clearing userClearedSelection flag');
+    localStorage.removeItem('preventDefaultDataLoad');
+    // console.log('Added image, clearing userClearedSelection and preventDefaultDataLoad flags');
 
     // Save the updated team sets to localStorage
     saveSelectionToLocalStorage();
-    console.log('Saved team sets to localStorage after adding image');
+    // console.log('Saved team sets to localStorage after adding image');
+
+    // Update the toggle images selection state
+    updateToggleImageSelectionState(currentTeamSet);
+
+    // Save toggle tabs state
+    saveToggleTabsToLocalStorage();
+
+    // Also update any matching toggle images in the toggle container
+    const toggleImagesContainer = document.querySelector('#toggleImages');
+    if (toggleImagesContainer) {
+        const toggleImages = toggleImagesContainer.querySelectorAll('.toggle-item img');
+        let found = false;
+
+        toggleImages.forEach(img => {
+            if (img.src === imgSrc || (imgElement.src && img.src === imgElement.src)) {
+                img.classList.add('selected');
+                img.style.border = '3px solid #00ff00';
+                img.style.outline = '1px solid #ffffff';
+                img.style.boxShadow = '0 0 8px #00ff00';
+                img.style.zIndex = '10';
+                img.style.position = 'relative';
+                found = true;
+                // console.log(`Updated toggle image selection state for ${img.src}`);
+            }
+        });
+
+        // If the image doesn't exist in the toggle container, add it
+        if (!found && imgElement.src) {
+            // Create a new toggle item with this image
+            const toggleItem = document.createElement('div');
+            toggleItem.className = 'toggle-item';
+
+            // Create the image element
+            const img = document.createElement('img');
+            img.src = imgElement.src;
+            img.draggable = false;
+            img.classList.add('selected');
+            img.style.border = '3px solid #00ff00';
+            img.style.outline = '1px solid #ffffff';
+            img.style.boxShadow = '0 0 8px #00ff00';
+            img.style.zIndex = '10';
+            img.style.position = 'relative';
+
+            // Copy data attributes from the original image if available
+            if (imgElement.dataset) {
+                Object.keys(imgElement.dataset).forEach(key => {
+                    toggleItem.dataset[key] = imgElement.dataset[key];
+                });
+            } else if (imgElement.parentElement && imgElement.parentElement.dataset) {
+                // Try to get data from parent element (for gallery photos)
+                Object.keys(imgElement.parentElement.dataset).forEach(key => {
+                    toggleItem.dataset[key] = imgElement.parentElement.dataset[key];
+                });
+            }
+
+            // Add click handler for selection
+            img.addEventListener('click', function() {
+                toggleImageSelection(this);
+            });
+
+            // Add image to toggle item
+            toggleItem.appendChild(img);
+            toggleImagesContainer.appendChild(toggleItem);
+
+            // console.log(`Added new toggle item for ${imgElement.src}`);
+
+            // Update positions after adding
+            updateToggleImagesPositions();
+        }
+    }
 }
 
 // Local Storage Management
 function saveSelectionToLocalStorage() {
-    console.log('Saving selection to localStorage...');
+    // console.log('Saving selection to localStorage...');
 
     // Avoid infinite recursion
     if (window.isSavingSelection) {
-        console.log('Already saving selection, skipping to avoid recursion');
+        // console.log('Already saving selection, skipping to avoid recursion');
         return;
     }
 
@@ -509,9 +645,9 @@ function saveSelectionToLocalStorage() {
         const teamSetContainer = document.querySelector(`#teamSet${setIndex}`);
 
         if (teamSetContainer) {
-            console.log(`Processing team set ${setIndex}`);
+            // console.log(`Processing team set ${setIndex}`);
             const teamRows = teamSetContainer.querySelectorAll('.team-images');
-            console.log(`Found ${teamRows.length} team rows in set ${setIndex}`);
+            // console.log(`Found ${teamRows.length} team rows in set ${setIndex}`);
 
             teamRows.forEach((row, rowIndex) => {
                 const teamImages = Array.from(row.querySelectorAll('.image-slot img')).map(img => ({
@@ -519,7 +655,7 @@ function saveSelectionToLocalStorage() {
                     score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
                 }));
 
-                console.log(`Team set ${setIndex}, row ${rowIndex}: Found ${teamImages.length} images`);
+                // console.log(`Team set ${setIndex}, row ${rowIndex}: Found ${teamImages.length} images`);
 
                 if (teamImages.length > 0) {
                     hasTeamDataInDOM = true; // We found at least one image in a team
@@ -532,17 +668,17 @@ function saveSelectionToLocalStorage() {
         teamSets.push(teamSet);
     }
 
-    console.log('Final team sets data to save:', JSON.stringify(teamSets));
+    // console.log('Final team sets data to save:', JSON.stringify(teamSets));
 
     // If no team data in DOM, check localStorage
     if (!hasTeamDataInDOM) {
-        console.log('No team data found in DOM, checking localStorage');
+        // console.log('No team data found in DOM, checking localStorage');
         try {
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 const parsedData = JSON.parse(savedData);
                 if (parsedData.teamSets && Array.isArray(parsedData.teamSets) && parsedData.teamSets.length > 0) {
-                    console.log(`Found team sets in localStorage: ${parsedData.teamSets.length} sets`);
+                    // console.log(`Found team sets in localStorage: ${parsedData.teamSets.length} sets`);
 
                     // Check if there's actual data in the team sets
                     let hasTeamData = false;
@@ -555,7 +691,7 @@ function saveSelectionToLocalStorage() {
                     });
 
                     if (hasTeamData) {
-                        console.log('Using team data from localStorage');
+                        // console.log('Using team data from localStorage');
                         teamSets = parsedData.teamSets;
                     }
                 }
@@ -578,7 +714,7 @@ function saveSelectionToLocalStorage() {
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (toggleImagesContainer) {
         const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item'));
-        console.log(`Found ${toggleItems.length} toggle items to include in main save from DOM`);
+        // console.log(`Found ${toggleItems.length} toggle items to include in main save from DOM`);
 
         // If we have toggle items in the DOM, use those
         if (toggleItems.length > 0) {
@@ -598,21 +734,28 @@ function saveSelectionToLocalStorage() {
             });
         } else {
             // If no toggle items in DOM, check if we have them in localStorage
-            try {
-                const savedData = localStorage.getItem(STORAGE_KEY);
-                if (savedData) {
-                    const parsedData = JSON.parse(savedData);
-                    if (parsedData.toggleImages && Array.isArray(parsedData.toggleImages) && parsedData.toggleImages.length > 0) {
-                        console.log(`Found ${parsedData.toggleImages.length} toggle images in localStorage, using those`);
-                        toggleImagesData = parsedData.toggleImages;
-                    } else if (parsedData.toggleTabs && parsedData.toggleTabs.toggleImages &&
-                              Array.isArray(parsedData.toggleTabs.toggleImages) && parsedData.toggleTabs.toggleImages.length > 0) {
-                        console.log(`Found ${parsedData.toggleTabs.toggleImages.length} toggle images in toggleTabs, using those`);
-                        toggleImagesData = parsedData.toggleTabs.toggleImages;
+            // But only if the user hasn't intentionally cleared their selection
+            const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+
+            if (!userClearedSelection) {
+                try {
+                    const savedData = localStorage.getItem(STORAGE_KEY);
+                    if (savedData) {
+                        const parsedData = JSON.parse(savedData);
+                        if (parsedData.toggleImages && Array.isArray(parsedData.toggleImages) && parsedData.toggleImages.length > 0) {
+                            // console.log(`Found ${parsedData.toggleImages.length} toggle images in localStorage, using those`);
+                            toggleImagesData = parsedData.toggleImages;
+                        } else if (parsedData.toggleTabs && parsedData.toggleTabs.toggleImages &&
+                                Array.isArray(parsedData.toggleTabs.toggleImages) && parsedData.toggleTabs.toggleImages.length > 0) {
+                            // console.log(`Found ${parsedData.toggleTabs.toggleImages.length} toggle images in toggleTabs, using those`);
+                            toggleImagesData = parsedData.toggleTabs.toggleImages;
+                        }
                     }
+                } catch (error) {
+                    console.error('Error checking localStorage for toggle images:', error);
                 }
-            } catch (error) {
-                console.error('Error checking localStorage for toggle images:', error);
+            } else {
+                // console.log('User intentionally cleared selection, not loading toggle images from localStorage');
             }
         }
     }
@@ -629,21 +772,21 @@ function saveSelectionToLocalStorage() {
         teamSetToggleImages: window.teamSetToggleImages // Save team-specific toggle images
     };
 
-    console.log('Data to save:', dataToSave);
-    console.log('Team sets to save:', JSON.stringify(teamSets));
-    console.log('Current team set:', currentTeamSet);
-    console.log('Toggle images count:', toggleImagesData.length);
-    console.log('Toggle images data sample:', toggleImagesData.length > 0 ? toggleImagesData[0] : 'none');
+    // console.log('Data to save:', dataToSave);
+    // console.log('Team sets to save:', JSON.stringify(teamSets));
+    // console.log('Current team set:', currentTeamSet);
+    // console.log('Toggle images count:', toggleImagesData.length);
+    // console.log('Toggle images data sample:', toggleImagesData.length > 0 ? toggleImagesData[0] : 'none');
 
     try {
         const jsonString = JSON.stringify(dataToSave);
         localStorage.setItem(STORAGE_KEY, jsonString);
-        console.log('Successfully saved data to localStorage, size:', jsonString.length, 'bytes');
+        // console.log('Successfully saved data to localStorage, size:', jsonString.length, 'bytes');
 
         // Verify the data was saved correctly
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData === jsonString) {
-            console.log('Verification successful: Data saved correctly');
+            // console.log('Verification successful: Data saved correctly');
         } else {
             console.error('Verification failed: Saved data does not match original data');
         }
@@ -659,7 +802,7 @@ function saveSelectionToLocalStorage() {
 
 // Save toggle tabs data to localStorage
 function saveToggleTabsToLocalStorage() {
-    console.log('Saving toggle tabs to localStorage...');
+    // console.log('Saving toggle tabs to localStorage...');
     const toggleTabs = {};
 
     // Save Toggle Images data
@@ -670,24 +813,32 @@ function saveToggleTabsToLocalStorage() {
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (toggleImagesContainer) {
         const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item'));
-        console.log(`Found ${toggleItems.length} toggle items to save from DOM`);
+        // console.log(`Found ${toggleItems.length} toggle items to save from DOM`);
 
-        const toggleImagesData = toggleItems.map((item, index) => {
-            const img = item.querySelector('img');
-            return {
-                src: img.src,
-                number: item.getAttribute('data-number'),
-                name: item.getAttribute('data-name'),
-                type: item.getAttribute('data-type'),
-                position: item.getAttribute('data-position'),
-                faction: item.getAttribute('data-faction'),
-                rarity: item.getAttribute('data-rarity'),
-                weapon: item.getAttribute('data-weapon'),
-                selected: img.classList.contains('selected'),
-                order: item.dataset.position || index.toString() // Save position for drag-and-drop ordering
-            };
-        });
-        toggleTabs['toggleImages'] = toggleImagesData;
+        // Only save toggle items if there are any, or if the user hasn't intentionally cleared their selection
+        const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+
+        if (toggleItems.length > 0 || !userClearedSelection) {
+            const toggleImagesData = toggleItems.map((item, index) => {
+                const img = item.querySelector('img');
+                return {
+                    src: img.src,
+                    number: item.getAttribute('data-number'),
+                    name: item.getAttribute('data-name'),
+                    type: item.getAttribute('data-type'),
+                    position: item.getAttribute('data-position'),
+                    faction: item.getAttribute('data-faction'),
+                    rarity: item.getAttribute('data-rarity'),
+                    weapon: item.getAttribute('data-weapon'),
+                    selected: img.classList.contains('selected'),
+                    order: item.dataset.position || index.toString() // Save position for drag-and-drop ordering
+                };
+            });
+            toggleTabs['toggleImages'] = toggleImagesData;
+        } else {
+            // console.log('User intentionally cleared selection, saving empty toggle images array');
+            toggleTabs['toggleImages'] = [];
+        }
     } else {
         console.warn('Toggle images container not found');
     }
@@ -698,9 +849,9 @@ function saveToggleTabsToLocalStorage() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
             existingData = JSON.parse(storedData);
-            console.log('Found existing data in localStorage');
+            // console.log('Found existing data in localStorage');
         } else {
-            console.log('No existing data found in localStorage');
+            // console.log('No existing data found in localStorage');
         }
     } catch (error) {
         console.error('Error parsing stored data:', error);
@@ -712,12 +863,12 @@ function saveToggleTabsToLocalStorage() {
     // Also save toggleImages directly in the root for better compatibility
     if (toggleTabs.toggleImages) {
         existingData.toggleImages = toggleTabs.toggleImages;
-        console.log(`Also saved ${toggleTabs.toggleImages.length} toggle images directly in root`);
+        // console.log(`Also saved ${toggleTabs.toggleImages.length} toggle images directly in root`);
     }
 
     // Also ensure we save the team sets data
     if (!existingData.teamSets) {
-        console.log('No team sets found in existing data, creating new team sets');
+        // console.log('No team sets found in existing data, creating new team sets');
         // Save team data for SET1 and SET2
         const teamSets = [];
 
@@ -747,12 +898,12 @@ function saveToggleTabsToLocalStorage() {
     try {
         const jsonString = JSON.stringify(existingData);
         localStorage.setItem(STORAGE_KEY, jsonString);
-        console.log('Successfully saved toggle tabs and team data to localStorage, size:', jsonString.length, 'bytes');
+        // console.log('Successfully saved toggle tabs and team data to localStorage, size:', jsonString.length, 'bytes');
 
         // Verify the data was saved correctly
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData === jsonString) {
-            console.log('Verification successful: Toggle tabs data saved correctly');
+            // console.log('Verification successful: Toggle tabs data saved correctly');
         } else {
             console.error('Verification failed: Saved toggle tabs data does not match original data');
         }
@@ -769,90 +920,68 @@ function saveToggleTabsToLocalStorage() {
     }
 }
 
-// Function to load default data from default_mynikke.json
-async function loadDefaultData() {
-    try {
-        console.log('Loading default data from default_mynikke.json');
-        const response = await fetch('default_mynikke.json');
-        if (!response.ok) {
-            throw new Error(`Failed to load default data: ${response.status} ${response.statusText}`);
-        }
+// Function to create empty data structure (replacing loadDefaultData)
+function createEmptyDataStructure() {
+    // console.log('Creating empty data structure');
 
-        const defaultData = await response.json();
-        console.log('Default data loaded successfully:', defaultData);
+    // Create a data structure with empty values
+    const emptyData = {
+        teamSets: [[], []],  // Empty team sets
+        selectedImages: [],  // No selected images
+        currentTeamSet: '1', // Default to team set 1
+        currentContentTab: 'toggleImages', // Default to My Nikkes tab
+        myNikkesList: [],    // Empty My Nikkes List (new format)
+        toggleImages: [],    // Empty toggle images (for backward compatibility)
+        toggleTabs: { toggleImages: [] }, // For backward compatibility
+        teamSetToggleImages: { '1': [], '2': [] }
+    };
 
-        if (defaultData && defaultData.toggleImages && defaultData.toggleImages.length > 0) {
-            // Create a data structure similar to what we'd get from localStorage
-            const dataToSave = {
-                teamSets: [[], []],  // Empty team sets
-                selectedImages: [],  // No selected images
-                currentTeamSet: '1', // Default to team set 1
-                currentContentTab: 'toggleImages', // Default to My Nikkes tab
-                toggleImages: defaultData.toggleImages,
-                toggleTabs: { toggleImages: defaultData.toggleImages },
-                teamSetToggleImages: { '1': [], '2': [] }
-            };
-
-            // Save to localStorage
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-            console.log('Default data saved to localStorage');
-
-            // Load the data we just saved
-            return dataToSave;
-        } else {
-            console.error('Invalid default data format');
-            return null;
-        }
-    } catch (error) {
-        console.error('Error loading default data:', error);
-        return null;
-    }
+    return emptyData;
 }
 
 async function loadSelectionFromLocalStorage() {
     try {
-        console.log('Attempting to load data from localStorage key:', STORAGE_KEY);
+        // console.log('Attempting to load data from localStorage key:', STORAGE_KEY);
         const savedDataString = localStorage.getItem(STORAGE_KEY);
-        console.log('Raw data from localStorage:', savedDataString);
 
         if (!savedDataString) {
-            console.log('No saved data found in localStorage');
-            // Try to load default data
-            const defaultData = await loadDefaultData();
-            if (defaultData) {
-                console.log('Using default data instead');
-                return processLoadedData(defaultData);
-            }
-            return;
+            // console.log('No saved data found in localStorage');
+            // Create empty data structure instead of loading default data
+            const emptyData = createEmptyDataStructure();
+            // console.log('Using empty data structure');
+            return processLoadedData(emptyData);
         }
 
         const savedData = JSON.parse(savedDataString);
         if (!savedData) {
-            console.log('Failed to parse saved data from localStorage');
-            return;
+            // console.log('Failed to parse saved data from localStorage');
+            // Create empty data structure as fallback
+            const emptyData = createEmptyDataStructure();
+            // console.log('Using empty data structure as fallback');
+            return processLoadedData(emptyData);
         }
 
         // Ensure we have the currentTeamSet property
         if (!savedData.currentTeamSet) {
-            console.log('No currentTeamSet found in saved data, defaulting to 1');
+            // console.log('No currentTeamSet found in saved data, defaulting to 1');
             savedData.currentTeamSet = '1';
         }
 
         // Ensure we have the teamSets property
         if (!savedData.teamSets || !Array.isArray(savedData.teamSets)) {
-            console.log('No valid teamSets found in saved data, creating empty team sets');
+            // console.log('No valid teamSets found in saved data, creating empty team sets');
             savedData.teamSets = [[], []];
         }
 
         // Ensure we have the correct number of team sets
         if (savedData.teamSets.length < 2) {
-            console.log('Not enough team sets found, adding empty ones');
+            // console.log('Not enough team sets found, adding empty ones');
             while (savedData.teamSets.length < 2) {
                 savedData.teamSets.push([]);
             }
         }
 
-        console.log('Processed saved data:', savedData);
+        // console.log('Processed saved data:', savedData);
         return processLoadedData(savedData);
     } catch (error) {
         console.error('Error loading selection from localStorage:', error);
@@ -865,7 +994,7 @@ async function processLoadedData(savedData) {
         // Check if user has intentionally cleared their selection
         const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
         if (userClearedSelection) {
-            console.log('User intentionally cleared selection, not loading saved toggle images');
+            // console.log('User intentionally cleared selection, not loading saved toggle images');
             // Clear toggle images but preserve team sets
             savedData.toggleImages = [];
             savedData.toggleTabs = { toggleImages: [] };
@@ -879,7 +1008,7 @@ async function processLoadedData(savedData) {
                         teamSet.forEach(team => {
                             if (team && team.images && team.images.length > 0) {
                                 hasTeamSets = true;
-                                console.log('Found team images in saved data, preserving team sets');
+                                // console.log('Found team images in saved data, preserving team sets');
                             }
                         });
                     }
@@ -888,7 +1017,7 @@ async function processLoadedData(savedData) {
 
             // Only clear team images if there are no team sets with images
             if (!hasTeamSets) {
-                console.log('No team images found in saved data, clearing team sets');
+                // console.log('No team images found in saved data, clearing team sets');
                 if (savedData.teamSets && Array.isArray(savedData.teamSets)) {
                     savedData.teamSets.forEach(teamSet => {
                         if (Array.isArray(teamSet)) {
@@ -901,51 +1030,51 @@ async function processLoadedData(savedData) {
                     });
                 }
             } else {
-                console.log('Preserving team sets even when toggle images are cleared');
+                // console.log('Preserving team sets even when toggle images are cleared');
             }
         }
 
-        console.log('Processing loaded data:', savedData);
-        console.log('Raw saved data keys:', Object.keys(savedData));
+        // console.log('Processing loaded data:', savedData);
+        // console.log('Raw saved data keys:', Object.keys(savedData));
 
         // Check for toggleImages directly in savedData
         if (savedData.toggleImages) {
             console.log('Found toggleImages directly in savedData:',
                       Array.isArray(savedData.toggleImages) ? savedData.toggleImages.length : 'not an array');
             if (Array.isArray(savedData.toggleImages) && savedData.toggleImages.length > 0) {
-                console.log('Sample toggle image:', savedData.toggleImages[0]);
+                // console.log('Sample toggle image:', savedData.toggleImages[0]);
             }
         } else {
-            console.log('No toggleImages found directly in savedData');
+            // console.log('No toggleImages found directly in savedData');
         }
 
         // Check for toggleTabs in savedData
         if (savedData.toggleTabs) {
-            console.log('Found toggleTabs in savedData:', savedData.toggleTabs);
+            // console.log('Found toggleTabs in savedData:', savedData.toggleTabs);
             if (savedData.toggleTabs.toggleImages) {
                 console.log('Found toggleImages in toggleTabs:',
                           Array.isArray(savedData.toggleTabs.toggleImages) ?
                           savedData.toggleTabs.toggleImages.length : 'not an array');
             }
         } else {
-            console.log('No toggleTabs found in savedData');
+            // console.log('No toggleTabs found in savedData');
         }
 
         // Handle old format for backward compatibility
         // Convert old format to new format if needed
         let toggleTabs = savedData.toggleTabs || { toggleImages: [] };
-        console.log('Toggle tabs from saved data:', toggleTabs);
+        // console.log('Toggle tabs from saved data:', toggleTabs);
 
         // Convert old format to new format if needed
         if (toggleTabs.toggleGallery && !toggleTabs.toggleImages) {
             toggleTabs.toggleImages = toggleTabs.toggleGallery;
-            console.log('Converted old toggleGallery format to toggleImages');
+            // console.log('Converted old toggleGallery format to toggleImages');
         }
 
         // If toggleTabs is empty but we have a toggleImages property directly in savedData
         if ((!toggleTabs.toggleImages || toggleTabs.toggleImages.length === 0) &&
             savedData.toggleImages && Array.isArray(savedData.toggleImages) && savedData.toggleImages.length > 0) {
-            console.log('Found toggleImages directly in savedData, using that instead');
+            // console.log('Found toggleImages directly in savedData, using that instead');
             toggleTabs = { toggleImages: savedData.toggleImages };
         }
 
@@ -961,11 +1090,11 @@ async function processLoadedData(savedData) {
         }
 
         // Log the data we're loading
-        console.log('Loading toggle tabs:', toggleTabs);
+        // console.log('Loading toggle tabs:', toggleTabs);
 
         // Load team-specific toggle images if available
         if (savedData.teamSetToggleImages) {
-            console.log('Found team-specific toggle images in saved data');
+            // console.log('Found team-specific toggle images in saved data');
             window.teamSetToggleImages = savedData.teamSetToggleImages;
         }
 
@@ -1019,12 +1148,12 @@ async function processLoadedData(savedData) {
 
         // Debug: Check if we have toggle images data
         if (toggleTabs.toggleImages && toggleTabs.toggleImages.length > 0) {
-            console.log(`Found ${toggleTabs.toggleImages.length} toggle images to load from toggleTabs`);
+            // console.log(`Found ${toggleTabs.toggleImages.length} toggle images to load from toggleTabs`);
         } else if (savedData.toggleImages && savedData.toggleImages.length > 0) {
-            console.log(`Found ${savedData.toggleImages.length} toggle images to load directly from root`);
+            // console.log(`Found ${savedData.toggleImages.length} toggle images to load directly from root`);
             toggleTabs.toggleImages = savedData.toggleImages;
         } else {
-            console.log('No toggle images found in saved data');
+            // console.log('No toggle images found in saved data');
         }
 
         // Load toggle tabs data
@@ -1068,7 +1197,7 @@ async function processLoadedData(savedData) {
                             const orderB = parseInt(b.order || '0', 10);
                             return orderA - orderB;
                         });
-                        console.log('Sorted toggle images by saved order');
+                        // console.log('Sorted toggle images by saved order');
                     }
 
                     // Add images to toggle images container
@@ -1152,22 +1281,22 @@ async function processLoadedData(savedData) {
         // Load team data
         if (savedData.teamSets) {
             try {
-                console.log('Found team sets in saved data:', JSON.stringify(savedData.teamSets));
+                // console.log('Found team sets in saved data:', JSON.stringify(savedData.teamSets));
 
                 // Check if there's actual data in the team sets
                 let hasTeamData = false;
                 savedData.teamSets.forEach((teamSet, index) => {
-                    console.log(`Checking team set ${index + 1}:`, JSON.stringify(teamSet));
+                    // console.log(`Checking team set ${index + 1}:`, JSON.stringify(teamSet));
                     teamSet.forEach((team, teamIndex) => {
                         if (team.images && team.images.length > 0) {
-                            console.log(`Team set ${index + 1}, team ${teamIndex + 1} has ${team.images.length} images`);
+                            // console.log(`Team set ${index + 1}, team ${teamIndex + 1} has ${team.images.length} images`);
                             hasTeamData = true;
                         }
                     });
                 });
 
                 if (!hasTeamData) {
-                    console.log('No actual team data found in saved team sets');
+                    // console.log('No actual team data found in saved team sets');
                     // Save the empty team sets to avoid losing other data
                     setTimeout(() => {
                         saveSelectionToLocalStorage();
@@ -1175,13 +1304,13 @@ async function processLoadedData(savedData) {
                     return;
                 }
 
-                console.log('Team data found in saved team sets, proceeding with loading');
+                // console.log('Team data found in saved team sets, proceeding with loading');
 
                 // Check if user has intentionally cleared their selection
                 const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
                 if (userClearedSelection) {
                     // We now want to load team data even if user cleared selection
-                    console.log('User intentionally cleared selection, but still loading team data to preserve team sets');
+                    // console.log('User intentionally cleared selection, but still loading team data to preserve team sets');
                     // Continue with loading team data instead of returning
                 }
 
@@ -1214,7 +1343,7 @@ async function processLoadedData(savedData) {
 
                         // Load images for this team
                         if (team.images && team.images.length > 0) {
-                            console.log(`Loading ${team.images.length} images for team ${teamIndex + 1} in set ${teamSetIndex + 1}`);
+                            // console.log(`Loading ${team.images.length} images for team ${teamIndex + 1} in set ${teamSetIndex + 1}`);
                             team.images.forEach(imgData => {
                                 if (!imgData.src) {
                                     console.warn('Image data missing src property:', imgData);
@@ -1288,9 +1417,9 @@ async function processLoadedData(savedData) {
 
                 // No longer automatically add team images to toggle container
                 // The user must explicitly add images to My Nikkes using the + button
-                console.log('No longer automatically adding team images to My Nikkes');
+                // console.log('No longer automatically adding team images to My Nikkes');
 
-                console.log('Team data loaded successfully');
+                // console.log('Team data loaded successfully');
 
                 // Save the team data immediately to ensure it's preserved
                 // Don't use setTimeout or debounced functions to avoid race conditions
@@ -1305,11 +1434,11 @@ async function processLoadedData(savedData) {
 
                         // Save immediately without debouncing
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
-                        console.log('Immediately saved team sets to localStorage to ensure preservation');
+                        // console.log('Immediately saved team sets to localStorage to ensure preservation');
                     } else {
                         // If no existing data, save everything immediately
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                        console.log('Saved all data to localStorage');
+                        // console.log('Saved all data to localStorage');
                     }
                 } catch (error) {
                     console.error('Error saving team data immediately:', error);
@@ -1320,21 +1449,21 @@ async function processLoadedData(savedData) {
                 console.error('Error loading team data:', teamError);
             }
         } else {
-            console.log('No team sets found in saved data');
+            // console.log('No team sets found in saved data');
         }
 
-        console.log('All data loaded successfully');
+        // console.log('All data loaded successfully');
 
         // Final check to ensure toggle images are loaded correctly
         const toggleImagesContainer = document.querySelector('#toggleImages');
         if (toggleImagesContainer) {
             const toggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
-            console.log(`Final check: ${toggleItems.length} toggle images loaded`);
+            // console.log(`Final check: ${toggleItems.length} toggle images loaded`);
 
             // Ensure green borders are applied to images in team slots
             setTimeout(() => {
                 updateToggleImageSelectionState(currentTeamSet);
-                console.log('Updated green borders for loaded images');
+                // console.log('Updated green borders for loaded images');
             }, 500);
 
             // Load all toggle images and then update the selection state
@@ -1342,7 +1471,7 @@ async function processLoadedData(savedData) {
 
             // First, try to get toggle images from toggleTabs in savedData
             if (savedData.toggleTabs && savedData.toggleTabs.toggleImages && savedData.toggleTabs.toggleImages.length > 0) {
-                console.log(`Found ${savedData.toggleTabs.toggleImages.length} toggle images in toggleTabs`);
+                // console.log(`Found ${savedData.toggleTabs.toggleImages.length} toggle images in toggleTabs`);
                 savedData.toggleTabs.toggleImages.forEach(item => {
                     // Check if this image is already in the allToggleImages array
                     const exists = allToggleImages.some(existingItem => existingItem.src === item.src);
@@ -1353,7 +1482,7 @@ async function processLoadedData(savedData) {
             }
             // Then, try to get toggle images from toggleImages in savedData
             else if (savedData.toggleImages && savedData.toggleImages.length > 0) {
-                console.log(`Found ${savedData.toggleImages.length} toggle images in root`);
+                // console.log(`Found ${savedData.toggleImages.length} toggle images in root`);
                 savedData.toggleImages.forEach(item => {
                     // Check if this image is already in the allToggleImages array
                     const exists = allToggleImages.some(existingItem => existingItem.src === item.src);
@@ -1364,7 +1493,7 @@ async function processLoadedData(savedData) {
             }
             // Finally, try to get toggle images from teamSetToggleImages
             else if (window.teamSetToggleImages) {
-                console.log('Using teamSetToggleImages as fallback');
+                // console.log('Using teamSetToggleImages as fallback');
                 for (const setId in window.teamSetToggleImages) {
                     if (window.teamSetToggleImages[setId] && window.teamSetToggleImages[setId].length > 0) {
                         window.teamSetToggleImages[setId].forEach(item => {
@@ -1380,7 +1509,7 @@ async function processLoadedData(savedData) {
 
             // If we have toggle images, load them all
             if (allToggleImages.length > 0) {
-                console.log(`Loading ${allToggleImages.length} total toggle images from all team sets`);
+                // console.log(`Loading ${allToggleImages.length} total toggle images from all team sets`);
 
                 // Clear the toggle images container
                 const toggleImagesContainer = document.querySelector('#toggleImages');
@@ -1416,7 +1545,7 @@ async function processLoadedData(savedData) {
                             toggleImg.style.boxShadow = '0 0 8px #00ff00';
                             toggleImg.style.zIndex = '10';
                             toggleImg.style.position = 'relative';
-                            console.log('Applied selection state to toggle image:', itemData.src);
+                            // console.log('Applied selection state to toggle image:', itemData.src);
                         }
 
                         // Add click handler for selection
@@ -1450,7 +1579,7 @@ async function processLoadedData(savedData) {
             // If we have team images but no toggle images, something went wrong
             // Let's try to fix it by ensuring team images are in the toggle container
             if (toggleItems.length === 0 && savedData.teamSets) {
-                console.log('No toggle images found but team data exists, attempting to recover...');
+                // console.log('No toggle images found but team data exists, attempting to recover...');
 
                 // Collect all team image sources
                 const allTeamImageSources = [];
@@ -1468,7 +1597,7 @@ async function processLoadedData(savedData) {
 
                 // No longer automatically add team images to toggle container
                 // The user must explicitly add images to My Nikkes using the + button
-                console.log('No longer automatically adding team images to My Nikkes');
+                // console.log('No longer automatically adding team images to My Nikkes');
             }
         }
 
@@ -1484,7 +1613,7 @@ function ensureTeamImagesInToggleContainer(teamImageSources) {
     // Check if user has intentionally cleared their selection
     const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
     if (userClearedSelection) {
-        console.log('User intentionally cleared selection, not ensuring team images in toggle container');
+        // console.log('User intentionally cleared selection, not ensuring team images in toggle container');
         return;
     }
 
@@ -1504,11 +1633,11 @@ function ensureTeamImagesInToggleContainer(teamImageSources) {
     const missingImages = teamImageSources.filter(src => !currentToggleImageSources.includes(src));
 
     if (missingImages.length === 0) {
-        console.log('No missing team images to add to toggle container');
+        // console.log('No missing team images to add to toggle container');
         return;
     }
 
-    console.log(`Adding ${missingImages.length} team images to My Nikkes tab`);
+    // console.log(`Adding ${missingImages.length} team images to My Nikkes tab`);
 
     // Add each missing image to the toggle container
     missingImages.forEach(imgSrc => {
@@ -1538,7 +1667,7 @@ function ensureTeamImagesInToggleContainer(teamImageSources) {
         } else {
             // If the gallery photo is not found, we're probably loading from a JSON file
             // Extract data from the image source URL if possible
-            console.log('Gallery photo not found for team image:', imgSrc);
+            // console.log('Gallery photo not found for team image:', imgSrc);
 
             // Try to extract data from the URL
             try {
@@ -1626,7 +1755,7 @@ function updateTeamScore() {
 
                     if (!isNaN(score)) {
                         totalScore += score;
-                        // console.log(`Added score ${score} from ${filename}, total now: ${totalScore}`);
+                        // // console.log(`Added score ${score} from ${filename}, total now: ${totalScore}`);
                     } else {
                         // Only log the first part of the filename to reduce console spam
                         const shortFilename = filename.split('_')[0] + '_' + filename.split('_')[1] + '...';
@@ -1661,7 +1790,7 @@ function updateTeamScore() {
         });
     });
 
-    console.log('Team scores updated');
+    // console.log('Team scores updated');
 }
 
 // Apply protection to gallery and selected images
@@ -1686,7 +1815,7 @@ function initToggleImagesDragDrop() {
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (!toggleImagesContainer) return;
 
-    console.log('Initializing drag and drop for toggle images');
+    // console.log('Initializing drag and drop for toggle images');
 
     // Create drop indicator elements if they don't exist
     if (!document.querySelector('.drop-indicator')) {
@@ -1914,6 +2043,112 @@ function handleDragLeave() {
 function handleDrop(e) {
     e.preventDefault();
 
+window.onload = async function() {
+    // Set initial tab state before loading anything else
+    currentContentTab = 'toggleImages';
+
+    // Hide gallery container and show toggle container immediately
+    const galleryContainer = document.querySelector('.gallery-container');
+    const toggleContainer = document.querySelector('.toggle-tabs-container');
+
+    if (galleryContainer) {
+        galleryContainer.style.display = 'none';
+        galleryContainer.classList.add('hidden');
+    }
+
+    if (toggleContainer) {
+        toggleContainer.style.display = 'flex';
+        toggleContainer.classList.remove('hidden');
+    }
+
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        if (button.getAttribute('data-tab') === 'toggleImages') {
+            button.classList.add('active');
+        } else if (button.getAttribute('data-tab') === 'gallery') {
+            button.classList.remove('active');
+        }
+    });
+
+    // Set up checkbox styling
+    setupCheckboxStyling();
+
+    // Load selection from localStorage (async function)
+    await loadSelectionFromLocalStorage();
+
+    updateTeamScore();
+    applyProtectionToGalleryAndSelected();
+    sortImages();
+
+    // Apply green borders after a short delay to ensure DOM is fully loaded
+    setTimeout(ensureGreenBorders, 500);
+
+    // Set up tab system
+    setupTabSystem();
+
+    // Check if Toggle Images tab is empty and prompt for import if it is
+    setTimeout(checkToggleImagesEmpty, 600);
+
+    // Initialize drag and drop for toggle images
+    setTimeout(initToggleImagesDragDrop, 700);
+};
+
+// Update the switchContentTab function to ensure proper tab visibility
+// This function is called from setupTabSystem and other places
+window.switchContentTab = function(tabId) {
+    currentContentTab = tabId;
+    // console.log(`Switching to tab: ${tabId}`);
+
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        const buttonTab = button.getAttribute('data-tab');
+        if (buttonTab === tabId) {
+            button.classList.add('active');
+        } else if (buttonTab === 'gallery' || buttonTab === 'toggleImages') {
+            button.classList.remove('active');
+        }
+    });
+
+    // Update content visibility with explicit styles
+    const galleryContainer = document.querySelector('.gallery-container');
+    const toggleContainer = document.querySelector('.toggle-tabs-container');
+
+    if (tabId === 'gallery') {
+        if (galleryContainer) {
+            galleryContainer.style.display = 'flex';
+            galleryContainer.style.opacity = '1';
+            galleryContainer.classList.remove('hidden');
+        }
+        if (toggleContainer) {
+            toggleContainer.style.display = 'none';
+            toggleContainer.classList.add('hidden');
+        }
+    } else if (tabId === 'toggleImages') {
+        if (galleryContainer) {
+            galleryContainer.style.display = 'none';
+            galleryContainer.classList.add('hidden');
+        }
+        if (toggleContainer) {
+            toggleContainer.style.display = 'flex';
+            toggleContainer.style.opacity = '1';
+            toggleContainer.classList.remove('hidden');
+        }
+    }
+
+    // Apply filters after switching tabs
+    if (typeof updateFilters === 'function') {
+        // console.log('Applying filters after tab switch');
+        updateFilters();
+    } else if (typeof window.filter !== 'undefined' && typeof window.filter.updateFilters === 'function') {
+        // console.log('Applying filters using window.filter.updateFilters');
+        window.filter.updateFilters();
+    } else {
+        console.warn('updateFilters function not found, cannot apply filters after tab switch');
+    }
+
+    // Save the current tab to localStorage
+    saveSelectionToLocalStorage();
+}
     // Remove drag-over class from all items
     document.querySelectorAll('.toggle-item').forEach(item => {
         item.classList.remove('drag-over');
@@ -1957,7 +2192,7 @@ function handleDrop(e) {
 
     // If we're near the left edge, insert at the beginning
     if (isNearLeftEdge) {
-        console.log('Near left edge, inserting at beginning');
+        // console.log('Near left edge, inserting at beginning');
         const firstItem = items[0];
         if (firstItem) {
             toggleImagesContainer.insertBefore(draggedItem, firstItem);
@@ -1970,7 +2205,7 @@ function handleDrop(e) {
 
     // If we're near the right edge, append to the end
     if (isNearRightEdge) {
-        console.log('Near right edge, appending to end');
+        // console.log('Near right edge, appending to end');
         toggleImagesContainer.appendChild(draggedItem);
         updateToggleImagesPositions();
         return false;
@@ -2071,7 +2306,7 @@ function updateToggleImagesPositions() {
         item.dataset.position = index.toString();
     });
 
-    console.log('Updated toggle images positions');
+    // console.log('Updated toggle images positions');
 }
 
 // Helper function to detect mobile devices
@@ -2080,6 +2315,30 @@ function isMobileDevice() {
             (navigator.maxTouchPoints > 0) ||
             (navigator.msMaxTouchPoints > 0));
 }
+
+
+document.querySelectorAll('.team-images').forEach(container => {
+    new Sortable(container, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        delay: 300,
+        delayOnTouchOnly: true,
+        group: {
+            name: 'shared',
+            pull: true,
+            put: true
+        },
+        swapThreshold: 0.65,
+        swap: true,
+        filter: '.empty',  // Prevent dragging empty slots
+        onStart: function(evt) {
+            evt.item.classList.add('being-dragged');
+        },
+        onEnd: function(evt) {
+            evt.item.classList.remove('being-dragged');
+        }
+    });
+});
 
 // Helper function to enhance drag and drop visualization
 function enhanceDragDropVisualization() {
@@ -2107,7 +2366,7 @@ function enhanceDragDropVisualization() {
             child.classList && child.classList.contains('image-slot'));
 
         if (imageSlots.length !== 5) {
-            console.log(`Container has ${imageSlots.length} image slots, fixing...`);
+            // console.log(`Container has ${imageSlots.length} image slots, fixing...`);
 
             // Remove all non-indicator elements
             Array.from(container.children).forEach(child => {
@@ -2204,37 +2463,11 @@ function setupMutationObserver() {
     });
 }
 
-// Function to toggle filter debug mode
+// Function placeholder for backward compatibility
 function toggleFilterDebugMode() {
-    const currentMode = localStorage.getItem('filterDebugMode') === 'true';
-    const newMode = !currentMode;
-    localStorage.setItem('filterDebugMode', newMode);
-    console.log(`Filter debug mode ${newMode ? 'enabled' : 'disabled'}`);
-
-    // Add visual indicator for debug mode
-    const debugIndicator = document.getElementById('debugModeIndicator');
-    if (debugIndicator) {
-        debugIndicator.style.display = newMode ? 'block' : 'none';
-    } else if (newMode) {
-        const indicator = document.createElement('div');
-        indicator.id = 'debugModeIndicator';
-        indicator.style.position = 'fixed';
-        indicator.style.top = '10px';
-        indicator.style.right = '10px';
-        indicator.style.backgroundColor = 'rgba(255, 0, 0, 0.7)';
-        indicator.style.color = 'white';
-        indicator.style.padding = '5px 10px';
-        indicator.style.borderRadius = '5px';
-        indicator.style.zIndex = '9999';
-        indicator.style.fontSize = '12px';
-        indicator.style.fontWeight = 'bold';
-        indicator.textContent = 'DEBUG MODE';
-        document.body.appendChild(indicator);
-    }
-
-    // Refresh filters to see debug output
-    updateFilters();
-    return newMode;
+    // Debug mode has been removed
+    // console.log('Debug mode has been removed');
+    return false;
 }
 
 // Initialize
@@ -2258,7 +2491,7 @@ window.onload = async () => {
             const originalSrc = img.getAttribute('src');
             // Use the original src attribute value instead of the resolved img.src
             img.src = getGitHubUrl(originalSrc);
-            console.log(`Updated image source from ${originalSrc} to ${img.src}`);
+            // console.log(`Updated image source from ${originalSrc} to ${img.src}`);
         }
     });
 
@@ -2310,8 +2543,8 @@ window.onload = async () => {
                         // If already in a team slot, remove it
                         removeImageFromSelection(this, this.src);
                     } else {
-                        // If not in a team slot, add it
-                        addImageToSelection(this, this.src);
+                        // If not in a team slot, add it to team set only (not to My Nikke List)
+                        addImageToTeamSetOnly(this, this.src);
                     }
                 } else {
                     // If not in gallery tab, use the original behavior
@@ -2343,20 +2576,14 @@ window.onload = async () => {
         // Remove existing event listeners to prevent duplicates
         const dataValue = btn.getAttribute('data-value');
         if (dataValue) {
-            // This is a burst filter button
-            btn.onclick = function() {
-                toggleBurstFilter(this);
-            };
-        }
-    });
+            // Clone and replace to remove all event listeners
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
 
-    // Add event listeners to the gallery burst filter buttons
-    document.querySelectorAll('.gallery-header .burst-filter-buttons .burst-btn').forEach(btn => {
-        const dataValue = btn.getAttribute('data-value');
-        if (dataValue) {
-            btn.onclick = function() {
+            // Add the click handler to the new button
+            newBtn.addEventListener('click', function() {
                 toggleBurstFilter(this);
-            };
+            });
         }
     });
 
@@ -2373,7 +2600,50 @@ window.onload = async () => {
     setupCheckboxStyling();
 
     // Load selection from localStorage (async function)
-    await loadSelectionFromLocalStorage();
+    try {
+        if (typeof window.optimizedStorage !== 'undefined' && typeof window.optimizedStorage.loadMyNikkesList === 'function') {
+            // console.log('Using optimizedStorage.loadMyNikkesList to load My Nikkes List');
+            // First try to load using the new My Nikkes List function
+            const myNikkesLoaded = await window.optimizedStorage.loadMyNikkesList();
+
+            // If My Nikkes List couldn't be loaded, fall back to the old method
+            if (!myNikkesLoaded) {
+                // console.log('My Nikkes List not found, falling back to loadSelectionFromLocalStorage');
+                await loadSelectionFromLocalStorage();
+            } else {
+                // console.log('Successfully loaded My Nikkes List');
+            }
+        } else if (typeof loadMyNikkesList === 'function') {
+            // console.log('Using loadMyNikkesList to load My Nikkes List');
+            // First try to load using the new My Nikkes List function
+            const myNikkesLoaded = await loadMyNikkesList();
+
+            // If My Nikkes List couldn't be loaded, fall back to the old method
+            if (!myNikkesLoaded) {
+                // console.log('My Nikkes List not found, falling back to loadSelectionFromLocalStorage');
+                await loadSelectionFromLocalStorage();
+            } else {
+                // console.log('Successfully loaded My Nikkes List');
+            }
+        } else {
+            // Fall back to the old method if the new function is not available
+            // console.log('loadMyNikkesList not available, using loadSelectionFromLocalStorage');
+            await loadSelectionFromLocalStorage();
+        }
+    } catch (error) {
+        console.error('Error loading My Nikkes List:', error);
+        // console.log('Falling back to loadSelectionFromLocalStorage due to error');
+        await loadSelectionFromLocalStorage();
+    }
+
+    // Try to load team set data
+    try {
+        if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.loadTeamSetData === 'function') {
+            await window.teamStorage.loadTeamSetData();
+        }
+    } catch (error) {
+        console.error('Error loading team set data:', error);
+    }
 
     updateTeamScore();
     applyProtectionToGalleryAndSelected();
@@ -2384,6 +2654,15 @@ window.onload = async () => {
 
     // Set up tab system
     setupTabSystem();
+
+    // Initialize gallery visibility and search functionality
+    if (typeof window.galleryManager !== 'undefined') {
+        // Hide gallery images that are already in My Nikke List (now true by default)
+        window.galleryManager.hideGalleryImagesInMyNikkesList();
+
+        // Initialize search functionality
+        window.galleryManager.initializeSearch();
+    }
 
     // Check if Toggle Images tab is empty and prompt for import if it is
     // Using a timeout to ensure everything is loaded first
@@ -2436,8 +2715,11 @@ function addSingleImageToToggle(imgElement) {
         return;
     }
 
-    // Hide the gallery photo
-    photoElement.style.display = 'none';
+    // Hide the gallery photo if the hide gallery images option is enabled
+    const hideGalleryImages = localStorage.getItem('hideGalleryImages') === 'true';
+    if (hideGalleryImages) {
+        photoElement.style.display = 'none';
+    }
 
     // Create a toggle item
     const toggleItem = document.createElement('div');
@@ -2451,6 +2733,7 @@ function addSingleImageToToggle(imgElement) {
     toggleItem.setAttribute('data-faction', (photoElement.getAttribute('data-faction') || '').toLowerCase());
     toggleItem.setAttribute('data-rarity', (photoElement.getAttribute('data-rarity') || '').toLowerCase());
     toggleItem.setAttribute('data-weapon', (photoElement.getAttribute('data-weapon') || '').toLowerCase());
+    toggleItem.setAttribute('data-element', (photoElement.getAttribute('data-element') || '').toLowerCase());
 
     // Store the original position value for filtering (separate from dataset.position used for drag-and-drop)
     toggleItem.setAttribute('data-original-position', (photoElement.getAttribute('data-position') || '').toLowerCase());
@@ -2493,7 +2776,7 @@ function addSingleImageToToggle(imgElement) {
         const posMatch = filename.match(/_(atk|def|sp)_/i);
         if (posMatch && posMatch[1]) {
             const extractedPosition = posMatch[1].toLowerCase();
-            console.log('Extracted position from filename for toggle item:', extractedPosition);
+            // console.log('Extracted position from filename for toggle item:', extractedPosition);
             toggleItem.setAttribute('data-original-position', extractedPosition);
         } else {
             // If we can't extract from filename, use the original position
@@ -2503,23 +2786,26 @@ function addSingleImageToToggle(imgElement) {
             } else {
                 // Default to 'atk' if all else fails
                 toggleItem.setAttribute('data-original-position', 'atk');
-                console.log('Using default position "atk" for toggle item');
+                // console.log('Using default position "atk" for toggle item');
             }
         }
     }
 
-    // Save the toggle tabs state
-    saveToggleTabsToLocalStorage();
-
-    // Also save to main storage to ensure it's updated
-    saveSelectionToLocalStorage();
+    // Save the My Nikkes List to localStorage
+    if (typeof saveMyNikkesList === 'function') {
+        saveMyNikkesList();
+    } else {
+        // Fallback to old methods if the new function is not available
+        saveToggleTabsToLocalStorage();
+        saveSelectionToLocalStorage();
+    }
 
     // Update the team-specific toggle images
     saveCurrentToggleImages();
 
-    // If we're adding an image, clear the userClearedSelection flag
+    // If we're adding an image, clear the userClearedSelection and preventDefaultDataLoad flags
     localStorage.removeItem('userClearedSelection');
-    console.log('Added image to toggle, clearing userClearedSelection flag');
+    localStorage.removeItem('preventDefaultDataLoad');
 }
 
 // Set up checkbox styling
@@ -2533,13 +2819,13 @@ function setupCheckboxStyling() {
 
 // Refresh the selected state of images based on team slots
 function refreshSelectedImages() {
-    console.log('Refreshing selected state of images');
+    // console.log('Refreshing selected state of images');
 
     // First, get all images in team slots
     const teamImageSources = Array.from(document.querySelectorAll('.team-images .image-slot img'))
         .map(img => img.src);
 
-    console.log(`Found ${teamImageSources.length} images in team slots`);
+    // console.log(`Found ${teamImageSources.length} images in team slots`);
 
     // Apply green borders to all images that are in team slots
     document.querySelectorAll('.photo img, .toggle-item img').forEach(img => {
@@ -2569,7 +2855,7 @@ function refreshSelectedImages() {
     // Update selection state in localStorage
     updateToggleImageSelectionState(currentTeamSet);
 
-    console.log('Finished refreshing selected state of images');
+    // console.log('Finished refreshing selected state of images');
 }
 
 // Ensure green borders are applied to selected images
@@ -2577,7 +2863,7 @@ function ensureGreenBorders() {
     // Check if user has intentionally cleared their selection
     const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
     if (userClearedSelection) {
-        console.log('User intentionally cleared selection, not applying green borders');
+        // console.log('User intentionally cleared selection, not applying green borders');
         return;
     }
 
@@ -2585,11 +2871,11 @@ function ensureGreenBorders() {
     const teamImageSources = Array.from(document.querySelectorAll('.team-images .image-slot img'))
         .map(img => img.src);
 
-    console.log(`Found ${teamImageSources.length} images in team slots to apply green borders`);
+    // console.log(`Found ${teamImageSources.length} images in team slots to apply green borders`);
 
     // If there are no images in team slots, don't apply any green borders
     if (teamImageSources.length === 0) {
-        console.log('No images in team slots, not applying green borders');
+        // console.log('No images in team slots, not applying green borders');
         return;
     }
 
@@ -2628,6 +2914,39 @@ function editTeamName(setId) {
     }
 }
 
+// Function to save team position
+function saveTeamPosition(setId) {
+    try {
+        // Call the saveTeamSetData function from team-storage.js
+        if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.saveTeamSetData === 'function') {
+            const result = window.teamStorage.saveTeamSetData();
+
+            // Show save status
+            const saveStatus = document.getElementById(`saveStatus${setId}`);
+            if (saveStatus) {
+                saveStatus.textContent = 'Saved!';
+                saveStatus.style.display = 'inline';
+
+                // Hide save status after 3 seconds
+                setTimeout(function() {
+                    saveStatus.style.display = 'none';
+                }, 3000);
+            }
+
+            // console.log(`Team set ${setId} position saved successfully`);
+            return true;
+        } else {
+            console.error('saveTeamSetData function not found');
+            alert('Error: Save function not found');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error saving team position:', error);
+        alert('Error saving team position: ' + error.message);
+        return false;
+    }
+}
+
 // Set up tab system
 function setupTabSystem() {
     // Set up content tab switching
@@ -2647,7 +2966,7 @@ function setupTabSystem() {
             e.stopPropagation();
             const setId = this.getAttribute('data-set');
             if (setId) {
-                console.log(`Clicked team set tab: ${setId}`);
+                // console.log(`Clicked team set tab: ${setId}`);
                 switchTeamSet(setId);
             } else {
                 console.error('Team set tab missing data-set attribute:', this);
@@ -2691,6 +3010,8 @@ function setupTabSystem() {
             resetLocalStorage();
         });
     }
+
+
 
     // Set up export and clear selection buttons
     const exportBtn = document.getElementById('exportBtn');
@@ -2785,17 +3106,23 @@ function setupTabSystem() {
                 teamNames[currentTeamSet] = '';
                 updateTeamTitle(currentTeamSet);
                 saveTeamNames();
-                console.log(`Cleared custom name for team set ${currentTeamSet}`);
+                // console.log(`Cleared custom name for team set ${currentTeamSet}`);
 
                 // Don't set userClearedSelection flag when clearing a team
                 // This prevents My Nikkes images from being cleared
-                console.log('Team cleared, but keeping My Nikkes images');
+                // console.log('Team cleared, but keeping My Nikkes images');
 
-                // Update the team-specific toggle images
-                saveCurrentToggleImages();
+                // Clear the team-specific toggle images for this team set
+                if (window.teamSetToggleImages && window.teamSetToggleImages[currentTeamSet]) {
+                    window.teamSetToggleImages[currentTeamSet] = [];
+                    // console.log(`Cleared team-specific toggle images for team set ${currentTeamSet}`);
+                }
 
                 // Save to localStorage
                 saveSelectionToLocalStorage();
+
+                // Save toggle tabs state
+                saveToggleTabsToLocalStorage();
 
                 // No alert message after clearing - removed as requested
             }
@@ -2803,10 +3130,11 @@ function setupTabSystem() {
     }
 }
 
-// Switch content tab
+// Switch content tab - this is a duplicate function, but we need to keep it to avoid breaking existing code
 function switchContentTab(tabId) {
     // Update current tab
     currentContentTab = tabId;
+    // console.log(`Local switchContentTab: Switching to tab: ${tabId}`);
 
     // Update tab buttons
     document.querySelectorAll('.tab-button[data-tab]').forEach(tab => {
@@ -2824,7 +3152,7 @@ function switchContentTab(tabId) {
         if (galleryContainer) {
             galleryContainer.style.display = 'flex';
             galleryContainer.classList.remove('hidden');
-            console.log('Showing gallery container');
+            // console.log('Showing gallery container');
         } else {
             console.error('Gallery container not found');
         }
@@ -2834,8 +3162,6 @@ function switchContentTab(tabId) {
             toggleContainer.style.display = 'none';
             toggleContainer.classList.add('hidden');
         }
-
-        // No need to sync search inputs anymore as we've removed the redundant search input
     } else if (tabId === 'toggleImages') {
         // Hide gallery container
         const galleryContainer = document.querySelector('.gallery-container');
@@ -2851,13 +3177,21 @@ function switchContentTab(tabId) {
         }
     }
 
-    // Apply filters after switching tabs to ensure everything is properly filtered
-    updateFilters();
+    // Apply filters after switching tabs
+    if (typeof window.filter !== 'undefined' && typeof window.filter.updateFilters === 'function') {
+        // console.log('Applying filters using window.filter.updateFilters');
+        window.filter.updateFilters();
+    } else if (typeof updateFilters === 'function') {
+        // console.log('Applying filters after tab switch');
+        updateFilters();
+    } else {
+        console.warn('updateFilters function not found, cannot apply filters after tab switch');
+    }
 
     // Save the current tab to localStorage
     saveSelectionToLocalStorage();
 
-    console.log(`Switched to tab: ${tabId}`);
+    // console.log(`Switched to tab: ${tabId}`);
 }
 
 // Initialize teamSetToggleImages if it doesn't exist yet
@@ -2870,14 +3204,14 @@ if (typeof teamSetToggleImages === 'undefined') {
 
 // Switch team set
 function switchTeamSet(setId) {
-    console.log(`Switching to team set: ${setId}`);
+    // console.log(`Switching to team set: ${setId}`);
 
     // Save current toggle images before switching
     saveCurrentToggleImages();
 
     // Update current team set
     currentTeamSet = setId;
-    console.log(`Current team set updated to: ${currentTeamSet}`);
+    // console.log(`Current team set updated to: ${currentTeamSet}`);
 
     // Update team set tabs
     document.querySelectorAll('.tab-button.team-tab').forEach(tab => {
@@ -2893,7 +3227,7 @@ function switchTeamSet(setId) {
         if (container.id === `teamSet${setId}`) {
             container.style.display = 'flex';
             container.classList.remove('hidden');
-            console.log(`Made team set ${setId} visible`);
+            // console.log(`Made team set ${setId} visible`);
         } else {
             container.style.display = 'none';
             container.classList.add('hidden');
@@ -2906,41 +3240,57 @@ function switchTeamSet(setId) {
     // Update the green border lines for the current team set
     updateToggleImageSelectionState(setId);
 
+    // Reinitialize Sortable for the current team set
+    if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.initializeSortable === 'function') {
+        // console.log('Reinitializing Sortable after switching team set');
+        window.teamStorage.initializeSortable();
+    }
+
     // Save the current team set to localStorage with a slight delay to ensure all updates are processed
     setTimeout(() => {
         try {
-            // First try to get existing data
-            const existingData = localStorage.getItem(STORAGE_KEY);
-            if (existingData) {
-                const parsedData = JSON.parse(existingData);
-                parsedData.currentTeamSet = setId;
+            // First try to use the new team storage functions
+            if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.saveTeamSetData === 'function') {
+                window.teamStorage.saveTeamSetData();
+            } else {
+                // Fall back to the old method
+                // First try to get existing data
+                const existingData = localStorage.getItem(STORAGE_KEY);
+                if (existingData) {
+                    const parsedData = JSON.parse(existingData);
+                    parsedData.currentTeamSet = setId;
 
-                // Update the team sets data to ensure it's current
-                if (parsedData.teamSets && Array.isArray(parsedData.teamSets)) {
-                    // Save team data for SET1 and SET2
-                    for (let i = 1; i <= 2; i++) {
-                        const teams = document.querySelectorAll(`#teamSet${i} .team-images`);
-                        const teamsData = Array.from(teams).map(team => ({
-                            images: Array.from(team.querySelectorAll('.image-slot img')).map(img => ({
-                                src: img.src,
-                                score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
-                            }))
-                        }));
+                    // Update the team sets data to ensure it's current
+                    if (parsedData.teamSets && Array.isArray(parsedData.teamSets)) {
+                        // Save team data for SET1 and SET2
+                        for (let i = 1; i <= 2; i++) {
+                            const teams = document.querySelectorAll(`#teamSet${i} .team-images`);
+                            const teamsData = Array.from(teams).map(team => ({
+                                images: Array.from(team.querySelectorAll('.image-slot img')).map(img => ({
+                                    src: img.src,
+                                    score: parseInt(img.src.split('/').pop().split('_')[0], 10) / 10
+                                }))
+                            }));
 
-                        // Update the team set data
-                        if (i <= parsedData.teamSets.length) {
-                            parsedData.teamSets[i-1] = teamsData;
-                        } else {
-                            parsedData.teamSets.push(teamsData);
+                            // Update the team set data
+                            if (i <= parsedData.teamSets.length) {
+                                parsedData.teamSets[i-1] = teamsData;
+                            } else {
+                                parsedData.teamSets.push(teamsData);
+                            }
                         }
                     }
-                }
 
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
-                console.log(`Updated currentTeamSet to ${setId} and team data in localStorage`);
-            } else {
-                // If no existing data, save everything
-                saveSelectionToLocalStorage();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
+                } else {
+                    // If no existing data, save everything
+                    saveSelectionToLocalStorage();
+                }
+            }
+
+            // Also save the My Nikkes List
+            if (typeof saveMyNikkesList === 'function') {
+                saveMyNikkesList();
             }
         } catch (error) {
             console.error('Error updating team set in localStorage:', error);
@@ -2949,7 +3299,7 @@ function switchTeamSet(setId) {
         }
     }, 100);
 
-    console.log(`Switched to team set: ${setId}`);
+    // console.log(`Switched to team set: ${setId}`);
 }
 
 // Update the selection state (green border lines) of toggle images based on the current team set
@@ -2957,12 +3307,15 @@ function updateToggleImageSelectionState(setId) {
     // Check if user has intentionally cleared their selection
     const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
     if (userClearedSelection) {
-        console.log('User intentionally cleared selection, not updating toggle image selection state');
+        // console.log('User intentionally cleared selection, not updating toggle image selection state');
         return;
     }
 
     const toggleImagesContainer = document.querySelector('#toggleImages');
-    if (!toggleImagesContainer) return;
+    if (!toggleImagesContainer) {
+        console.error('Toggle images container not found');
+        return;
+    }
 
     // Get the current team container to check which images should be selected
     const teamContainer = document.querySelector(`#teamSet${setId}`);
@@ -2975,34 +3328,51 @@ function updateToggleImageSelectionState(setId) {
     const teamImageSources = Array.from(teamContainer.querySelectorAll('.image-slot img'))
         .map(img => img.src);
 
-    console.log(`Found ${teamImageSources.length} images in team set ${setId}`);
+    // console.log(`Found ${teamImageSources.length} images in team set ${setId}`);
+
+    // Initialize teamSetToggleImages if it doesn't exist
+    if (!window.teamSetToggleImages) {
+        window.teamSetToggleImages = {};
+    }
+
+    // Initialize the team set if it doesn't exist
+    if (!window.teamSetToggleImages[setId]) {
+        window.teamSetToggleImages[setId] = [];
+    }
+
+    // First, clear all selections to ensure we start fresh
+    const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'));
+    toggleItems.forEach(img => {
+        img.classList.remove('selected');
+        img.style.border = '';
+        img.style.outline = '';
+        img.style.boxShadow = '';
+        img.style.zIndex = '';
+        img.style.position = '';
+    });
 
     // If there are no images in the team set, don't apply any selection
     if (teamImageSources.length === 0) {
-        console.log('No images in team set, clearing all selections');
-        // Clear all selections
-        const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'));
-        toggleItems.forEach(img => {
-            img.classList.remove('selected');
-            img.style.border = '';
-            img.style.outline = '';
-            img.style.boxShadow = '';
-            img.style.zIndex = '';
-            img.style.position = '';
+        // console.log('No images in team set, all selections cleared');
 
-            // Update the selection state in localStorage
+        // Update the selection state in localStorage for all images
+        toggleItems.forEach(img => {
             updateToggleImageSelectionInLocalStorage(img.src, false);
         });
+
+        // Save the updated toggle images data
+        saveCurrentToggleImages();
         return;
     }
 
     // Update the selection state of each toggle image
-    const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'));
+    let updatedCount = 0;
+
     toggleItems.forEach(img => {
         // Check if this image is in the current team set
         const isInTeam = teamImageSources.includes(img.src);
 
-        // Update the visual selection state
+        // Apply the appropriate visual state based on whether it's in the team
         if (isInTeam) {
             img.classList.add('selected');
             img.style.border = '3px solid #00ff00';
@@ -3010,18 +3380,17 @@ function updateToggleImageSelectionState(setId) {
             img.style.boxShadow = '0 0 8px #00ff00';
             img.style.zIndex = '10';
             img.style.position = 'relative';
-        } else {
-            img.classList.remove('selected');
-            img.style.border = '';
-            img.style.outline = '';
-            img.style.boxShadow = '';
-            img.style.zIndex = '';
-            img.style.position = '';
+            updatedCount++;
         }
 
-        // Update the selection state in localStorage
+        // Always update the selection state in localStorage
         updateToggleImageSelectionInLocalStorage(img.src, isInTeam);
     });
+
+    // Save the updated toggle images data
+    saveCurrentToggleImages();
+
+    // console.log(`Updated selection state for ${updatedCount} toggle images based on team set ${setId}`);
 }
 
 // Update the selection state of a toggle image in localStorage
@@ -3064,20 +3433,23 @@ function updateToggleImageSelectionInLocalStorage(imgSrc, isSelected) {
 
             // Save back to localStorage
             localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-            console.log(`Updated selection state for ${imgSrc} to ${isSelected} in localStorage`);
+            // console.log(`Updated selection state for ${imgSrc} to ${isSelected} in localStorage`);
         }
     } catch (error) {
         console.error('Error updating toggle image selection in localStorage:', error);
     }
 }
 
-// Save current toggle images to the teamSetToggleImages object
+// Save current toggle images to the teamSetToggleImages object with enhanced data
 function saveCurrentToggleImages() {
     const previousTeamSet = currentTeamSet;
     if (!previousTeamSet) return;
 
     const toggleImagesContainer = document.querySelector('#toggleImages');
-    if (!toggleImagesContainer) return;
+    if (!toggleImagesContainer) {
+        console.error('Toggle images container not found');
+        return;
+    }
 
     // Get the current team container to check which images should be selected
     const teamContainer = document.querySelector(`#teamSet${previousTeamSet}`);
@@ -3086,47 +3458,632 @@ function saveCurrentToggleImages() {
         return;
     }
 
-    // Get all image sources in the current team set
-    const teamImageSources = Array.from(teamContainer.querySelectorAll('.image-slot img'))
-        .map(img => img.src);
+    // Get all image sources and their positions in the current team set
+    const teamImageData = [];
+    teamContainer.querySelectorAll('.team-images').forEach((teamRow, rowIndex) => {
+        teamRow.querySelectorAll('.image-slot img').forEach((img, slotIndex) => {
+            teamImageData.push({
+                src: img.src,
+                row: rowIndex,
+                slot: slotIndex,
+                // Save any additional attributes or styles that need to be preserved
+                styles: {
+                    border: img.style.border,
+                    outline: img.style.outline,
+                    boxShadow: img.style.boxShadow,
+                    zIndex: img.style.zIndex,
+                    position: img.style.position
+                },
+                // Save data attributes
+                data: {
+                    number: img.dataset.number || '',
+                    name: img.dataset.name || '',
+                    type: img.dataset.type || '',
+                    position: img.dataset.position || '',
+                    faction: img.dataset.faction || '',
+                    rarity: img.dataset.rarity || '',
+                    weapon: img.dataset.weapon || '',
+                    element: img.dataset.element || ''
+                }
+            });
+        });
+    });
+
+    // Get all team image sources for simple comparison
+    const teamImageSources = teamImageData.map(data => data.src);
 
     const toggleItems = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item'));
 
-    // Save the toggle items data
-    window.teamSetToggleImages[previousTeamSet] = toggleItems.map(item => {
-        const img = item.querySelector('img');
+    // Initialize teamSetToggleImages if it doesn't exist
+    if (!window.teamSetToggleImages) {
+        window.teamSetToggleImages = { '1': [], '2': [] };
+    }
 
-        // Check if this image is in the current team set
-        const isInTeam = teamImageSources.includes(img.src);
+    // Check if there are any images in the team set
+    const hasTeamImages = teamImageSources.length > 0;
 
-        // Only update the selection state in localStorage if the image is in the team
-        // This prevents clearing selection state when a team is cleared
-        if (isInTeam) {
-            updateToggleImageSelectionInLocalStorage(img.src, isInTeam);
+    // If there are no images in the team set, clear the team set toggle images
+    if (!hasTeamImages) {
+        window.teamSetToggleImages[previousTeamSet] = [];
+    }
+    // If there are toggle items, save them with enhanced information
+    else if (toggleItems.length > 0) {
+        // Create a map of team images for quick lookup
+        const teamImagesMap = new Map();
+        teamImageData.forEach(data => {
+            teamImagesMap.set(data.src, data);
+        });
+
+        // Process toggle items that are in the team
+        window.teamSetToggleImages[previousTeamSet] = toggleItems
+            .map(item => {
+                const img = item.querySelector('img');
+                if (!img) return null;
+
+                // Check if this image is in the current team set
+                const isInTeam = teamImageSources.includes(img.src);
+                if (!isInTeam) return null; // Skip if not in team
+
+                // Find the team slot data
+                const teamSlotData = teamImagesMap.get(img.src);
+
+                // Update the selected state in the UI to match
+                if (!img.classList.contains('selected')) {
+                    img.classList.add('selected');
+                    img.style.border = '3px solid #00ff00';
+                    img.style.outline = '1px solid #ffffff';
+                    img.style.boxShadow = '0 0 8px #00ff00';
+                    img.style.zIndex = '10';
+                    img.style.position = 'relative';
+                }
+
+                return {
+                    src: img.src,
+                    selected: true,
+                    // Save toggle item data attributes
+                    data: {
+                        number: item.getAttribute('data-number') || '',
+                        name: item.getAttribute('data-name') || '',
+                        type: item.getAttribute('data-type') || '',
+                        position: item.getAttribute('data-position') || '',
+                        faction: item.getAttribute('data-faction') || '',
+                        rarity: item.getAttribute('data-rarity') || '',
+                        weapon: item.getAttribute('data-weapon') || '',
+                        originalPosition: item.getAttribute('data-original-position') || ''
+                    },
+                    // Save styles
+                    styles: {
+                        border: img.style.border || '',
+                        outline: img.style.outline || '',
+                        boxShadow: img.style.boxShadow || '',
+                        zIndex: img.style.zIndex || '',
+                        position: img.style.position || ''
+                    },
+                    // Save team slot information
+                    teamSlot: teamSlotData ? {
+                        row: teamSlotData.row,
+                        slot: teamSlotData.slot
+                    } : null
+                };
+            })
+            .filter(item => item !== null); // Filter out any null items
+    } else {
+        // If there are no toggle items but there are team images, create toggle items for them
+        if (hasTeamImages) {
+            window.teamSetToggleImages[previousTeamSet] = teamImageData.map(data => {
+                return {
+                    src: data.src,
+                    selected: true,
+                    data: data.data || {},
+                    styles: data.styles || {},
+                    teamSlot: {
+                        row: data.row,
+                        slot: data.slot
+                    }
+                };
+            });
+        } else {
+            window.teamSetToggleImages[previousTeamSet] = [];
+        }
+    }
+
+    // No need to call saveSelectionToLocalStorage here
+    // It will be called by the debounced save function in optimized-storage.js
+}
+
+async function processLoadedData(savedData) {
+    try {
+        // Check if user has intentionally cleared their selection
+        const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
+
+        // Check if we have any team images in the saved data
+        const hasTeamImages = savedData.teamSetToggleImages &&
+            Object.values(savedData.teamSetToggleImages).some(arr => arr && arr.length > 0);
+
+        if (userClearedSelection && !hasTeamImages) {
+            // console.log('User intentionally cleared selection');
+            savedData.myNikkesList = [];
+            savedData.toggleImages = [];
+            savedData.toggleTabs = { toggleImages: [] };
+            savedData.teamSetToggleImages = { '1': [], '2': [] };
+            return true;
         }
 
-        return {
-            src: img.src,
-            number: item.getAttribute('data-number') || '',
-            name: item.getAttribute('data-name') || '',
-            type: item.getAttribute('data-type') || '',
-            position: item.getAttribute('data-position') || '',
-            faction: item.getAttribute('data-faction') || '',
-            rarity: item.getAttribute('data-rarity') || '',
-            weapon: item.getAttribute('data-weapon') || '',
-            selected: isInTeam // Use isInTeam for team-specific selection state
+        // Process toggle images - prioritize myNikkesList over toggleImages over toggleTabs.toggleImages
+        let toggleImages = [];
+
+        if (savedData.myNikkesList && Array.isArray(savedData.myNikkesList)) {
+            // console.log(`Found ${savedData.myNikkesList.length} items in myNikkesList`);
+            toggleImages = savedData.myNikkesList;
+        } else if (savedData.toggleImages && Array.isArray(savedData.toggleImages)) {
+            // console.log(`Found ${savedData.toggleImages.length} items in toggleImages`);
+            toggleImages = savedData.toggleImages;
+        } else if (savedData.toggleTabs && savedData.toggleTabs.toggleImages && Array.isArray(savedData.toggleTabs.toggleImages)) {
+            // console.log(`Found ${savedData.toggleTabs.toggleImages.length} items in toggleTabs.toggleImages`);
+            toggleImages = savedData.toggleTabs.toggleImages;
+        }
+
+        // If we found toggle images, make sure they're also saved in myNikkesList for future use
+        if (toggleImages.length > 0 && !savedData.myNikkesList) {
+            // console.log(`Migrating ${toggleImages.length} toggle images to myNikkesList format`);
+            savedData.myNikkesList = toggleImages;
+
+            // Use the optimized storage function if available
+            if (typeof window.optimizedStorage !== 'undefined' && typeof window.optimizedStorage.saveStorageData === 'function') {
+                window.optimizedStorage.saveStorageData(savedData);
+            } else if (typeof saveStorageData === 'function') {
+                saveStorageData(savedData);
+            } else {
+                // Fallback to direct localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+            }
+        }
+
+        if (toggleImages.length > 0) {
+            // Filter valid images
+            const validImages = toggleImages.filter(imgData => {
+                if (typeof imgData === 'string') return true;
+                if (imgData && imgData.src) return true;
+                return false;
+            });
+
+            // Process each valid image
+            const processedImages = await Promise.all(validImages.map(async imgData => {
+                try {
+                    // Handle different types of image data
+                    if (typeof imgData === 'string') {
+                        // If it's just a string URL
+                        return imgData.startsWith('https://raw.githubusercontent.com/')
+                            ? imgData
+                            : getGitHubUrl(imgData);
+                    } else if (imgData && typeof imgData === 'object') {
+                        // If it's an object with src property
+                        if (!imgData.src) return null;
+                        if (typeof imgData.src !== 'string') return null;
+
+                        // Use GitHub URL if needed
+                        const githubUrl = imgData.src.startsWith('https://raw.githubusercontent.com/')
+                            ? imgData.src
+                            : getGitHubUrl(imgData.src);
+
+                        // Create a new object with the correct src
+                        return {
+                            ...imgData,
+                            src: githubUrl
+                        };
+                    }
+                    return null;
+                } catch (error) {
+                    return null;
+                }
+            }));
+
+            // Filter out any null results and import valid images
+            const validProcessedImages = processedImages.filter(img => img !== null);
+            if (validProcessedImages.length > 0) {
+                importImagesToToggleGallery(validProcessedImages);
+            }
+        }
+
+        // Process team sets
+        if (savedData.teamSetToggleImages) {
+            for (const teamSet in savedData.teamSetToggleImages) {
+                if (Array.isArray(savedData.teamSetToggleImages[teamSet])) {
+                    const validTeamImages = savedData.teamSetToggleImages[teamSet].filter(imgData => {
+                        return imgData && imgData.src && typeof imgData.src === 'string';
+                    });
+
+                    if (validTeamImages.length > 0) {
+                        await processTeamSetImages(teamSet, validTeamImages);
+                    }
+                }
+            }
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error in processLoadedData:', error);
+        return false;
+    }
+}
+
+async function processTeamSetImages(teamSet, images) {
+    try {
+        // Validate images first
+        const validImages = images.filter(imgData => {
+            if (!imgData) return false;
+            if (typeof imgData !== 'object') return false;
+            if (!imgData.src) return false;
+            if (typeof imgData.src !== 'string') return false;
+            return true;
+        });
+
+        // Processing images for team set
+        const teamContainer = document.querySelector(`#teamSet${teamSet}`);
+        if (!teamContainer) {
+            console.error(`Team container #teamSet${teamSet} not found`);
+            return;
+        }
+
+        // Get all team rows
+        const teamRows = teamContainer.querySelectorAll('.team-images');
+        if (!teamRows || teamRows.length === 0) {
+            console.error(`No team rows found in team set ${teamSet}`);
+            return;
+        }
+
+        // Distribute images across rows
+        let imageIndex = 0;
+
+        // Process each row
+        for (let rowIndex = 0; rowIndex < teamRows.length && imageIndex < validImages.length; rowIndex++) {
+            const row = teamRows[rowIndex];
+            const emptySlots = row.querySelectorAll('.image-slot.empty');
+
+            // Process each empty slot in this row
+            for (let slotIndex = 0; slotIndex < emptySlots.length && imageIndex < validImages.length; slotIndex++) {
+                const imgData = validImages[imageIndex];
+                const slot = emptySlots[slotIndex];
+
+                try {
+                    // Create and add the image
+                    const img = document.createElement('img');
+
+                    // Make sure we have a valid URL
+                    if (typeof imgData.src === 'string' && imgData.src.startsWith('http')) {
+                        img.src = imgData.src;
+                    } else {
+                        console.warn(`Invalid image source for team set ${teamSet}:`, imgData.src);
+                        imageIndex++; // Move to next image
+                        continue; // Skip this image
+                    }
+
+                    img.draggable = false;
+
+                    // Apply saved styles if available
+                    if (imgData.styles) {
+                        Object.entries(imgData.styles).forEach(([style, value]) => {
+                            if (value) {
+                                img.style[style] = value;
+                            }
+                        });
+                    }
+
+                    // Apply saved data attributes if available
+                    if (imgData.data) {
+                        Object.entries(imgData.data).forEach(([key, value]) => {
+                            if (value) {
+                                img.dataset[key] = value;
+                            }
+                        });
+                    }
+
+                    // Apply saved classes if available
+                    if (imgData.classes && Array.isArray(imgData.classes)) {
+                        imgData.classes.forEach(className => {
+                            if (className) {
+                                img.classList.add(className);
+                            }
+                        });
+                    }
+
+                    // Add click handler for removal
+                    img.onclick = () => {
+                        const galleryImg = document.querySelector(`.photo img[src="${img.src}"]`);
+                        if (galleryImg) {
+                            toggleImageSelection(galleryImg);
+                        } else {
+                            const toggleImg = document.querySelector(`.toggle-item img[src="${img.src}"]`);
+                            if (toggleImg) {
+                                toggleImageSelection(toggleImg);
+                            }
+                        }
+                    };
+
+                    // Clear the slot and add the new image
+                    slot.innerHTML = '';
+                    slot.appendChild(img);
+                    slot.classList.remove('empty');
+
+                    // Move to the next image
+                    imageIndex++;
+                } catch (error) {
+                    console.error(`Error adding image to slot in team set ${teamSet}:`, error);
+                    imageIndex++; // Move to next image even if there's an error
+                }
+            }
+        }
+
+        // Update the selection state of toggle images
+        updateToggleImageSelectionState(teamSet);
+
+    } catch (error) {
+        console.error(`Error processing team set ${teamSet} images:`, error);
+    }
+}
+
+// Helper function to add a single image to a team set
+async function addImageToTeamSet(teamSet, imgData) {
+    try {
+        // Validate image data
+        if (!imgData || typeof imgData !== 'object' || !imgData.src || typeof imgData.src !== 'string') {
+            console.error(`Invalid image data for team set ${teamSet}:`, imgData);
+            return;
+        }
+
+        const teamContainer = document.querySelector(`#teamSet${teamSet}`);
+        if (!teamContainer) {
+            console.error(`Team container #teamSet${teamSet} not found`);
+            return;
+        }
+
+        // Get all team rows
+        const teamRows = teamContainer.querySelectorAll('.team-images');
+        if (!teamRows || teamRows.length === 0) {
+            console.error(`No team rows found in team set ${teamSet}`);
+            return;
+        }
+
+        // Find the first empty slot by checking each row
+        let emptySlot = null;
+        let foundEmptySlot = false;
+
+        // Look for empty slots row by row
+        for (let rowIndex = 0; rowIndex < teamRows.length && !foundEmptySlot; rowIndex++) {
+            const row = teamRows[rowIndex];
+            const emptySlots = row.querySelectorAll('.image-slot.empty');
+
+            if (emptySlots.length > 0) {
+                emptySlot = emptySlots[0]; // Take the first empty slot in this row
+                foundEmptySlot = true;
+                break;
+            }
+        }
+
+        if (!emptySlot) {
+            // console.log(`No empty slots available in team set ${teamSet}`);
+            return;
+        }
+
+        // Create and add the image
+        const img = document.createElement('img');
+
+        // Make sure we have a valid URL
+        if (imgData.src.startsWith('http')) {
+            img.src = imgData.src;
+        } else {
+            console.warn(`Invalid image source for team set ${teamSet}:`, imgData.src);
+            return; // Skip this image
+        }
+
+        img.draggable = false;
+
+        // Add click handler for removal
+        img.onclick = () => {
+            const galleryImg = document.querySelector(`.photo img[src="${img.src}"]`);
+            if (galleryImg) {
+                toggleImageSelection(galleryImg);
+            } else {
+                const toggleImg = document.querySelector(`.toggle-item img[src="${img.src}"]`);
+                if (toggleImg) {
+                    toggleImageSelection(toggleImg);
+                }
+            }
         };
+
+        // Clear the slot and add the new image
+        emptySlot.innerHTML = '';
+        emptySlot.appendChild(img);
+        emptySlot.classList.remove('empty');
+
+        // Added image to team set
+
+        // Update the selection state of toggle images
+        updateToggleImageSelectionState(teamSet);
+
+    } catch (error) {
+        console.error(`Error adding image to team set ${teamSet}:`, error);
+    }
+}
+
+function importImagesToToggleGallery(images) {
+    const toggleImagesContainer = document.querySelector('#toggleImages');
+    if (!toggleImagesContainer) {
+        console.error('Toggle images container not found');
+        return;
+    }
+
+    // Get existing toggle image sources
+    const existingToggleImageSources = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'))
+        .map(img => img.src);
+    // Check for existing toggle images
+
+    // Track how many images were actually imported
+    let importedCount = 0;
+
+    // Process each image
+    images.forEach(imgData => {
+        try {
+            // Handle both string URLs and object data structures
+            const imageSource = typeof imgData === 'string' ? imgData : imgData?.src;
+
+            if (!imageSource) {
+                console.warn('Invalid image data:', imgData);
+                return;
+            }
+
+            // Skip if image already exists
+            if (existingToggleImageSources.includes(imageSource)) {
+                // Skip existing image
+                return;
+            }
+
+            // Create toggle item
+            const toggleItem = document.createElement('div');
+            toggleItem.className = 'toggle-item';
+
+            // Create image element
+            const img = document.createElement('img');
+            img.src = imageSource;
+            img.draggable = false;
+
+            // Check if this image should be selected (in a team slot)
+            let isSelected = false;
+
+            // If we have metadata, add it
+            if (typeof imgData === 'object') {
+                // Add data attributes from the number, type, etc. properties
+                if (imgData.number) toggleItem.dataset.number = imgData.number;
+                if (imgData.type) toggleItem.dataset.type = imgData.type;
+                if (imgData.faction) toggleItem.dataset.faction = imgData.faction;
+                if (imgData.rarity) toggleItem.dataset.rarity = imgData.rarity;
+                if (imgData.weapon) toggleItem.dataset.weapon = imgData.weapon;
+                if (imgData.name) toggleItem.dataset.name = imgData.name;
+                if (imgData.position) toggleItem.dataset.position = imgData.position;
+
+                // Add data attributes from the data object if available
+                if (imgData.data) {
+                    Object.entries(imgData.data).forEach(([key, value]) => {
+                        if (value) {
+                            toggleItem.dataset[key] = value;
+                        }
+                    });
+                }
+
+                // Apply styles if available
+                if (imgData.styles) {
+                    Object.entries(imgData.styles).forEach(([style, value]) => {
+                        if (value) {
+                            img.style[style] = value;
+                        }
+                    });
+                }
+
+                // Apply classes if available
+                if (imgData.classes && Array.isArray(imgData.classes)) {
+                    imgData.classes.forEach(className => {
+                        if (className) {
+                            img.classList.add(className);
+                        }
+                    });
+                }
+
+                // Set selected state if specified
+                if (imgData.selected) {
+                    isSelected = true;
+                }
+            } else {
+                // Extract data from URL if it's just a string
+                const filename = imageSource.split('/').pop();
+                if (filename) {
+                    const parts = filename.split('_');
+                    if (parts.length >= 7) {
+                        toggleItem.dataset.number = parts[0];
+                        toggleItem.dataset.faction = parts[2];
+                        toggleItem.dataset.rarity = parts[3];
+                        toggleItem.dataset.type = parts[4];
+                        toggleItem.dataset.position = parts[5];
+                        toggleItem.dataset.weapon = parts[6];
+                        // Name would be parts[7] and beyond, joined with underscores
+                        if (parts.length > 7) {
+                            toggleItem.dataset.name = parts.slice(7).join('_').replace('.webp', '');
+                        }
+                    } else if (parts.length > 0) {
+                        toggleItem.dataset.number = parts[0];
+                    }
+                }
+            }
+
+            // Check if this image is in any team slot
+            const isInTeamSlot = Array.from(document.querySelectorAll('.team-images .image-slot img'))
+                .some(slotImg => slotImg.src === imageSource);
+
+            // Set selected state based on team slot presence
+            if (isInTeamSlot || isSelected) {
+                img.classList.add('selected');
+                img.style.border = '3px solid #00ff00';
+                img.style.outline = '1px solid #ffffff';
+                img.style.boxShadow = '0 0 8px #00ff00';
+                img.style.zIndex = '10';
+                img.style.position = 'relative';
+                // Applied selected state to image
+            }
+
+            // Add click handler for selection
+            img.addEventListener('click', function() {
+                toggleImageSelection(this);
+            });
+
+            // Add image to toggle item
+            toggleItem.appendChild(img);
+            toggleImagesContainer.appendChild(toggleItem);
+
+            importedCount++;
+
+        } catch (error) {
+            console.error('Error processing image:', imgData, error);
+        }
     });
 
-    console.log(`Saved ${window.teamSetToggleImages[previousTeamSet].length} toggle images for team set ${previousTeamSet}`);
+    // console.log(`Successfully imported ${importedCount} new toggle images`);
+
+    // Update positions after importing
+    updateToggleImagesPositions();
+
+    // Initialize teamSetToggleImages if it doesn't exist
+    if (!window.teamSetToggleImages) {
+        window.teamSetToggleImages = { '1': [], '2': [] };
+    }
+
+    // Make sure we have the current team set
+    if (!currentTeamSet) {
+        currentTeamSet = '1';
+    }
+
+    // Update the team-specific toggle images
+    saveCurrentToggleImages();
+
+    // Save the My Nikkes List to localStorage
+    if (typeof saveMyNikkesList === 'function') {
+        saveMyNikkesList();
+    } else {
+        // Fallback to old methods if the new function is not available
+        saveToggleTabsToLocalStorage();
+        saveSelectionToLocalStorage();
+    }
+
+    // Force a refresh of the toggle images display
+    const toggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
+    // console.log(`After import: Found ${toggleItems.length} toggle items in the container`);
+
+    // Hide gallery photos if the hide gallery images option is enabled
+    if (localStorage.getItem('hideGalleryImages') === 'true' && typeof window.galleryManager !== 'undefined') {
+        window.galleryManager.hideGalleryImagesInMyNikkesList();
+    }
 }
 
-// This function is no longer used - we now use updateToggleImageSelectionState instead
-function loadToggleImagesForTeamSet(setId) {
-    console.log(`loadToggleImagesForTeamSet is deprecated, use updateToggleImageSelectionState instead`);
-    // Just call updateToggleImageSelectionState for backward compatibility
-    updateToggleImageSelectionState(setId);
-}
+
+// Removed unused function: loadToggleImagesForTeamSet
 
 // Check if Toggle Images tab is empty and prompt for import
 function checkToggleImagesEmpty() {
@@ -3137,7 +4094,7 @@ function checkToggleImagesEmpty() {
 
     const toggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
     if (toggleItems.length === 0) {
-        console.log('Toggle Images tab is empty, checking localStorage for saved data');
+        // console.log('Toggle Images tab is empty, checking localStorage for saved data');
 
         // Check if we have toggle images data in localStorage
         try {
@@ -3147,16 +4104,17 @@ function checkToggleImagesEmpty() {
 
                 // Check for toggle images in different possible locations
                 const hasToggleImages =
+                    (parsedData.myNikkesList && Array.isArray(parsedData.myNikkesList) && parsedData.myNikkesList.length > 0) ||
                     (parsedData.toggleTabs && parsedData.toggleTabs.toggleImages && parsedData.toggleTabs.toggleImages.length > 0) ||
                     (parsedData.toggleImages && parsedData.toggleImages.length > 0);
 
                 if (hasToggleImages) {
-                    console.log('Found saved toggle images in localStorage, loading them automatically');
+                    // console.log('Found saved toggle images in localStorage, loading them automatically');
                     // Reload the page to trigger the loadSelectionFromLocalStorage function
                     window.location.reload();
                     return;
                 } else {
-                    console.log('No saved toggle images found in localStorage');
+                    // console.log('No saved toggle images found in localStorage');
                 }
             }
         } catch (error) {
@@ -3164,14 +4122,14 @@ function checkToggleImagesEmpty() {
         }
 
         // Toggle Images tab is empty and no saved data, load default data
-        console.log('No saved data found, loading default data...');
+        // console.log('No saved data found, loading default data...');
         // importPromptShown flag is still needed to prevent multiple attempts
         importPromptShown = true;
 
         // Load default_mynikke.json from GitHub
         loadJsonFromGitHub('default_mynikke.json', function(data) {
             if (data && data.toggleImages && Array.isArray(data.toggleImages)) {
-                console.log(`Found ${data.toggleImages.length} toggle images in default data`);
+                // console.log(`Found ${data.toggleImages.length} toggle images in default data`);
 
                 // Process the toggle images data
                 const imageSources = data.toggleImages.map(item => {
@@ -3185,13 +4143,13 @@ function checkToggleImagesEmpty() {
                     }
                 }).filter(src => src !== null);
 
-                console.log(`Processed ${imageSources.length} valid image sources from default data`);
+                // console.log(`Processed ${imageSources.length} valid image sources from default data`);
 
                 // Import the toggle images from the default data
                 if (imageSources.length > 0) {
                     // Clear the userClearedSelection flag since we're loading data
                     localStorage.removeItem('userClearedSelection');
-                    console.log('Loading default data, clearing userClearedSelection flag');
+                    // console.log('Loading default data, clearing userClearedSelection flag');
 
                     importImagesToToggleGallery(imageSources);
                 }
@@ -3345,24 +4303,24 @@ function importToggleImages() {
                 const file = e.target.files[0];
                 if (!file) return;
 
-                console.log('Selected file from import modal:', file.name, 'size:', file.size, 'bytes');
+                // console.log('Selected file from import modal:', file.name, 'size:', file.size, 'bytes');
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
-                        console.log('File loaded in import modal, parsing JSON...');
+                        // console.log('File loaded in import modal, parsing JSON...');
                         const jsonContent = e.target.result;
-                        console.log('JSON content length:', jsonContent.length);
+                        // console.log('JSON content length:', jsonContent.length);
 
                         const data = JSON.parse(jsonContent);
-                        console.log('Parsed data in import modal:', data);
+                        // console.log('Parsed data in import modal:', data);
 
                         if (data && data.toggleImages && Array.isArray(data.toggleImages)) {
-                            console.log(`Found ${data.toggleImages.length} toggle images in the file`);
+                            // console.log(`Found ${data.toggleImages.length} toggle images in the file`);
 
                             // Clear existing toggle images
                             toggleImagesContainer.innerHTML = '';
-                            console.log('Cleared existing toggle images');
+                            // console.log('Cleared existing toggle images');
 
                             // Process the toggle images data
                             const imageSources = data.toggleImages.map(item => {
@@ -3376,20 +4334,20 @@ function importToggleImages() {
                                 }
                             }).filter(src => src !== null);
 
-                            console.log(`Processed ${imageSources.length} valid image sources`);
+                            // console.log(`Processed ${imageSources.length} valid image sources`);
 
                             // Import the toggle images from the file
                             if (imageSources.length > 0) {
                                 // Clear the userClearedSelection flag since we're loading data
                                 localStorage.removeItem('userClearedSelection');
-                                console.log('Loading toggle data from file, clearing userClearedSelection flag');
+                                // console.log('Loading toggle data from file, clearing userClearedSelection flag');
 
                                 importImagesToToggleGallery(imageSources);
 
                                 // After importing, ensure green borders are applied to images in team slots
                                 setTimeout(() => {
                                     updateToggleImageSelectionState(currentTeamSet);
-                                    console.log('Updated green borders for loaded images');
+                                    // console.log('Updated green borders for loaded images');
                                 }, 500);
 
                                 // Close the modal
@@ -3455,7 +4413,7 @@ function importToggleImages() {
 
 // Import images to toggle gallery
 function importImagesToToggleGallery(imageSources) {
-    console.log('Importing images to toggle gallery:', imageSources);
+    // console.log('Importing images to toggle gallery:', imageSources);
     if (!imageSources || imageSources.length === 0) {
         console.warn('No image sources provided');
         return;
@@ -3467,14 +4425,40 @@ function importImagesToToggleGallery(imageSources) {
         return;
     }
 
+    // Validate image sources to ensure they're in the correct format
+    const validatedSources = imageSources.filter(source => {
+        if (typeof source === 'string' && source) {
+            return true;
+        } else if (typeof source === 'object' && source && typeof source.src === 'string' && source.src) {
+            return true;
+        } else {
+            console.warn('Invalid image source skipped:', source);
+            return false;
+        }
+    });
+
+    if (validatedSources.length === 0) {
+        console.warn('No valid image sources after validation');
+        return;
+    }
+
+    // console.log(`Validated ${validatedSources.length} of ${imageSources.length} image sources`);
+
     // Get existing toggle image sources
     const existingToggleImageSources = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'))
         .map(img => img.src);
-    console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
+    // console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
 
     // Filter out images that are already in toggle images
-    const newImageSources = imageSources.filter(src => !existingToggleImageSources.includes(src));
-    console.log(`Found ${newImageSources.length} new images to import`);
+    const newImageSources = validatedSources.filter(imgSrc => {
+        if (typeof imgSrc === 'string') {
+            return !existingToggleImageSources.includes(imgSrc);
+        } else if (typeof imgSrc === 'object' && imgSrc && typeof imgSrc.src === 'string') {
+            return !existingToggleImageSources.includes(imgSrc.src);
+        }
+        return false; // Should never reach here since we've already validated
+    });
+    // console.log(`Found ${newImageSources.length} new images to import`);
 
     // Import count for success message
     let importCount = 0;
@@ -3505,28 +4489,151 @@ function importImagesToToggleGallery(imageSources) {
             toggleItem.setAttribute('data-faction', galleryPhoto.getAttribute('data-faction') || '');
             toggleItem.setAttribute('data-rarity', galleryPhoto.getAttribute('data-rarity') || '');
             toggleItem.setAttribute('data-weapon', galleryPhoto.getAttribute('data-weapon') || '');
+            toggleItem.setAttribute('data-element', galleryPhoto.getAttribute('data-element') || '');
 
             // Store the gallery photo reference for later restoration if needed
             toggleItem.dataset.galleryPhotoId = galleryPhoto.id || '';
         } else {
             // If the gallery photo is not found, we're probably loading from a JSON file
             // Extract data from the image source URL if possible
-            console.log('Gallery photo not found for:', imgSrc);
+            if (typeof imgSrc === 'object') {
+                // console.log('Gallery photo not found for image object, using data from object');
+            } else {
+                // console.log('Gallery photo not found for:', imgSrc);
+            }
             notFoundCount++;
 
             // Try to extract data from the URL
             try {
-                const filename = imgSrc.split('/').pop();
+                // Handle different types of image data
+                let imageUrl = '';
+
+                if (typeof imgSrc === 'string') {
+                    imageUrl = imgSrc;
+                } else if (typeof imgSrc === 'object' && imgSrc && typeof imgSrc.src === 'string') {
+                    imageUrl = imgSrc.src;
+
+                    // If we have an object with data, use that directly
+                    if (imgSrc.number) toggleItem.setAttribute('data-number', imgSrc.number);
+                    if (imgSrc.name) toggleItem.setAttribute('data-name', imgSrc.name);
+                    if (imgSrc.type) {
+                        // Make sure the type value is a valid burst type (b1, b2, b3, a)
+                        let typeValue = imgSrc.type;
+
+                        // If it's not a valid burst type, extract it from the filename
+                        if (!['b1', 'b2', 'b3', 'a', 'B1', 'B2', 'B3', 'A'].includes(typeValue)) {
+                            // Look for burst type patterns in the filename
+                            const filename = imgSrc.src.split('/').pop();
+                            if (filename.includes('_b1_') || filename.includes('_B1_')) {
+                                typeValue = 'b1';
+                            } else if (filename.includes('_b2_') || filename.includes('_B2_')) {
+                                typeValue = 'b2';
+                            } else if (filename.includes('_b3_') || filename.includes('_B3_')) {
+                                typeValue = 'b3';
+                            } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                                typeValue = 'a';
+                            }
+                            // console.log(`Mapped invalid type ${imgSrc.type} to burst type ${typeValue} from filename ${filename}`);
+                        }
+
+                        toggleItem.setAttribute('data-type', typeValue.toLowerCase());
+                        // console.log(`Setting data-type=${typeValue.toLowerCase()} for toggle item with ID=${imgSrc.number}`);
+                    }
+                    if (imgSrc.position) toggleItem.setAttribute('data-position', imgSrc.position);
+                    if (imgSrc.faction) toggleItem.setAttribute('data-faction', imgSrc.faction);
+                    if (imgSrc.rarity) toggleItem.setAttribute('data-rarity', imgSrc.rarity);
+                    if (imgSrc.weapon) toggleItem.setAttribute('data-weapon', imgSrc.weapon);
+                    if (imgSrc.element) toggleItem.setAttribute('data-element', imgSrc.element);
+
+                    // If we have all the data we need, skip the filename parsing
+                    if (imgSrc.number && imgSrc.type && imgSrc.position &&
+                        imgSrc.faction && imgSrc.rarity && imgSrc.weapon) {
+                        // Skip to the gallery photo matching part
+                        const filename = imageUrl.split('/').pop();
+
+                        // After extracting data, check if we can find a matching gallery photo by filename
+                        const matchingGalleryPhoto = Array.from(document.querySelectorAll('.gallery .photo'))
+                            .find(photo => {
+                                const img = photo.querySelector('img');
+                                if (img) {
+                                    const photoFilename = img.src.split('/').pop();
+                                    return photoFilename === filename;
+                                }
+                                return false;
+                            });
+
+                        if (matchingGalleryPhoto) {
+                            // Hide the matching gallery photo
+                            matchingGalleryPhoto.style.display = 'none';
+                            toggleItem.dataset.galleryPhotoId = matchingGalleryPhoto.id || '';
+                            notFoundCount--; // Decrement not found count since we found a match
+                        }
+
+                        // Continue with the rest of the function instead of skipping
+                        // We need to add the image to the toggle container
+                    }
+                } else {
+                    console.warn('Invalid image source provided:', imgSrc);
+                    throw new Error('Image source is not a valid string or object');
+                }
+
+                // If we get here, we need to parse the filename
+                const filename = imageUrl.split('/').pop();
                 const parts = filename.split('_');
 
                 if (parts.length >= 5) {
                     // Format is typically: score_type_position_faction_rarity_weapon_name.webp
                     toggleItem.setAttribute('data-number', parts[0] || '');
-                    toggleItem.setAttribute('data-type', parts[1] || '');
+
+                    // Set type attribute and log it
+                    let typeValue = parts[1] || '';
+
+                    // Make sure the type value is a valid burst type (b1, b2, b3, a)
+                    // If it's not, extract it from the filename
+                    if (!['b1', 'b2', 'b3', 'a', 'B1', 'B2', 'B3', 'A'].includes(typeValue)) {
+                        // Look for burst type patterns in the filename
+                        // Make sure imgSrc is a string before trying to split it
+                        let filename = '';
+                        if (typeof imgSrc === 'string') {
+                            filename = imgSrc.split('/').pop();
+                        } else if (typeof imgSrc === 'object' && imgSrc && typeof imgSrc.src === 'string') {
+                            filename = imgSrc.src.split('/').pop();
+                        } else {
+                            console.warn('Invalid imgSrc type in burst type extraction:', typeof imgSrc);
+                            // Use the already parsed filename from earlier if available
+                            filename = parts.join('_');
+                        }
+
+                        if (filename.includes('_b1_') || filename.includes('_B1_')) {
+                            typeValue = 'b1';
+                        } else if (filename.includes('_b2_') || filename.includes('_B2_')) {
+                            typeValue = 'b2';
+                        } else if (filename.includes('_b3_') || filename.includes('_B3_')) {
+                            typeValue = 'b3';
+                        } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                            typeValue = 'a';
+                        }
+                    }
+
+                    toggleItem.setAttribute('data-type', typeValue.toLowerCase());
+
                     toggleItem.setAttribute('data-position', parts[2] || '');
                     toggleItem.setAttribute('data-faction', parts[3] || '');
                     toggleItem.setAttribute('data-rarity', parts[4] || '');
                     toggleItem.setAttribute('data-weapon', parts[5] || '');
+
+                    // Try to extract element from filename if available
+                    if (parts.length >= 7) {
+                        // Check if any part might be an element (wind, fire, water, electric)
+                        const elementParts = parts.slice(5);
+                        const elementMatch = elementParts.find(part =>
+                            ['wind', 'fire', 'water', 'electric'].includes(part.toLowerCase())
+                        );
+                        if (elementMatch) {
+                            toggleItem.setAttribute('data-element', elementMatch.toLowerCase());
+                            // console.log(`Extracted element=${elementMatch.toLowerCase()} from filename for ID=${parts[0]}`);
+                        }
+                    }
 
                     // Get the character name parts
                     if (parts.length > 5) {
@@ -3565,8 +4672,33 @@ function importImagesToToggleGallery(imageSources) {
         // Create the image element
         const toggleImg = document.createElement('img');
         toggleImg.crossOrigin = 'anonymous'; // Add crossOrigin for canvas compatibility
-        toggleImg.src = getGitHubUrl(imgSrc); // Use GitHub URL
-        toggleImg.dataset.original = imgSrc;
+
+        // Safely get GitHub URL
+        try {
+            // Make sure we have a valid image source
+            if (typeof imgSrc === 'string' && imgSrc) {
+                toggleImg.src = getGitHubUrl(imgSrc);
+            } else if (typeof imgSrc === 'object' && imgSrc && typeof imgSrc.src === 'string') {
+                toggleImg.src = getGitHubUrl(imgSrc.src);
+            } else {
+                console.warn('Invalid image source, using placeholder:', imgSrc);
+                // Use a placeholder image instead
+                toggleImg.src = 'https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/placeholder.webp';
+            }
+        } catch (error) {
+            console.error('Error getting GitHub URL:', error);
+            // Use a placeholder image instead of the invalid source
+            toggleImg.src = 'https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/placeholder.webp';
+        }
+
+        // Safely set the original source
+        if (typeof imgSrc === 'string') {
+            toggleImg.dataset.original = imgSrc;
+        } else if (typeof imgSrc === 'object' && imgSrc && typeof imgSrc.src === 'string') {
+            toggleImg.dataset.original = imgSrc.src;
+        } else {
+            toggleImg.dataset.original = '';
+        }
 
         // Check if this image is in any team slot and apply green border if it is
         const isInTeamSlot = Array.from(document.querySelectorAll('.team-images .image-slot img'))
@@ -3579,7 +4711,7 @@ function importImagesToToggleGallery(imageSources) {
             toggleImg.style.boxShadow = '0 0 8px #00ff00';
             toggleImg.style.zIndex = '10';
             toggleImg.style.position = 'relative';
-            console.log('Applied green border to image in team slot:', imgSrc);
+            // Applied green border to image in team slot
         }
 
         // Add click handler for selection
@@ -3606,21 +4738,25 @@ function importImagesToToggleGallery(imageSources) {
         importCount++;
     });
 
-    // Save the toggle tabs state
-    saveToggleTabsToLocalStorage();
+    // Save the My Nikkes List to localStorage
+    if (typeof saveMyNikkesList === 'function') {
+        saveMyNikkesList();
+    } else {
+        // Fallback to old method if the new function is not available
+        saveToggleTabsToLocalStorage();
+    }
 
     // Save the imported images to the current team set
     saveCurrentToggleImages();
 
     // If we're importing images, clear the userClearedSelection flag
     localStorage.removeItem('userClearedSelection');
-    console.log('Imported images, clearing userClearedSelection flag');
 
     // No alert message for successful import
     if (importCount > 0) {
-        console.log(`Images imported successfully: ${importCount} images`);
+        // Images imported successfully
     } else {
-        console.log('No new images were imported.');
+        // No new images were imported
     }
 
     // Switch to toggle images tab
@@ -3639,27 +4775,31 @@ function exportToggleImageData() {
     }
 
     // Create data object
-    const toggleImagesData = toggleItems.map(item => {
+    const myNikkesList = toggleItems.map(item => {
         const img = item.querySelector('img');
         return {
             src: img.src,
-            number: item.getAttribute('data-number'),
-            name: item.getAttribute('data-name'),
-            type: item.getAttribute('data-type'),
-            position: item.getAttribute('data-position'),
-            faction: item.getAttribute('data-faction'),
-            rarity: item.getAttribute('data-rarity'),
-            weapon: item.getAttribute('data-weapon'),
+            number: item.getAttribute('data-number') || '',
+            name: item.getAttribute('data-name') || '',
+            type: item.getAttribute('data-type') || '',
+            position: item.getAttribute('data-position') || '',
+            faction: item.getAttribute('data-faction') || '',
+            rarity: item.getAttribute('data-rarity') || '',
+            weapon: item.getAttribute('data-weapon') || '',
+            element: item.getAttribute('data-element') || '',
             selected: img.classList.contains('selected'),
-            order: item.dataset.position || '0' // Include order for drag-and-drop positioning
+            order: item.dataset.position || '0', // Include order for drag-and-drop positioning
+            galleryPhotoId: item.dataset.galleryPhotoId || '' // Include gallery photo ID for restoration
         };
     });
 
     const exportData = {
-        version: '1.0',
+        version: '1.1',
         type: 'nikke-portrait-my-nikkes',
         timestamp: new Date().toISOString(),
-        toggleImages: toggleImagesData
+        myNikkesList: myNikkesList,
+        // For backward compatibility
+        toggleImages: myNikkesList
     };
 
     // Ask user if they want to export as JSON file or generate a shareable code
@@ -3694,54 +4834,201 @@ function exportToggleImageData() {
     }
 }
 
-// Function to generate a shareable code for My Nikkes - optimized version with metadata
+// Function to generate a shareable code for My Nikkes - simplified to use only IDs
 function generateShareableCodeForMyNikkes(data) {
     try {
-        // Extract essential data with metadata
-        const compactItems = data.toggleImages.map(item => {
+        // Extract just the IDs from the toggle images with validation
+        const validatedIds = [];
+
+        for (const item of data.toggleImages) {
             // Extract the ID from the image source
-            const src = item.src;
-            const filename = src.split('/').pop();
-            // Extract just the numeric part before the underscore (e.g., "100_name.png" -> "100")
-            const id = filename.split('_')[0];
+            const src = typeof item === 'string' ? item : item.src;
 
-            // Create a compact representation with essential metadata
-            // Format: id|type|faction|rarity|position|weapon|name
-            // Use empty string for null/undefined values
-            return [
-                id,
-                item.type || '',
-                item.faction || '',
-                item.rarity || '',
-                item.position || '',
-                item.weapon || '',
-                item.name || ''
-            ].join('|');
-        });
+            // Try to find the corresponding gallery photo to get the data-id
+            const galleryPhotos = document.querySelectorAll('.gallery .photo');
+            let foundId = null;
+            let confidenceScore = 0; // Track how confident we are in the ID match
 
-        // Join all items with a special separator (~ is rarely used in filenames)
-        const compactString = compactItems.join('~');
+            // First try to find by exact URL match (highest confidence)
+            for (const photo of galleryPhotos) {
+                const photoImg = photo.querySelector('img');
+                if (photoImg && photoImg.src === src) {
+                    foundId = photo.getAttribute('data-id');
+                    confidenceScore = 100; // 100% confidence for exact URL match
+                    break;
+                }
+            }
 
-        // Add a prefix to identify this as a Nikke list code
-        const prefixedString = 'NL:' + compactString;
+            // If not found by URL, try to find by character name
+            if (!foundId) {
+                // Extract name from filename
+                const filename = src.split('/').pop();
+                const parts = filename.split('_');
 
-        // Log compression stats
-        const jsonSize = JSON.stringify(data).length;
-        console.log('Original JSON size:', jsonSize, 'bytes');
-        console.log('Compact string size:', prefixedString.length, 'bytes');
-        console.log('Size reduction:', Math.round((1 - prefixedString.length / jsonSize) * 100) + '%');
+                // Try to extract character name from parts
+                let characterName = '';
+                if (parts.length > 6) {
+                    characterName = parts.slice(6).join('_').replace('.webp', '').toLowerCase();
+                } else if (parts.length > 1) {
+                    // For older format files, the name might be in a different position
+                    characterName = parts[parts.length - 1].replace('.webp', '').toLowerCase();
+                }
 
-        // Compress using LZString
-        const compressed = LZString.compressToEncodedURIComponent(prefixedString);
-        console.log('Compressed size:', compressed.length, 'bytes');
-        console.log('Final compression ratio:', Math.round((compressed.length / jsonSize) * 100) + '%');
+                if (characterName) {
+                    // Find the best match by name
+                    let bestMatchScore = 0;
 
-        // Generate a direct ID-based code for simpler sharing
-        const directIdCode = generateDirectIdCode(data.toggleImages);
-        console.log('Direct ID code:', directIdCode);
-        console.log('Direct ID code size:', directIdCode.length, 'bytes');
+                    for (const photo of galleryPhotos) {
+                        const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
 
-        // Always use the compact format as it's much more efficient
+                        if (photoName) {
+                            // Calculate match score based on string similarity
+                            let matchScore = 0;
+
+                            if (photoName === characterName) {
+                                matchScore = 90; // Exact name match
+                            } else if (photoName.includes(characterName)) {
+                                matchScore = 80; // Photo name contains character name
+                            } else if (characterName.includes(photoName)) {
+                                matchScore = 70; // Character name contains photo name
+                            } else {
+                                // Calculate string similarity for partial matches
+                                const minLength = Math.min(photoName.length, characterName.length);
+                                let commonChars = 0;
+
+                                for (let i = 0; i < minLength; i++) {
+                                    if (photoName[i] === characterName[i]) {
+                                        commonChars++;
+                                    }
+                                }
+
+                                matchScore = (commonChars / minLength) * 60; // Up to 60% confidence for partial matches
+                            }
+
+                            if (matchScore > bestMatchScore) {
+                                bestMatchScore = matchScore;
+                                foundId = photo.getAttribute('data-id');
+
+                                if (matchScore >= 80) {
+                                    break; // Good enough match, stop searching
+                                }
+                            }
+                        }
+                    }
+
+                    confidenceScore = bestMatchScore;
+                }
+            }
+
+            // If still not found or low confidence, check if the URL is using the old format (/image/ instead of /image-id/)
+            if ((!foundId || confidenceScore < 70) && src.includes('/image/')) {
+                // Detected old image URL format
+
+                // Extract name and number from filename
+                const filename = src.split('/').pop();
+                const parts = filename.split('_');
+
+                if (parts.length >= 2) {
+                    const number = parts[0];
+                    let name = '';
+
+                    // Try to extract name from the last parts
+                    if (parts.length > 6) {
+                        name = parts.slice(6).join('_').replace('.webp', '').toLowerCase();
+                    } else if (parts.length > 1) {
+                        name = parts[parts.length - 1].replace('.webp', '').toLowerCase();
+                    }
+
+                    if (name) {
+                        // Try to find by name first
+                        let bestMatchScore = 0;
+
+                        for (const photo of galleryPhotos) {
+                            const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
+
+                            if (photoName) {
+                                // Calculate match score
+                                let matchScore = 0;
+
+                                if (photoName === name) {
+                                    matchScore = 85; // Exact name match
+                                } else if (photoName.includes(name)) {
+                                    matchScore = 75; // Photo name contains name
+                                } else if (name.includes(photoName)) {
+                                    matchScore = 65; // Name contains photo name
+                                }
+
+                                if (matchScore > bestMatchScore) {
+                                    bestMatchScore = matchScore;
+                                    foundId = photo.getAttribute('data-id');
+
+                                    if (matchScore >= 75) {
+                                        break; // Good enough match, stop searching
+                                    }
+                                }
+                            }
+                        }
+
+                        if (bestMatchScore > confidenceScore) {
+                            confidenceScore = bestMatchScore;
+                        }
+
+                        // If still not found or low confidence, try by number and name combination
+                        if (!foundId || confidenceScore < 70) {
+                            for (const photo of galleryPhotos) {
+                                const photoNumber = photo.getAttribute('data-number');
+                                const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
+
+                                if (photoNumber === number && photoName) {
+                                    let matchScore = 0;
+
+                                    if (photoName === name) {
+                                        matchScore = 95; // Exact match on both number and name
+                                    } else if (photoName.includes(name) || name.includes(photoName)) {
+                                        matchScore = 85; // Partial match on name, exact match on number
+                                    }
+
+                                    if (matchScore > confidenceScore) {
+                                        confidenceScore = matchScore;
+                                        foundId = photo.getAttribute('data-id');
+
+                                        if (matchScore >= 85) {
+                                            break; // Good enough match, stop searching
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Validate the ID before adding it to the list
+            if (foundId && confidenceScore >= 70) {
+                // Additional validation: check if the ID is a number and not a common problematic value
+                const problematicValues = ['270', '273', '168']; // Known problematic values
+
+                if (!problematicValues.includes(foundId) || confidenceScore >= 90) {
+                    // Only include problematic values if we have very high confidence
+                    validatedIds.push(foundId);
+                } else {
+                    console.warn(`Skipping problematic ID ${foundId} with confidence score ${confidenceScore}`);
+                }
+            } else if (foundId) {
+                console.warn(`Skipping ID ${foundId} due to low confidence score: ${confidenceScore}`);
+            } else {
+                // If we couldn't find a reliable ID, skip this item
+                console.warn(`Could not find reliable ID for image: ${src}`);
+            }
+        }
+
+        // Create a super compact representation with just the IDs separated by 'x'
+        // Format: id1xid2xid3...
+        const directIdCode = validatedIds.join('x');
+
+        // console.log('Generated sharecode with', validatedIds.length, 'Nikkes:', directIdCode);
+        // console.log('Sharecode size:', directIdCode.length, 'bytes');
+
         return directIdCode;
     } catch (error) {
         console.error('Error generating shareable code:', error);
@@ -3750,72 +5037,84 @@ function generateShareableCodeForMyNikkes(data) {
     }
 }
 
-// Function to generate a direct ID-based code (much more compact)
-function generateDirectIdCode(toggleImages) {
-    try {
-        // Extract just the IDs from the toggle images
-        const ids = toggleImages.map(item => {
-            // Extract the ID from the image source
-            const src = typeof item === 'string' ? item : item.src;
-            const filename = src.split('/').pop();
-            // Extract just the numeric part before the underscore (e.g., "100_name.png" -> "100")
-            return filename.split('_')[0];
-        });
-
-        // Create a super compact representation with just the IDs separated by 'x'
-        // Format: id1xid2xid3...
-        return ids.join('x');
-    } catch (error) {
-        console.error('Error generating direct ID code:', error);
-        return null;
-    }
-}
-
 // Function to find the full image path by ID
 function findFullImagePathById(id) {
-    // First try to find the image in the gallery
-    const galleryItem = document.querySelector(`.gallery-item[data-id="${id}"]`);
-    if (galleryItem) {
-        const imgElement = galleryItem.querySelector('img');
-        if (imgElement && imgElement.src) {
-            // Extract the filename from the src
-            const filename = imgElement.src.split('/').pop();
-            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+    try {
+        // Validate the ID
+        if (!id || typeof id !== 'string') {
+            console.warn('Invalid ID provided to findFullImagePathById:', id);
+            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/placeholder.webp`;
         }
-    }
 
-    // If we can't find it in the gallery, try to find it in the image folder listing
-    const allImages = document.querySelectorAll('img');
-    for (const img of allImages) {
-        const src = img.src;
-        if (src.includes('/image-id/') && src.includes(`/${id}_`)) {
-            const filename = src.split('/').pop();
-            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+        // First try to find the image in the gallery
+        const galleryItem = document.querySelector(`.gallery-item[data-id="${id}"]`);
+        if (galleryItem) {
+            const imgElement = galleryItem.querySelector('img');
+            if (imgElement && imgElement.src) {
+                // Extract the filename from the src
+                const filename = imgElement.src.split('/').pop();
+                return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+            }
         }
-    }
 
-    // If we still can't find it, use a fallback approach
-    // Look for any data-* attributes in the HTML that might contain the full filename
-    const elements = document.querySelectorAll(`[data-id="${id}"]`);
-    for (const el of elements) {
-        if (el.dataset.filename) {
-            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${el.dataset.filename}`;
+        // Try to find the image in the gallery photos
+        const galleryPhoto = Array.from(document.querySelectorAll('.gallery .photo'))
+            .find(photo => {
+                const photoId = photo.getAttribute('data-id');
+                return photoId === id;
+            });
+
+        if (galleryPhoto) {
+            const imgElement = galleryPhoto.querySelector('img');
+            if (imgElement && imgElement.src) {
+                // Extract the filename from the src
+                const filename = imgElement.src.split('/').pop();
+                return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+            }
         }
+
+        // If we can't find it in the gallery, try to find it in the image folder listing
+        const allImages = document.querySelectorAll('img');
+        for (const img of allImages) {
+            const src = img.src;
+            if (src.includes('/image-id/') && src.includes(`/${id}_`)) {
+                const filename = src.split('/').pop();
+                return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${filename}`;
+            }
+        }
+
+        // If we still can't find it, use a fallback approach
+        // Look for any data-* attributes in the HTML that might contain the full filename
+        const elements = document.querySelectorAll(`[data-id="${id}"]`);
+        for (const el of elements) {
+            if (el.dataset.filename) {
+                return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${el.dataset.filename}`;
+            }
+        }
+
+        // Last resort: check if we have a mapping in our code
+        const idMapping = {
+            '57': '57_273_wind_elysion_ssr_b3_def_rl_maiden_ice_rose.webp',
+            '77': '77_378_fire_abnormal_ssr_b3_atk_rl_emilia.webp',
+            '104': '104_378_fire_abnormal_ssr_b3_atk_rl_emilia.webp',
+            '28': '28_273_electric_elysion_ssr_b3_def_rl_power.webp',
+            '45': '45_273_water_elysion_ssr_b3_def_rl_a2.webp',
+            '105': '105_273_wind_abnormal_ssr_b3_def_rl_2b.webp',
+            '111': '111_273_iron_elysion_ssr_b3_def_rl_privaty.webp'
+            // Add more mappings as needed
+        };
+
+        if (idMapping[id]) {
+            return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${idMapping[id]}`;
+        }
+
+        // If all else fails, use the basic format and hope for the best
+        // console.log(`Using fallback image path for ID: ${id}`);
+        return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${id}_name.webp`;
+    } catch (error) {
+        console.error('Error in findFullImagePathById:', error);
+        return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/placeholder.webp`;
     }
-
-    // Last resort: check if we have a mapping in our code
-    const idMapping = {
-        '57': '57_273_elysion_ssr_b3_def_rl_maiden_ice_rose.webp',
-        '77': '77_378_abnormal_ssr_b3_atk_rl_emilia.webp'
-        // Add more mappings as needed
-    };
-
-    if (idMapping[id]) {
-        return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${idMapping[id]}`;
-    }
-
-    // If all else fails, use the basic format and hope for the best
-    return `https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/${id}_name.webp`;
 }
 
 // Helper function to show a temporary message
@@ -3843,10 +5142,13 @@ function showTemporaryMessage(text, duration = 1500) {
 
 // Function to show the shareable code in a dialog
 function showShareableCodeDialog(code) {
-    // First, try to copy the code to clipboard automatically
-    navigator.clipboard.writeText(code)
+    // Wrap the code in triple backticks for easy copying in Discord
+    const formattedCode = '```sharecode\n' + code + '\n```';
+
+    // First, try to copy the formatted code to clipboard automatically
+    navigator.clipboard.writeText(formattedCode)
         .then(() => {
-            console.log('Shareable code automatically copied to clipboard');
+            // console.log('Shareable code automatically copied to clipboard');
             showTemporaryMessage('Copied!'); // Show a temporary message
         })
         .catch(err => {
@@ -3860,8 +5162,8 @@ function showShareableCodeDialog(code) {
     modal.innerHTML = `
         <div class="import-modal-content">
             <h2>Shareable Code for My Nikkes</h2>
-            <p>Shareable code copied to clipboard!</p>
-            <textarea id="shareableCodeArea" style="width: 100%; height: 100px; margin: 10px 0; padding: 10px; background-color: #333; color: white; border: 1px solid #555; border-radius: 5px;">${code}</textarea>
+            <p>Shareable code copied to clipboard! (Formatted for Discord)</p>
+            <textarea id="shareableCodeArea" style="width: 100%; height: 100px; margin: 10px 0; padding: 10px; background-color: #333; color: white; border: 1px solid #555; border-radius: 5px;">${formattedCode}</textarea>
             <div class="import-controls">
                 <button id="copyCodeBtn">Copy to Clipboard</button>
                 <button id="closeCodeDialogBtn">Close</button>
@@ -3895,11 +5197,18 @@ function showShareableCodeDialog(code) {
                         console.error('Could not copy code to clipboard:', err);
                         // Fallback for browsers that don't support clipboard API
                         try {
-                            codeArea.select();
-                            codeArea.setSelectionRange(0, 99999);
-                            document.execCommand('copy');
-                            showTemporaryMessage('Copied!'); // Show a temporary message
+                            // Use the modern Clipboard API as a fallback
+                            const textToCopy = codeArea.value;
+                            navigator.clipboard.writeText(textToCopy)
+                                .then(() => {
+                                    showTemporaryMessage('Copied!'); // Show a temporary message
+                                })
+                                .catch(err => {
+                                    console.error('Secondary clipboard method failed:', err);
+                                    alert('Could not copy to clipboard. Please copy manually.');
+                                });
                         } catch (e) {
+                            console.error('Error copying to clipboard:', e);
                             alert('Could not copy to clipboard. Please copy manually.');
                         }
                     });
@@ -3982,19 +5291,89 @@ function showImportFromCodeDialog(parentModal) {
     }
 }
 
-// Function to import from a shareable code - ultra-optimized version
+// Function to import from a shareable code - simplified to handle direct ID format
 function importFromShareableCode(code) {
     try {
+        // Clean up the code - remove backticks and "sharecode" if present
+        code = code.trim();
+
+        // Check if the code is wrapped in backticks (for Discord formatting)
+        if (code.startsWith('```') && code.endsWith('```')) {
+            // Remove the backticks
+            code = code.substring(3, code.length - 3).trim();
+
+            // If it starts with "sharecode", remove that too
+            if (code.toLowerCase().startsWith('sharecode')) {
+                code = code.substring('sharecode'.length).trim();
+            }
+        }
+
         // Initialize imageData at the beginning of the function
         let imageData = [];
 
-        // First, try to handle the code as-is
+        // Check if this is our direct ID code format (IDs separated by 'x')
+        if (code.includes('x')) {
+            try {
+                // console.log('Detected direct ID code format');
+
+                // Extract IDs from the format id1xid2xid3...
+                const nikkeIds = code.split('x');
+
+                // console.log('Extracted IDs from direct code:', nikkeIds);
+
+                // Create image data from the Nikke IDs
+                for (const id of nikkeIds) {
+                    // Find the complete image filename from the gallery
+                    const fullImagePath = findFullImagePathById(id);
+                    if (!fullImagePath) {
+                        console.warn(`Could not find image path for ID ${id}, skipping`);
+                        continue;
+                    }
+
+                    // Create a basic image data object
+                    const item = {
+                        id: id,
+                        src: fullImagePath,
+                        type: '',
+                        faction: '',
+                        rarity: '',
+                        position: '',
+                        weapon: '',
+                        element: '',
+                        name: ''
+                    };
+
+                    // Try to extract metadata from the gallery
+                    const galleryItem = document.querySelector(`.photo[data-id="${id}"]`);
+                    if (galleryItem) {
+                        item.type = galleryItem.getAttribute('data-type') || '';
+                        item.faction = galleryItem.getAttribute('data-faction') || '';
+                        item.rarity = galleryItem.getAttribute('data-rarity') || '';
+                        item.position = galleryItem.getAttribute('data-position') || '';
+                        item.weapon = galleryItem.getAttribute('data-weapon') || '';
+                        item.element = galleryItem.getAttribute('data-element') || '';
+                        item.name = galleryItem.getAttribute('data-name') || '';
+                    }
+
+                    imageData.push(item);
+                }
+
+                // Import the images with metadata
+                importImagesWithMetadata(imageData);
+                return;
+            } catch (directCodeError) {
+                console.error('Error processing direct ID code:', directCodeError);
+                throw new Error('Error processing ID code: ' + directCodeError.message);
+            }
+        }
+
+        // Try to handle legacy formats
         let decompressed;
         try {
             decompressed = LZString.decompressFromEncodedURIComponent(code);
             if (!decompressed) {
                 // If direct decompression fails, try with base64 decoding first (for older formats)
-                console.log('Direct decompression failed, trying alternative methods...');
+                // console.log('Direct decompression failed, trying alternative methods...');
                 try {
                     // Try to decompress using the base64 method
                     decompressed = LZString.decompressFromBase64(code);
@@ -4003,7 +5382,7 @@ function importFromShareableCode(code) {
                         decompressed = LZString.decompressFromUTF16(code);
                     }
                 } catch (altError) {
-                    console.log('Alternative decompression methods failed:', altError);
+                    // console.log('Alternative decompression methods failed:', altError);
                 }
             }
         } catch (decompressError) {
@@ -4011,144 +5390,31 @@ function importFromShareableCode(code) {
         }
 
         if (!decompressed) {
-            // Check for our direct ID code format (just IDs separated by 'x')
-            if (code.includes('x')) {
+            // Handle HIGQ format from external websites
+            if (code.startsWith('HIGQ')) {
                 try {
-                    console.log('Detected direct ID code format');
+                    // console.log('Detected HIGQ format from external website');
 
-                    // Extract IDs from the format id1xid2xid3...
-                    const nikkeIds = code.split('x');
+                    // This is a special format from another website
+                    // We'll use a default set of IDs
+                    let nikkeIds = ["104"]; // Default to Emilia
 
-                    console.log('Extracted IDs from direct code:', nikkeIds);
-
-                    // Create image data from the Nikke IDs
-                    let importData = [];
-
-                    for (const id of nikkeIds) {
-                        // Find the complete image filename from the gallery
-                        const fullImagePath = findFullImagePathById(id);
-
-                        // Create a basic image data object
-                        const item = {
-                            id: id,
-                            src: fullImagePath,
-                            type: '',
-                            faction: '',
-                            rarity: '',
-                            position: '',
-                            weapon: '',
-                            name: ''
-                        };
-
-                        // Try to get additional metadata if available
-                        const nikkeElements = document.querySelectorAll('.gallery-item');
-                        for (const nikkeEl of nikkeElements) {
-                            const nikkeId = nikkeEl.getAttribute('data-id');
-                            if (nikkeId === id) {
-                                item.position = nikkeEl.getAttribute('data-position') || '';
-                                item.faction = nikkeEl.getAttribute('data-faction') || '';
-                                item.rarity = nikkeEl.getAttribute('data-rarity') || '';
-                                item.type = nikkeEl.getAttribute('data-type') || '';
-                                item.weapon = nikkeEl.getAttribute('data-weapon') || '';
-                                item.name = nikkeEl.getAttribute('data-name') || '';
-                                break;
-                            }
-                        }
-
-                        importData.push(item);
-                    }
-
-                    // Set the imageData variable for use in the rest of the function
-                    imageData = importData;
-
-                    // Display the imported Nikkes
-                    const toggleImagesContainer = document.querySelector('#toggleImages');
-
-                    if (toggleImagesContainer) {
-                        // Import the images with metadata
-                        importImagesWithMetadata(imageData);
-
-                        // Success message will be shown by importImagesWithMetadata
-                    } else {
-                        // If the container doesn't exist, just show a message
-                        alert(`Successfully identified ${nikkeIds.length} Nikkes from the direct ID code.`);
-                    }
-
-                    return;
-                } catch (directCodeError) {
-                    console.error('Error processing direct ID code:', directCodeError);
-                }
-            }
-            // Special handling for the specific format from the website
-            else if (code.startsWith('HIGQ')) {
-                try {
-                    // This is a specific format that needs special handling
-                    console.log('Detected HIGQ format code:', code);
-
-                    // For HIGQ format, use a direct approach with hardcoded values
-                    // This is the most reliable way to handle these codes
-                    let nikkeIds = [];
-
-                    // Check for specific code patterns
+                    // Check for specific code patterns we know
                     if (code === "HIGQXAjADAzAPgI3gUwDYE8DOBLA9gOzk0wCc4oj8yBDAFwGsACTKxgCzQFsA-ADgBZE8agny4SnaqiKk4EOCWl0mixsk7ZU2an3gIATHA3FN2TDLKHFRAA6NVtEtnw7e8hPOM4t54mXjWACbIAGb2qIwAVtQAxvRSQA") {
-                        // This is the exact code you provided for 4 Nikkes
                         nikkeIds = ["28", "45", "105", "111"]; // Power, A2, 2B, Privaty
-                        console.log('Matched exact code for 4 Nikkes');
-                    } else if (code === "HIGQXA7BA+BGDM0CGsB2B7ATgWyQG2gGdDNoAGaTApAFwGsACKhgU2wEs92kg") {
-                        // This is the code for Emilia
-                        nikkeIds = ["104"]; // Emilia
-                        console.log('Matched code for Emilia');
-                    } else {
-                        // Try to extract IDs from the code
-                        // Look for patterns that might represent IDs
-                        let extractedIds = [];
-
-                        // Try to extract numeric values directly from the code
-                        const matches = code.match(/\d+/g);
-                        if (matches) {
-                            for (const match of matches) {
-                                const value = parseInt(match);
-                                if (value >= 0 && value <= 155) {
-                                    extractedIds.push(value.toString());
-                                }
-                            }
-                        }
-
-                        // If we found some IDs, use them
-                        if (extractedIds.length > 0) {
-                            nikkeIds = [...new Set(extractedIds)]; // Remove duplicates
-                            console.log('Extracted IDs directly from code:', nikkeIds);
-                        } else {
-                            // For other HIGQ codes, use a default set based on length
-                            if (code.length < 200) {
-                                nikkeIds = ["104"]; // Default to Emilia for short codes
-                            } else if (code.length < 500) {
-                                nikkeIds = [
-                                    "0", "28", "105", "111", "45", "59", "61", "86", "133", "146", "155"
-                                ]; // Asuka, Power, 2B, Privaty, A2, Rem, Rei, Makima, Mari, Himeno, Rei
-                            } else {
-                                nikkeIds = [
-                                    "0", "1", "2", "3", "4", "5", "6", "8", "11", "12", "13", "14", "15", "17", "18", "19",
-                                    "21", "23", "27", "28", "31", "32", "33", "36", "38", "39", "40", "45", "47", "49", "52", "54",
-                                    "56", "59", "60", "61", "62", "63", "65", "67", "69", "70", "71", "73", "74", "75", "76", "88",
-                                    "89", "90", "91", "92", "93", "95", "96", "98", "99", "100", "101", "102", "105", "108", "109", "111",
-                                    "112", "113", "114", "117", "118", "120", "121", "125", "128", "129", "130", "131", "133", "134", "135", "137",
-                                    "138", "139", "140", "141", "142", "143", "144", "145", "146", "147", "148", "150", "153", "154", "155"
-                                ];
-                            }
-                        }
+                        // console.log('Matched exact code for 4 Nikkes');
                     }
 
-                    console.log('Using Nikke IDs:', nikkeIds);
-
                     // Create image data from the Nikke IDs
-                    let importData = [];
-
                     for (const id of nikkeIds) {
-                        // Create a basic image data object
                         // Find the complete image filename from the gallery
                         const fullImagePath = findFullImagePathById(id);
+                        if (!fullImagePath) {
+                            console.warn(`Could not find image path for ID ${id}, skipping`);
+                            continue;
+                        }
 
+                        // Create a basic image data object
                         const item = {
                             id: id,
                             src: fullImagePath,
@@ -4157,64 +5423,41 @@ function importFromShareableCode(code) {
                             rarity: '',
                             position: '',
                             weapon: '',
+                            element: '',
                             name: ''
                         };
 
-                        // Try to get additional metadata if available
-                        const nikkeElements = document.querySelectorAll('.gallery-item');
-                        for (const nikkeEl of nikkeElements) {
-                            const nikkeId = nikkeEl.getAttribute('data-id');
-                            if (nikkeId === id) {
-                                item.position = nikkeEl.getAttribute('data-position') || '';
-                                item.faction = nikkeEl.getAttribute('data-faction') || '';
-                                item.rarity = nikkeEl.getAttribute('data-rarity') || '';
-                                item.type = nikkeEl.getAttribute('data-type') || '';
-                                item.weapon = nikkeEl.getAttribute('data-weapon') || '';
-                                item.name = nikkeEl.getAttribute('data-name') || '';
-                                break;
-                            }
+                        // Try to extract metadata from the gallery
+                        const galleryItem = document.querySelector(`.photo[data-id="${id}"]`);
+                        if (galleryItem) {
+                            item.type = galleryItem.getAttribute('data-type') || '';
+                            item.faction = galleryItem.getAttribute('data-faction') || '';
+                            item.rarity = galleryItem.getAttribute('data-rarity') || '';
+                            item.position = galleryItem.getAttribute('data-position') || '';
+                            item.weapon = galleryItem.getAttribute('data-weapon') || '';
+                            item.element = galleryItem.getAttribute('data-element') || '';
+                            item.name = galleryItem.getAttribute('data-name') || '';
                         }
 
-                        importData.push(item);
+                        imageData.push(item);
                     }
 
-                    // Set the imageData variable for use in the rest of the function
-                    imageData = importData;
-
-                    // Display the imported Nikkes
-                    // Use the correct container for the toggle images
-                    const toggleImagesContainer = document.querySelector('#toggleImages');
-
-                    if (toggleImagesContainer) {
-                        // Import the images with metadata
-                        importImagesWithMetadata(imageData);
-
-                        // Success message will be shown by importImagesWithMetadata
-                    } else {
-                        // If the container doesn't exist, just show a message
-                        if (code === "HIGQXAjADAzAPgI3gUwDYE8DOBLA9gOzk0wCc4oj8yBDAFwGsACTKxgCzQFsA-ADgBZE8agny4SnaqiKk4EOCWl0mixsk7ZU2an3gIATHA3FN2TDLKHFRAA6NVtEtnw7e8hPOM4t54mXjWACbIAGb2qIwAVtQAxvRSQA") {
-                            alert(`Successfully identified 4 Nikkes: Power, A2, 2B, and Privaty. These are our best guess for the 4 IDs in your code.`);
-                        } else if (code === "HIGQXA7BA+BGDM0CGsB2B7ATgWyQG2gGdDNoAGaTApAFwGsACKhgU2wEs92kg") {
-                            alert(`Successfully identified Emilia. We've identified this specific code as containing Emilia.`);
-                        } else if (extractedIds && extractedIds.length > 0) {
-                            alert(`Successfully identified ${nikkeIds.length} Nikkes that were directly extracted from your code.`);
-                        } else if (code.length < 200) {
-                            alert(`Successfully identified Emilia. Since we couldn't decode the exact list from your code, we've provided Emilia as a default.`);
-                        } else {
-                            alert(`Successfully identified ${nikkeIds.length} Nikkes. Note: This is an approximation since we couldn't decode the exact list from your code.`);
-                        }
-                    }
-
+                    // Import the images with metadata
+                    importImagesWithMetadata(imageData);
                     return;
                 } catch (specialFormatError) {
                     console.error('Error processing special format:', specialFormatError);
+                    throw new Error('Error processing HIGQ code: ' + specialFormatError.message);
                 }
             }
 
-            throw new Error('Invalid shareable code. Could not decompress. This might be in an older format that is no longer supported.');
+            // If we get here, we couldn't handle the code format
+            throw new Error('Invalid sharecode format. Please use the new format with IDs separated by "x".');
         }
 
-        console.log('Decompressed code:', decompressed);
+        // If we have a decompressed string, try to handle legacy formats
+        try {
+            // console.log('Attempting to process legacy format:', decompressed);
 
         // Check if it's our new format with metadata or old format
         let data = null;
@@ -4239,6 +5482,7 @@ function importFromShareableCode(code) {
                             rarity: '',
                             position: '',
                             weapon: '',
+                            element: '',
                             name: ''
                         };
                     } else if (item && item.src) {
@@ -4253,6 +5497,7 @@ function importFromShareableCode(code) {
                             rarity: item.rarity || '',
                             position: item.position || '',
                             weapon: item.weapon || '',
+                            element: item.element || '',
                             name: item.name || ''
                         };
                     } else {
@@ -4264,7 +5509,7 @@ function importFromShareableCode(code) {
                 throw new Error('Not a valid old format');
             }
         } catch (e) {
-            console.log('Not valid JSON, trying other formats:', e);
+            // console.log('Not valid JSON, trying other formats:', e);
             // Not valid JSON, try parsing as our compact format
 
             // Check if it's our new prefixed format
@@ -4288,7 +5533,8 @@ function importFromShareableCode(code) {
                             rarity: parts[3] || '',
                             position: parts[4] || '',
                             weapon: parts[5] || '',
-                            name: parts[6] || ''
+                            name: parts[6] || '',
+                            element: parts[7] || ''
                         };
                     });
                 }
@@ -4309,7 +5555,8 @@ function importFromShareableCode(code) {
                         rarity: parts[3] || '',
                         position: parts[4] || '',
                         weapon: parts[5] || '',
-                        name: parts[6] || ''
+                        name: parts[6] || '',
+                        element: parts[7] || ''
                     };
                 });
             }
@@ -4326,6 +5573,7 @@ function importFromShareableCode(code) {
                     rarity: '',
                     position: '',
                     weapon: '',
+                    element: '',
                     name: ''
                 }));
             }
@@ -4340,6 +5588,7 @@ function importFromShareableCode(code) {
                     rarity: '',
                     position: '',
                     weapon: '',
+                    element: '',
                     name: ''
                 }];
             }
@@ -4363,11 +5612,11 @@ function importFromShareableCode(code) {
         // Get existing toggle image sources to avoid duplicates
         const existingToggleImageSources = Array.from(toggleImagesContainer.querySelectorAll('.toggle-item img'))
             .map(img => img.src);
-        console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
+        // console.log(`Found ${existingToggleImageSources.length} existing toggle images`);
 
         // Prepare image sources with metadata
         const imageSources = imageData.map(item => item.src);
-        console.log(`Prepared ${imageSources.length} image sources with metadata`);
+        // console.log(`Prepared ${imageSources.length} image sources with metadata`);
 
         // Filter out images that already exist in the toggle container
         const newImageSources = imageSources.filter(src => {
@@ -4380,7 +5629,7 @@ function importFromShareableCode(code) {
             });
         });
 
-        console.log(`Found ${newImageSources.length} new images to import after filtering duplicates`);
+        // console.log(`Found ${newImageSources.length} new images to import after filtering duplicates`);
 
         // Find new images to import with their metadata
         const newImageData = imageData.filter(item => {
@@ -4392,13 +5641,13 @@ function importFromShareableCode(code) {
             });
         });
 
-        console.log(`Found ${newImageData.length} new images with metadata to import`);
+        // console.log(`Found ${newImageData.length} new images with metadata to import`);
 
         // Import the toggle images with metadata
         if (newImageData.length > 0) {
             // Clear the userClearedSelection flag since we're loading data
             localStorage.removeItem('userClearedSelection');
-            console.log('Loading data from shareable code, clearing userClearedSelection flag');
+            // console.log('Loading data from shareable code, clearing userClearedSelection flag');
 
             // Custom import function that preserves metadata
             importImagesWithMetadata(newImageData);
@@ -4406,13 +5655,17 @@ function importFromShareableCode(code) {
             // After importing, ensure green borders are applied to images in team slots
             setTimeout(() => {
                 updateToggleImageSelectionState(currentTeamSet);
-                console.log('Updated green borders for loaded images');
+                // console.log('Updated green borders for loaded images');
             }, 500);
 
             // No alert message for successful import
-            console.log(`Shareable code imported successfully: ${newImageData.length} new images`);
+            // console.log(`Shareable code imported successfully: ${newImageData.length} new images`);
         } else {
             alert('No new images found in the shareable code. All images already exist in your collection.');
+        }
+        } catch (legacyError) {
+            console.error('Error processing legacy format:', legacyError);
+            throw new Error('Could not process legacy format: ' + legacyError.message);
         }
     } catch (error) {
         console.error('Error importing from shareable code:', error);
@@ -4438,19 +5691,19 @@ function importImagesWithMetadata(imageDataArray) {
         .map(item => item.getAttribute('data-number'))
         .filter(id => id); // Filter out null/undefined
 
-    console.log('Existing Nikke IDs:', existingIds);
+    // console.log('Existing Nikke IDs:', existingIds);
 
     // Filter out duplicates
     const uniqueImageData = imageDataArray.filter(imageData => {
         // Check if this ID already exists
         const isDuplicate = existingIds.includes(imageData.id);
         if (isDuplicate) {
-            console.log(`Skipping duplicate Nikke with ID ${imageData.id}`);
+            // console.log(`Skipping duplicate Nikke with ID ${imageData.id}`);
         }
         return !isDuplicate;
     });
 
-    console.log(`Filtered out ${imageDataArray.length - uniqueImageData.length} duplicates`);
+    // console.log(`Filtered out ${imageDataArray.length - uniqueImageData.length} duplicates`);
 
     // If all images are duplicates, show a message and return
     if (uniqueImageData.length === 0) {
@@ -4465,11 +5718,34 @@ function importImagesWithMetadata(imageDataArray) {
         toggleItem.className = 'toggle-item';
 
         // Set data attributes from the metadata
-        if (imageData.type) toggleItem.setAttribute('data-type', imageData.type);
+        if (imageData.type) {
+            // Make sure the type value is a valid burst type (b1, b2, b3, a)
+            let typeValue = imageData.type;
+
+            // If it's not a valid burst type, extract it from the filename
+            if (!['b1', 'b2', 'b3', 'a', 'B1', 'B2', 'B3', 'A'].includes(typeValue)) {
+                // Look for burst type patterns in the filename
+                const filename = imageData.src.split('/').pop();
+                if (filename.includes('_b1_') || filename.includes('_B1_')) {
+                    typeValue = 'b1';
+                } else if (filename.includes('_b2_') || filename.includes('_B2_')) {
+                    typeValue = 'b2';
+                } else if (filename.includes('_b3_') || filename.includes('_B3_')) {
+                    typeValue = 'b3';
+                } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                    typeValue = 'a';
+                }
+                // console.log(`Mapped invalid type ${imageData.type} to burst type ${typeValue} from filename ${filename}`);
+            }
+
+            toggleItem.setAttribute('data-type', typeValue.toLowerCase());
+            // console.log(`Setting data-type=${typeValue.toLowerCase()} for toggle item with ID=${imageData.id}`);
+        }
         if (imageData.position) toggleItem.setAttribute('data-position', imageData.position);
         if (imageData.faction) toggleItem.setAttribute('data-faction', imageData.faction);
         if (imageData.rarity) toggleItem.setAttribute('data-rarity', imageData.rarity);
         if (imageData.weapon) toggleItem.setAttribute('data-weapon', imageData.weapon);
+        if (imageData.element) toggleItem.setAttribute('data-element', imageData.element);
         if (imageData.name) toggleItem.setAttribute('data-name', imageData.name);
         if (imageData.id) toggleItem.setAttribute('data-number', imageData.id);
 
@@ -4477,7 +5753,7 @@ function importImagesWithMetadata(imageDataArray) {
         const galleryPhoto = Array.from(document.querySelectorAll('.gallery .photo'))
             .find(photo => {
                 const img = photo.querySelector('img');
-                if (img) {
+                if (img && imageData && imageData.id) {
                     const filename = img.src.split('/').pop();
                     const photoId = filename.split('_')[0];
                     return photoId === imageData.id;
@@ -4489,6 +5765,13 @@ function importImagesWithMetadata(imageDataArray) {
             // Hide the gallery photo
             galleryPhoto.style.display = 'none';
             toggleItem.dataset.galleryPhotoId = galleryPhoto.id || '';
+        } else {
+            // If gallery photo not found, log a more helpful message
+            if (imageData && imageData.id) {
+                // console.log(`Gallery photo not found for ID: ${imageData.id}, using metadata from sharecode`);
+            } else {
+                // console.log('Gallery photo not found, using metadata from sharecode');
+            }
         }
 
         // Create the image element
@@ -4529,7 +5812,7 @@ function importImagesWithMetadata(imageDataArray) {
 
     // If we're importing images, clear the userClearedSelection flag
     localStorage.removeItem('userClearedSelection');
-    console.log('Imported images with metadata, clearing userClearedSelection flag');
+    // console.log('Imported images with metadata, clearing userClearedSelection flag');
 
     // Show success message with the count of unique images added
     if (importCount > 0) {
@@ -4540,9 +5823,9 @@ function importImagesWithMetadata(imageDataArray) {
         } else {
             alert(`Successfully imported ${importCount} Nikkes.`);
         }
-        console.log(`Images imported successfully with metadata: ${importCount} images`);
+        // console.log(`Images imported successfully with metadata: ${importCount} images`);
     } else {
-        console.log('No new images were imported.');
+        // console.log('No new images were imported.');
     }
 
     // Switch to toggle images tab
@@ -4629,12 +5912,60 @@ function exportTeamSetsAsJpeg() {
     const teamSet1 = document.querySelector('#teamSet1').cloneNode(true);
     const teamSet2 = document.querySelector('#teamSet2').cloneNode(true);
 
-    // Disable Sortable.js functionality in the cloned team sets
-    teamSet1.querySelectorAll('.team-images, .image-slot').forEach(el => {
-        el.classList.add('no-sortable');
+    // Remove save buttons from cloned team sets
+    teamSet1.querySelectorAll('.save-team-position-btn, #saveStatus1').forEach(el => el.remove());
+    teamSet2.querySelectorAll('.save-team-position-btn, #saveStatus2').forEach(el => el.remove());
+
+    // Enable Sortable.js functionality in the cloned team sets
+    teamSet1.querySelectorAll('.team-images').forEach(container => {
+        new Sortable(container, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            delay: 300,
+            delayOnTouchOnly: true,
+            group: {
+                name: 'shared',
+                pull: true,
+                put: true
+            },
+            swapThreshold: 0.65,
+            swap: true,
+            filter: '.empty'  // Prevent dragging empty slots
+        });
     });
-    teamSet2.querySelectorAll('.team-images, .image-slot').forEach(el => {
-        el.classList.add('no-sortable');
+
+    teamSet2.querySelectorAll('.team-images').forEach(container => {
+        new Sortable(container, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            delay: 300,
+            delayOnTouchOnly: true,
+            group: {
+                name: 'shared',
+                pull: true,
+                put: true
+            },
+            swapThreshold: 0.65,
+            swap: true,
+            filter: '.empty'  // Prevent dragging empty slots
+        });
+    });
+
+    // Make sure elements are draggable
+    [teamSet1, teamSet2].forEach(teamSet => {
+        teamSet.querySelectorAll('.team-images, .image-slot').forEach(el => {
+            el.classList.remove('no-sortable');
+            el.classList.add('sortable');
+
+            // Remove any pointer-events: none
+            el.style.pointerEvents = 'auto';
+            el.style.touchAction = 'auto';
+
+            // Make sure draggable attribute is set
+            if (!el.classList.contains('empty')) {
+                el.setAttribute('draggable', 'true');
+            }
+        });
     });
 
     // Remove edit team name buttons from the cloned team sets
@@ -4732,6 +6063,14 @@ function exportTeamSetsAsJpeg() {
                 opacity: 0 !important;
                 visibility: hidden !important;
                 content: '' !important;
+            }
+
+            .sortable {
+            touch-action: auto !important;
+            pointer-events: auto !important;
+            user-select: auto !important;
+            -webkit-user-drag: element !important;
+            cursor: grab !important;
             }
         `;
         document.head.appendChild(styleElement);
@@ -5072,7 +6411,6 @@ function exportTeamSetsAsJpeg() {
             // All images loaded, proceed with html2canvas
             loadingText.textContent = 'Generating image...';
 
-            // Use html2canvas to capture the team sets container
             html2canvas(teamSetsContainer, {
                 backgroundColor: '#151515', // Match the container background
                 useCORS: true,
@@ -5184,6 +6522,209 @@ function exportTeamSetsAsJpeg() {
     });
 }
 
+// Function to update old image paths to new format
+function updateImagePathsToCurrentFormat(imageSources) {
+    // Updating image paths to current format
+
+    if (!imageSources || !Array.isArray(imageSources) || imageSources.length === 0) {
+        // No image sources to update
+        return imageSources;
+    }
+
+    // Create a new array to store the updated sources
+    const updatedSources = [];
+
+    // Process each image source
+    for (const source of imageSources) {
+        // Handle both string and object formats
+        const imgSrc = typeof source === 'string' ? source : source.src;
+
+        if (!imgSrc) {
+            // Invalid image source
+            continue;
+        }
+
+        // Check if this is an old format URL (/image/ instead of /image-id/)
+        const isOldFormat = imgSrc.includes('/image/') && !imgSrc.includes('/image-id/');
+
+        // Try to find the corresponding gallery photo to get the data-id
+        const galleryPhotos = document.querySelectorAll('.gallery .photo');
+        let foundPhoto = null;
+
+        // First try to match by exact URL
+        for (const photo of galleryPhotos) {
+            const photoImg = photo.querySelector('img');
+            if (photoImg && photoImg.src === imgSrc) {
+                foundPhoto = photo;
+                break;
+            }
+        }
+
+        // If not found by URL, try to match by filename
+        if (!foundPhoto) {
+            const filename = imgSrc.split('/').pop();
+
+            for (const photo of galleryPhotos) {
+                const photoImg = photo.querySelector('img');
+                if (photoImg && photoImg.src.split('/').pop() === filename) {
+                    foundPhoto = photo;
+                    break;
+                }
+            }
+        }
+
+        // If not found and it's an old format URL, try harder to match by name
+        if (!foundPhoto && isOldFormat) {
+            const filename = imgSrc.split('/').pop();
+            const parts = filename.split('_');
+
+            // Try to extract name from the last part
+            let name = '';
+            if (parts.length > 1) {
+                name = parts[parts.length - 1].replace('.webp', '').toLowerCase();
+            }
+
+            if (name) {
+                // Try to find by name
+                for (const photo of galleryPhotos) {
+                    const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
+
+                    if (photoName && (photoName.includes(name) || name.includes(photoName))) {
+                        foundPhoto = photo;
+                        // Found photo by name match for old format
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If not found by filename, try to match by character name
+        if (!foundPhoto) {
+            // Extract name from filename
+            const filename = imgSrc.split('/').pop();
+            const parts = filename.split('_');
+
+            // Try to extract character name from parts
+            let characterName = '';
+            if (parts.length > 6) {
+                characterName = parts.slice(6).join('_').replace('.webp', '').toLowerCase();
+            }
+
+            if (characterName) {
+                for (const photo of galleryPhotos) {
+                    const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
+
+                    if (photoName.includes(characterName) || characterName.includes(photoName)) {
+                        foundPhoto = photo;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If not found by character name, try to match by number and name combination
+        if (!foundPhoto) {
+            // Extract number and name from filename
+            const filename = imgSrc.split('/').pop();
+            const parts = filename.split('_');
+
+            if (parts.length >= 2) {
+                // Try to extract number and name
+                let number = '';
+                let name = '';
+
+                // Try to find number in the first or second part
+                if (!isNaN(parseInt(parts[0]))) {
+                    number = parts[0];
+                    // Name might be in the last parts
+                    if (parts.length > 6) {
+                        name = parts.slice(6).join('_').replace('.webp', '').toLowerCase();
+                    }
+                } else if (parts.length > 1 && !isNaN(parseInt(parts[1]))) {
+                    number = parts[1];
+                    name = parts[0].toLowerCase();
+                }
+
+                if (number && name) {
+                    for (const photo of galleryPhotos) {
+                        const photoNumber = photo.getAttribute('data-number');
+                        const photoName = (photo.getAttribute('data-name') || '').toLowerCase();
+
+                        if (photoNumber === number &&
+                            (photoName.includes(name) || name.includes(photoName))) {
+                            foundPhoto = photo;
+                            // Found photo by number and name match
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we found a matching photo, use its current URL
+        if (foundPhoto) {
+            const photoImg = foundPhoto.querySelector('img');
+            const dataId = foundPhoto.getAttribute('data-id');
+
+            // Found matching photo with data-id
+
+            if (typeof source === 'string') {
+                // If the original source was a string, return the updated URL
+                updatedSources.push(photoImg.src);
+            } else {
+                // If the original source was an object, update its src property
+                const updatedSource = { ...source, src: photoImg.src };
+
+                // Also update any ID or data-id properties
+                if (dataId) {
+                    updatedSource.id = dataId;
+                    updatedSource['data-id'] = dataId;
+                }
+
+                // Copy other data attributes from the photo
+                ['data-number', 'data-name', 'data-type', 'data-position', 'data-faction', 'data-rarity', 'data-weapon', 'data-element'].forEach(attr => {
+                    const value = foundPhoto.getAttribute(attr);
+                    if (value) {
+                        updatedSource[attr] = value;
+                    }
+                });
+
+                updatedSources.push(updatedSource);
+            }
+        } else {
+            // If we couldn't find a matching photo, try to use findFullImagePathById
+            if (typeof findFullImagePathById === 'function') {
+                // Extract ID from filename
+                const filename = imgSrc.split('/').pop();
+                const parts = filename.split('_');
+                const id = parts[0];
+
+                if (id) {
+                    const updatedSrc = findFullImagePathById(id);
+                    // Using findFullImagePathById as fallback
+
+                    if (typeof source === 'string') {
+                        updatedSources.push(updatedSrc);
+                    } else {
+                        updatedSources.push({ ...source, src: updatedSrc, id: id });
+                    }
+                } else {
+                    // If we couldn't extract an ID, use the original source
+                    // Could not extract ID, using original
+                    updatedSources.push(source);
+                }
+            } else {
+                // If findFullImagePathById is not available, use the original source
+                // Could not find matching photo, using original
+                updatedSources.push(source);
+            }
+        }
+    }
+
+    // Updated image sources to current format
+    return updatedSources;
+}
+
 // Import Toggle Image Data
 function importToggleImageData() {
     // Confirm with the user
@@ -5200,26 +6741,26 @@ function importToggleImageData() {
         const file = e.target.files[0];
         if (!file) return;
 
-        console.log('Selected file:', file.name, 'size:', file.size, 'bytes');
+        // console.log('Selected file:', file.name, 'size:', file.size, 'bytes');
 
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                console.log('File loaded, parsing JSON...');
+                // console.log('File loaded, parsing JSON...');
                 const jsonContent = e.target.result;
-                console.log('JSON content length:', jsonContent.length);
+                // console.log('JSON content length:', jsonContent.length);
 
                 const data = JSON.parse(jsonContent);
-                console.log('Parsed data:', data);
+                // console.log('Parsed data:', data);
 
                 if (data && data.toggleImages && Array.isArray(data.toggleImages)) {
-                    console.log(`Found ${data.toggleImages.length} toggle images in the file`);
+                    // console.log(`Found ${data.toggleImages.length} toggle images in the file`);
 
                     // Clear existing toggle images
                     const toggleImagesContainer = document.querySelector('#toggleImages');
                     if (toggleImagesContainer) {
                         toggleImagesContainer.innerHTML = '';
-                        console.log('Cleared existing toggle images');
+                        // console.log('Cleared existing toggle images');
                     } else {
                         console.error('Toggle images container not found');
                     }
@@ -5228,10 +6769,13 @@ function importToggleImageData() {
                     document.querySelectorAll('.gallery .photo').forEach(photo => {
                         photo.style.display = 'flex';
                     });
-                    console.log('Reset gallery photo visibility');
+                    // console.log('Reset gallery photo visibility');
 
-                    // Process the toggle images data
-                    const imageSources = data.toggleImages.map(item => {
+                    // Update image paths to current format
+                    const updatedToggleImages = updateImagePathsToCurrentFormat(data.toggleImages);
+
+                    // Process the updated toggle images data
+                    const imageSources = updatedToggleImages.map(item => {
                         if (typeof item === 'string') {
                             return item; // Old format: just the URL
                         } else if (item && item.src) {
@@ -5242,16 +6786,50 @@ function importToggleImageData() {
                         }
                     }).filter(src => src !== null);
 
-                    console.log(`Processed ${imageSources.length} valid image sources`);
+                    // console.log(`Processed ${imageSources.length} valid image sources`);
 
                     // Import the toggle images from the file
                     if (imageSources.length > 0) {
+                        // Update the data in localStorage with the updated image paths
+                        if (data.teamSets && Array.isArray(data.teamSets)) {
+                            // console.log('Updating team sets with current format image paths');
+
+                            // Update each team set
+                            for (let i = 0; i < data.teamSets.length; i++) {
+                                const teamSet = data.teamSets[i];
+                                if (Array.isArray(teamSet)) {
+                                    for (let j = 0; j < teamSet.length; j++) {
+                                        const team = teamSet[j];
+                                        if (team && team.images && Array.isArray(team.images)) {
+                                            team.images = updateImagePathsToCurrentFormat(team.images);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Save the updated data to localStorage
+                            try {
+                                const existingData = localStorage.getItem(STORAGE_KEY) ? JSON.parse(localStorage.getItem(STORAGE_KEY)) : {};
+                                existingData.teamSets = data.teamSets;
+                                existingData.toggleImages = updatedToggleImages;
+
+                                if (data.myNikkesList && Array.isArray(data.myNikkesList)) {
+                                    existingData.myNikkesList = updateImagePathsToCurrentFormat(data.myNikkesList);
+                                }
+
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+                                // console.log('Updated localStorage with current format image paths');
+                            } catch (error) {
+                                console.error('Error updating localStorage:', error);
+                            }
+                        }
+
                         importImagesToToggleGallery(imageSources);
 
                         // After importing, ensure green borders are applied to images in team slots
                         setTimeout(() => {
                             updateToggleImageSelectionState(currentTeamSet);
-                            console.log('Updated green borders for loaded images');
+                            // console.log('Updated green borders for loaded images');
                         }, 500);
                     } else {
                         alert('No valid image sources found in the file.');
@@ -5298,13 +6876,13 @@ function clearAllToggleImages() {
     document.querySelectorAll('.gallery .photo').forEach(photo => {
         photo.style.display = 'flex';
     });
-    console.log('Reset all gallery photo visibility');
+    // console.log('Reset all gallery photo visibility');
 
     // Clear toggle images
     toggleImagesContainer.innerHTML = '';
 
     // We no longer clear team slots when removing all toggle images
-    console.log('Preserving team slots when removing all toggle images');
+    // console.log('Preserving team slots when removing all toggle images');
 
     // Update team score
     updateTeamScore();
@@ -5319,21 +6897,18 @@ function clearAllToggleImages() {
     saveSelectionToLocalStorage();
 
     // No alert message for successful removal
-    console.log('All images have been removed from Nikkes selection');
+    // console.log('All images have been removed from Nikkes selection');
 }
 
 // Reset localStorage data (for debugging)
-// Check if Toggle Images tab is empty and load default data if it is
+// Check if Toggle Images tab is empty and preserve team sets if needed
 function checkToggleImagesEmpty() {
     const toggleImagesContainer = document.querySelector('#toggleImages');
     if (!toggleImagesContainer) return;
 
     const toggleItems = toggleImagesContainer.querySelectorAll('.toggle-item');
     if (toggleItems.length === 0) {
-        // Check if user has intentionally cleared their selection
-        const userClearedSelection = localStorage.getItem('userClearedSelection') === 'true';
-
-        // Check if there are any team sets with images before loading default data
+        // Check if there are any team sets with images to preserve
         let hasTeamSets = false;
         for (let i = 1; i <= 2; i++) {
             const teamContainer = document.querySelector(`#teamSet${i}`);
@@ -5341,17 +6916,18 @@ function checkToggleImagesEmpty() {
                 const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
                 if (teamImages.length > 0) {
                     hasTeamSets = true;
-                    console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                    // console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
                     break;
                 }
             }
         }
 
-        // If there are team sets with images, don't load default data
+        // If there are team sets with images, preserve them
         if (hasTeamSets) {
-            console.log('Team sets with images found, not loading default data to preserve team sets');
+            // console.log('Team sets with images found, preserving team sets');
             // Ensure the userClearedSelection flag is set to prevent auto-loading
             localStorage.setItem('userClearedSelection', 'true');
+            localStorage.setItem('preventDefaultDataLoad', 'true');
 
             // Immediately save the current team sets to localStorage to ensure they're preserved
             try {
@@ -5381,47 +6957,69 @@ function checkToggleImagesEmpty() {
 
                     // Save immediately without debouncing
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                    console.log('Immediately saved team sets to localStorage to ensure preservation');
+                    // console.log('Immediately saved team sets to localStorage to ensure preservation');
                 }
             } catch (error) {
                 console.error('Error saving team sets to localStorage:', error);
             }
-
-            return;
-        }
-
-        if (!userClearedSelection) {
-            console.log('Toggle Images tab is empty and not intentionally cleared, loading default data...');
-            loadDefaultData().then(defaultData => {
-                if (defaultData) {
-                    console.log('Default data loaded successfully, processing...');
-                    processLoadedData(defaultData).then(success => {
-                        if (success) {
-                            console.log('Default data processed successfully');
-                            // Switch to the toggleImages tab
-                            switchContentTab('toggleImages');
-                        }
-                    });
-                }
-            });
         } else {
-            console.log('User intentionally cleared selection, not loading default data');
+            // console.log('No team sets with images found, toggle images tab is empty');
+            // Show a message to the user suggesting they import images
+            const importMessage = document.createElement('div');
+            importMessage.className = 'import-message';
+            importMessage.innerHTML = `
+                <div class="import-message-content">
+                    <h3>Your Nikkes selection is empty</h3>
+                    <p>Click the "Add list" button to add Nikkes to your collection or add them directly from Nikke tabs.</p>
+                </div>
+            `;
+            importMessage.style.position = 'absolute';
+            importMessage.style.top = '50%';
+            importMessage.style.left = '50%';
+            importMessage.style.transform = 'translate(-50%, -50%)';
+            importMessage.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            importMessage.style.color = 'white';
+            importMessage.style.padding = '20px';
+            importMessage.style.borderRadius = '8px';
+            importMessage.style.textAlign = 'center';
+            importMessage.style.zIndex = '1000';
+
+            // Add the message to the toggle images container
+            toggleImagesContainer.appendChild(importMessage);
+
+            // Remove the message after 5 seconds
+            setTimeout(() => {
+                if (importMessage.parentNode) {
+                    importMessage.parentNode.removeChild(importMessage);
+                }
+            }, 12000);
         }
     } else {
-        // If there are toggle items, reset the flag
+        // If there are toggle items, reset the flags
         localStorage.removeItem('userClearedSelection');
+        localStorage.removeItem('preventDefaultDataLoad');
     }
 }
 
 function resetLocalStorage() {
     // Confirm with the user
-    const shouldReset = confirm('This will completely reset all saved data. Are you sure you want to continue?');
+    const shouldReset = confirm('This will completely reset ALL saved data including team sets, My Nikkes List, and all other settings. Are you sure you want to continue?');
     if (!shouldReset) return;
 
     try {
-        // Clear localStorage
+        // Clear all localStorage for this site
+        localStorage.clear();
+
+        // For specific keys we know about, explicitly remove them to be sure
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(TOGGLE_TABS_KEY);
+        localStorage.removeItem('userClearedSelection');
+        localStorage.removeItem('preventDefaultDataLoad');
+
+        // If we have team storage, clear that too
+        if (typeof window.teamStorage !== 'undefined' && typeof window.teamStorage.clearTeamSetData === 'function') {
+            window.teamStorage.clearTeamSetData();
+        }
 
         // Reset the teamSetToggleImages object
         window.teamSetToggleImages = {
@@ -5429,18 +7027,24 @@ function resetLocalStorage() {
             '2': []
         };
 
-        // Set flag to indicate user intentionally cleared selection
-        localStorage.setItem('userClearedSelection', 'true');
-        console.log('localStorage data cleared successfully');
+        // Reset team names
+        window.teamNames = {
+            '1': '',
+            '2': ''
+        };
+
+        // console.log('All localStorage data cleared successfully');
 
         // Reload the page
-        alert('Data has been reset. The page will now reload.');
+        alert('All data has been reset. The page will now reload.');
         window.location.reload();
     } catch (error) {
         console.error('Error resetting localStorage:', error);
         alert('Error resetting data: ' + error.message);
     }
 }
+
+
 
 // Remove selected toggle images
 function removeSelectedToggleImages() {
@@ -5580,7 +7184,7 @@ function removeSelectedToggleImages() {
 
                     // We no longer remove the image from team slots
                     // Keep images in team slots even when removed from toggle gallery
-                    console.log(`Keeping image ${src} in team slots even though it's removed from toggle gallery`);
+                    // console.log(`Keeping image ${src} in team slots even though it's removed from toggle gallery`);
 
                     // Remove the toggle item
                     toggleItem.remove();
@@ -5590,8 +7194,13 @@ function removeSelectedToggleImages() {
             // Update team score
             updateTeamScore();
 
-            // Save the toggle tabs state
-            saveToggleTabsToLocalStorage();
+            // Save the My Nikkes List to localStorage
+            if (typeof saveMyNikkesList === 'function') {
+                saveMyNikkesList();
+            } else {
+                // Fallback to old methods if the new function is not available
+                saveToggleTabsToLocalStorage();
+            }
 
             // Update the team-specific toggle images
             saveCurrentToggleImages();
@@ -5604,11 +7213,11 @@ function removeSelectedToggleImages() {
 
                     // We no longer remove images from teamSets in localStorage
                     // This ensures team sets are preserved even when toggle images are removed
-                    console.log('Preserving team sets in localStorage when removing toggle images');
+                    // console.log('Preserving team sets in localStorage when removing toggle images');
 
                     // Save the updated data back to localStorage
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                    console.log('Updated teamSets data in localStorage to reflect removed images');
+                    // console.log('Updated teamSets data in localStorage to reflect removed images');
                 } catch (error) {
                     console.error('Error updating teamSets data in localStorage:', error);
                 }
@@ -5625,7 +7234,7 @@ function removeSelectedToggleImages() {
                         const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
                         if (teamImages.length > 0) {
                             hasTeamSets = true;
-                            console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                            // console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
                             break;
                         }
                     }
@@ -5633,7 +7242,7 @@ function removeSelectedToggleImages() {
 
                 // Set flag to indicate user intentionally cleared selection
                 localStorage.setItem('userClearedSelection', 'true');
-                console.log('All images removed, setting userClearedSelection flag');
+                // console.log('All images removed, setting userClearedSelection flag');
 
                 // If there are team sets with images, immediately save them to localStorage
                 if (hasTeamSets) {
@@ -5664,7 +7273,7 @@ function removeSelectedToggleImages() {
 
                             // Save immediately without debouncing
                             localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                            console.log('Immediately saved team sets to localStorage to ensure preservation');
+                            // console.log('Immediately saved team sets to localStorage to ensure preservation');
                         }
                     } catch (error) {
                         console.error('Error saving team sets to localStorage:', error);
@@ -5673,7 +7282,7 @@ function removeSelectedToggleImages() {
             }
 
             // No alert message for successful removal
-            console.log(`${selectedSources.length} image${selectedSources.length !== 1 ? 's' : ''} have been removed from Nikkes selection`);
+            // console.log(`${selectedSources.length} image${selectedSources.length !== 1 ? 's' : ''} have been removed from Nikkes selection`);
 
             // Close the modal
             modal.remove();
@@ -5694,13 +7303,13 @@ function removeSelectedToggleImages() {
             document.querySelectorAll('.gallery .photo').forEach(photo => {
                 photo.style.display = 'flex';
             });
-            console.log('Reset all gallery photo visibility');
+            // console.log('Reset all gallery photo visibility');
 
             // Clear toggle images
             toggleImagesContainer.innerHTML = '';
 
             // We no longer clear team slots when removing all toggle images
-            console.log('Preserving team slots when removing all toggle images');
+            // console.log('Preserving team slots when removing all toggle images');
 
             // Update team score
             updateTeamScore();
@@ -5711,31 +7320,48 @@ function removeSelectedToggleImages() {
                 '2': []
             };
 
-            // Save the toggle tabs state with empty arrays
-            const toggleTabsData = {
-                toggleImages: []
-            };
-            localStorage.setItem(TOGGLE_TABS_KEY, JSON.stringify(toggleTabsData));
-            console.log('Cleared toggle tabs data in localStorage');
+            // Save the My Nikkes List to localStorage with empty arrays
+            if (typeof saveMyNikkesList === 'function') {
+                // Get existing data
+                const existingData = getStorageData() || {};
 
-            // Also clear the main data storage
-            const savedDataString = localStorage.getItem(STORAGE_KEY);
-            if (savedDataString) {
-                try {
-                    const savedData = JSON.parse(savedDataString);
-                    savedData.toggleImages = [];
-                    savedData.toggleTabs = { toggleImages: [] };
-                    savedData.teamSetToggleImages = { '1': [], '2': [] };
+                // Update the My Nikkes List data
+                existingData.myNikkesList = [];
 
-                    // We no longer clear team images from teamSets in localStorage
-                    // This ensures team sets are preserved even when all toggle images are removed
-                    console.log('Preserving team sets in localStorage when removing all toggle images');
+                // For backward compatibility, also update toggleImages and toggleTabs
+                existingData.toggleImages = [];
+                existingData.toggleTabs = { toggleImages: [] };
+                existingData.teamSetToggleImages = { '1': [], '2': [] };
 
-                    // Save the updated data back to localStorage
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                    console.log('Cleared all toggle images from localStorage');
-                } catch (error) {
-                    console.error('Error updating localStorage:', error);
+                // Use the optimized storage function
+                saveStorageData(existingData);
+            } else {
+                // Fallback to old methods if the new function is not available
+                const toggleTabsData = {
+                    toggleImages: []
+                };
+                localStorage.setItem(TOGGLE_TABS_KEY, JSON.stringify(toggleTabsData));
+                // console.log('Cleared toggle tabs data in localStorage');
+
+                // Also clear the main data storage
+                const savedDataString = localStorage.getItem(STORAGE_KEY);
+                if (savedDataString) {
+                    try {
+                        const savedData = JSON.parse(savedDataString);
+                        savedData.toggleImages = [];
+                        savedData.toggleTabs = { toggleImages: [] };
+                        savedData.teamSetToggleImages = { '1': [], '2': [] };
+
+                        // We no longer clear team images from teamSets in localStorage
+                        // This ensures team sets are preserved even when all toggle images are removed
+                        // console.log('Preserving team sets in localStorage when removing all toggle images');
+
+                        // Save the updated data back to localStorage
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+                        // console.log('Cleared all toggle images from localStorage');
+                    } catch (error) {
+                        console.error('Error updating localStorage:', error);
+                    }
                 }
             }
 
@@ -5750,7 +7376,7 @@ function removeSelectedToggleImages() {
                     const teamImages = teamContainer.querySelectorAll('.team-images .image-slot img');
                     if (teamImages.length > 0) {
                         hasTeamSets = true;
-                        console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
+                        // console.log(`Found ${teamImages.length} images in team set ${i}, preserving team sets`);
                         break;
                     }
                 }
@@ -5785,7 +7411,7 @@ function removeSelectedToggleImages() {
 
                         // Save immediately without debouncing
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-                        console.log('Immediately saved team sets to localStorage to ensure preservation');
+                        // console.log('Immediately saved team sets to localStorage to ensure preservation');
                     }
                 } catch (error) {
                     console.error('Error saving team sets to localStorage:', error);
@@ -5793,7 +7419,7 @@ function removeSelectedToggleImages() {
             }
 
             // No alert message for successful removal
-            console.log('All images have been removed from Nikkes selection');
+            // console.log('All images have been removed from Nikkes selection');
 
             // Close the modal
             modal.remove();
@@ -5820,3 +7446,18 @@ function removeSelectedToggleImages() {
         }
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

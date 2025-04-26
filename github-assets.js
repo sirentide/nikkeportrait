@@ -1,8 +1,21 @@
 // GitHub assets configuration
-const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sirentide/public-host/master/';
+const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/';
 
 // Function to convert local image path to GitHub URL
 function getGitHubUrl(localPath) {
+    // Handle object with src property
+    if (localPath && typeof localPath === 'object' && localPath.src && typeof localPath.src === 'string') {
+        console.log('Converting object with src to GitHub URL:', localPath.src);
+        return getGitHubUrl(localPath.src);
+    }
+
+    // Check if localPath is a valid string
+    if (!localPath || typeof localPath !== 'string') {
+        console.warn('Invalid path provided to getGitHubUrl:', localPath);
+        // Return a default image or empty string instead of the invalid path
+        return '';
+    }
+
     // If it's already a GitHub URL, return it as is
     if (localPath.startsWith('https://raw.githubusercontent.com/')) {
         return localPath;
@@ -12,7 +25,7 @@ function getGitHubUrl(localPath) {
     if (localPath.startsWith('file:')) {
         // Extract just the filename from the path
         const filename = localPath.split('/').pop().split('\\').pop();
-        return GITHUB_BASE_URL + 'image/' + filename;
+        return GITHUB_BASE_URL + filename;
     }
 
     // Remove any leading slashes
@@ -26,9 +39,9 @@ function getGitHubUrl(localPath) {
         path = path.split('/').pop().split('\\').pop();
     }
 
-    // If the path doesn't include 'image/' and doesn't start with http, add it
-    if (!path.includes('image/') && !path.startsWith('http')) {
-        path = 'image/' + path;
+    // Don't add any path prefix since the base URL already includes image-id/
+    if (path.includes('image/')) {
+        path = path.replace('image/', '');
     }
 
     // Return the full GitHub URL

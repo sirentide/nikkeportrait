@@ -85,6 +85,16 @@ function createFilterPanel() {
                     <label class="checkbox-label compact"><input type="checkbox" name="weapon" value="mg" onchange="updateFilters()"><span>MG</span></label>
                 </div>
             </div>
+            <div class="filter-box compact">
+                <h4>Element</h4>
+                <div class="checkbox-group compact">
+                    <label class="checkbox-label compact"><input type="checkbox" name="element" value="fire" onchange="updateFilters()"><span>Fire</span></label>
+                    <label class="checkbox-label compact"><input type="checkbox" name="element" value="water" onchange="updateFilters()"><span>Water</span></label>
+                    <label class="checkbox-label compact"><input type="checkbox" name="element" value="wind" onchange="updateFilters()"><span>Wind</span></label>
+                    <label class="checkbox-label compact"><input type="checkbox" name="element" value="electric" onchange="updateFilters()"><span>Electric</span></label>
+                    <label class="checkbox-label compact"><input type="checkbox" name="element" value="iron" onchange="updateFilters()"><span>Iron</span></label>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -275,6 +285,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to update filters
 function updateFilters() {
+    // Make this function available globally for script.js to call
+    window.filter = window.filter || {};
+    window.filter.updateFilters = updateFilters;
     console.log('Updating filters');
 
     // Get all checked filter values
@@ -283,6 +296,7 @@ function updateFilters() {
         rarity: [],
         faction: [],
         weapon: [],
+        element: [],
         type: []
     };
 
@@ -292,6 +306,7 @@ function updateFilters() {
         rarity: 0,
         faction: 0,
         weapon: 0,
+        element: 0,
         type: 0
     };
 
@@ -309,6 +324,7 @@ function updateFilters() {
         rarity: 0,
         faction: 0,
         weapon: 0,
+        element: 0,
         type: 0
     };
 
@@ -327,7 +343,8 @@ function updateFilters() {
     burstButtons.forEach(button => {
         const value = button.getAttribute('data-value');
         if (value) {
-            uniqueBurstValues.add(value);
+            // Make sure the value is lowercase for consistency
+            uniqueBurstValues.add(value.toLowerCase());
         }
     });
 
@@ -335,6 +352,8 @@ function updateFilters() {
     uniqueBurstValues.forEach(value => {
         filters.type.push(value);
     });
+
+    console.log('Active burst filters:', Array.from(uniqueBurstValues));
 
     // If all checkboxes of a filter type are checked, clear the filter (treat as if none are checked)
     for (const [filterType, count] of Object.entries(checkedCheckboxes)) {
@@ -376,11 +395,57 @@ function updateFilters() {
                         }
                     }
                 }
+            } else if (filterType === 'type') {
+                // For type filtering, use data-type attribute
+                itemValue = item.getAttribute('data-type');
+                // Debug logging removed
+            } else if (filterType === 'element') {
+                // For element filtering, use data-element attribute
+                itemValue = item.getAttribute('data-element');
+
+                // If element attribute is missing, try to extract it from the filename
+                if (!itemValue) {
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for element patterns in the filename
+                        const elementMatch = filename.match(/_(fire|water|wind|electric|iron)_/i);
+                        if (elementMatch && elementMatch[1]) {
+                            itemValue = elementMatch[1].toLowerCase();
+                            // Debug logging removed
+
+                            // Update the data-element attribute for future use
+                            item.setAttribute('data-element', itemValue);
+                        }
+                    }
+                }
+
+                // Debug logging removed
+            } else if (filterType === 'weapon') {
+                // For weapon filtering, use data-weapon attribute
+                itemValue = item.getAttribute('data-weapon');
+
+                // If weapon attribute is missing, try to extract it from the filename
+                if (!itemValue) {
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for weapon patterns in the filename
+                        const weaponMatch = filename.match(/_(sg|smg|ar|snr|rl|mg)_/i);
+                        if (weaponMatch && weaponMatch[1]) {
+                            itemValue = weaponMatch[1].toLowerCase();
+
+                            // Update the data-weapon attribute for future use
+                            item.setAttribute('data-weapon', itemValue);
+                        }
+                    }
+                }
             } else {
                 itemValue = item.dataset[filterType];
             }
 
             if (!itemValue) {
+                // Debug logging removed
                 shouldShow = false;
                 break;
             }
@@ -388,13 +453,41 @@ function updateFilters() {
             // Special handling for type filter (burst type)
             if (filterType === 'type') {
                 // Convert both to lowercase for case-insensitive comparison
-                const itemValueLower = itemValue.toLowerCase();
+                let itemValueLower = itemValue.toLowerCase();
+
+                // Handle numeric data-type values by mapping them to burst types
+                // This is needed because some gallery items might have numeric data-type values
+                if (!isNaN(itemValueLower)) {
+                    // Extract the burst type from the filename if available
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for burst type patterns in the filename
+                        if (filename.includes('_b1_') || filename.includes('_B1_')) {
+                            itemValueLower = 'b1';
+                        } else if (filename.includes('_b2_') || filename.includes('_B2_')) {
+                            itemValueLower = 'b2';
+                        } else if (filename.includes('_b3_') || filename.includes('_B3_')) {
+                            itemValueLower = 'b3';
+                        } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                            itemValueLower = 'a';
+                        }
+                        // Debug logging removed
+                    }
+                }
+
                 // Check if any filter value is included in the item value
                 const typeMatch = filterValues.some(filterValue => {
-                    return itemValueLower.includes(filterValue.toLowerCase());
+                    const filterValueLower = filterValue.toLowerCase();
+                    const exactMatch = itemValueLower === filterValueLower;
+                    const includesMatch = itemValueLower.includes(filterValueLower);
+                    const result = exactMatch || includesMatch;
+                    // Debug logging removed
+                    return result;
                 });
 
                 if (!typeMatch) {
+                    // Debug logging removed
                     shouldShow = false;
                     break;
                 }
@@ -434,11 +527,24 @@ function updateFilters() {
                     const img = item.querySelector('img');
                     if (img && img.src) {
                         const filename = img.src.split('/').pop();
+                        console.log('Extracting position from filename for toggle item:', filename);
+
                         // Look for position patterns like _atk_, _def_, _sp_ in the filename
                         const posMatch = filename.match(/_(atk|def|sp)_/i);
                         if (posMatch && posMatch[1]) {
                             itemValue = posMatch[1].toLowerCase();
-                            // console.log('Extracted position from filename for toggle item:', itemValue);
+                            console.log('Extracted position from filename pattern for toggle item:', itemValue);
+                        } else {
+                            // Try a different approach - check each part of the filename
+                            const parts = filename.split('_');
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i].toLowerCase();
+                                if (part === 'atk' || part === 'def' || part === 'sp') {
+                                    itemValue = part;
+                                    console.log('Found position in filename part for toggle item:', itemValue);
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -447,11 +553,57 @@ function updateFilters() {
                         itemValue = item.dataset[filterType];
                     }
                 }
+            } else if (filterType === 'type') {
+                // For type filtering, use data-type attribute
+                itemValue = item.getAttribute('data-type');
+                // Debug logging removed
+            } else if (filterType === 'element') {
+                // For element filtering, use data-element attribute
+                itemValue = item.getAttribute('data-element');
+
+                // If element attribute is missing, try to extract it from the filename
+                if (!itemValue) {
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for element patterns in the filename
+                        const elementMatch = filename.match(/_(fire|water|wind|electric|iron)_/i);
+                        if (elementMatch && elementMatch[1]) {
+                            itemValue = elementMatch[1].toLowerCase();
+                            // Debug logging removed
+
+                            // Update the data-element attribute for future use
+                            item.setAttribute('data-element', itemValue);
+                        }
+                    }
+                }
+
+                // Debug logging removed
+            } else if (filterType === 'weapon') {
+                // For weapon filtering, use data-weapon attribute
+                itemValue = item.getAttribute('data-weapon');
+
+                // If weapon attribute is missing, try to extract it from the filename
+                if (!itemValue) {
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for weapon patterns in the filename
+                        const weaponMatch = filename.match(/_(sg|smg|ar|snr|rl|mg)_/i);
+                        if (weaponMatch && weaponMatch[1]) {
+                            itemValue = weaponMatch[1].toLowerCase();
+
+                            // Update the data-weapon attribute for future use
+                            item.setAttribute('data-weapon', itemValue);
+                        }
+                    }
+                }
             } else {
                 itemValue = item.dataset[filterType];
             }
 
             if (!itemValue) {
+                // Debug logging removed
                 shouldShow = false;
                 break;
             }
@@ -459,13 +611,48 @@ function updateFilters() {
             // Special handling for type filter (burst type)
             if (filterType === 'type') {
                 // Convert both to lowercase for case-insensitive comparison
-                const itemValueLower = itemValue.toLowerCase();
+                let itemValueLower = itemValue.toLowerCase();
+
+                // Handle numeric data-type values by mapping them to burst types
+                // This is needed because some toggle items have numeric data-type values
+                if (!isNaN(itemValueLower) || itemValueLower.length > 3) {
+                    // Extract the burst type from the filename if available
+                    const img = item.querySelector('img');
+                    if (img && img.src) {
+                        const filename = img.src.split('/').pop();
+                        // Look for burst type patterns in the filename
+                        if (filename.includes('_b1_') || filename.includes('_B1_')) {
+                            itemValueLower = 'b1';
+                        } else if (filename.includes('_b2_') || filename.includes('_B2_')) {
+                            itemValueLower = 'b2';
+                        } else if (filename.includes('_b3_') || filename.includes('_B3_')) {
+                            itemValueLower = 'b3';
+                        } else if (filename.includes('_a_') || filename.includes('_A_')) {
+                            itemValueLower = 'a';
+                        }
+                        // Debug logging removed
+                    }
+
+                    // If we still don't have a valid burst type, try to extract it from the data-name attribute
+                    if (!['b1', 'b2', 'b3', 'a'].includes(itemValueLower)) {
+                        // Update the data-type attribute with the correct burst type
+                        item.setAttribute('data-type', itemValueLower);
+                        // Debug logging removed
+                    }
+                }
+
                 // Check if any filter value is included in the item value
                 const typeMatch = filterValues.some(filterValue => {
-                    return itemValueLower.includes(filterValue.toLowerCase());
+                    const filterValueLower = filterValue.toLowerCase();
+                    const exactMatch = itemValueLower === filterValueLower;
+                    const includesMatch = itemValueLower.includes(filterValueLower);
+                    const result = exactMatch || includesMatch;
+                    // Debug logging removed
+                    return result;
                 });
 
                 if (!typeMatch) {
+                    // Debug logging removed
                     shouldShow = false;
                     break;
                 }
@@ -494,9 +681,72 @@ function updateFilters() {
         console.log(`Toggle items filtered: ${toggleHiddenCount} items hidden, ${toggleVisibleCount} items shown`);
     }
 
-    // If script.js has its own updateFilters function, call it to ensure consistency
-    if (typeof window.updateFilters === 'function' && window.updateFilters !== updateFilters) {
-        console.log('Calling script.js updateFilters for consistency');
-        window.updateFilters();
+    // Add debug logging for filter discrepancies
+    if (localStorage.getItem('filterDebugMode') === 'true') {
+        console.log('Active filters:', filters);
+
+        // Log any items with potential position/weapon swaps
+        const allItems = [...galleryItems, ...toggleItems];
+        const suspiciousItems = allItems.filter(item => {
+            const position = item.getAttribute('data-position');
+            const weapon = item.getAttribute('data-weapon');
+            const weaponTypes = ['sg', 'smg', 'ar', 'snr', 'rl', 'mg'];
+            const positionTypes = ['atk', 'def', 'sp'];
+
+            // Check for weapon types in position attribute or position types in weapon attribute
+            return (weaponTypes.includes(position?.toLowerCase()) || positionTypes.includes(weapon?.toLowerCase()));
+        });
+
+        if (suspiciousItems.length > 0) {
+            console.warn('Found items with potential position/weapon swaps:');
+            suspiciousItems.forEach(item => {
+                const img = item.querySelector('img');
+                const filename = img?.src.split('/').pop() || 'unknown';
+                console.warn(`Item ${item.getAttribute('data-id')}: ${filename}`);
+                console.warn(`  Position: ${item.getAttribute('data-position')}, Weapon: ${item.getAttribute('data-weapon')}`);
+
+                // Try to extract correct values from filename
+                if (img && img.src) {
+                    const posMatch = filename.match(/_(atk|def|sp)_/i);
+                    const weapMatch = filename.match(/_(sg|smg|ar|snr|rl|mg)_/i);
+
+                    if (posMatch && posMatch[1]) {
+                        const correctPos = posMatch[1].toLowerCase();
+                        console.warn(`  Correct position from filename: ${correctPos}`);
+                        // Auto-fix the position attribute
+                        item.setAttribute('data-position', correctPos);
+                    }
+
+                    if (weapMatch && weapMatch[1]) {
+                        const correctWeap = weapMatch[1].toLowerCase();
+                        console.warn(`  Correct weapon from filename: ${correctWeap}`);
+                        // Auto-fix the weapon attribute
+                        item.setAttribute('data-weapon', correctWeap);
+                    }
+                }
+            });
+
+            // After fixing attributes, reapply filters
+            console.warn('Fixed attributes for items with position/weapon swaps. Reapplying filters...');
+            updateFilters();
+            return; // Exit early since we're calling updateFilters again
+        }
     }
+
+    // Removed circular reference to script.js updateFilters
+}
+
+// Function to toggle filter debug mode
+function toggleFilterDebugMode() {
+    const currentMode = localStorage.getItem('filterDebugMode') === 'true';
+    const newMode = !currentMode;
+    localStorage.setItem('filterDebugMode', newMode);
+    console.log(`Filter debug mode ${newMode ? 'enabled' : 'disabled'}`);
+
+    if (newMode) {
+        // Run updateFilters to check for issues
+        updateFilters();
+    }
+
+    return newMode;
 }

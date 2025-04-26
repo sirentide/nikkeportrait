@@ -271,6 +271,36 @@ button:disabled {
     touch-action: none; /* Prevent browser handling of touch events */
     z-index: 1; /* Ensure proper stacking */
     box-sizing: border-box; /* Include border in width/height */
+    cursor: grab; /* Show grab cursor for draggable items */
+}
+
+/* Sortable styles */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #444;
+    border: 2px dashed #666;
+}
+
+.sortable-chosen {
+    cursor: grabbing;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(66, 153, 225, 0.5);
+}
+
+.sortable-drag {
+    opacity: 0.8;
+    z-index: 100;
+}
+
+/* Only show grab cursor for slots with images */
+.image-slot.empty {
+    cursor: default;
+}
+
+/* When dragging, highlight all slots */
+.team-images.sortable-active .image-slot {
+    border: 2px dashed #4299e1;
+    transition: all 0.2s ease;
 }
 
 /* Add drag handle for mobile */
@@ -408,7 +438,7 @@ body.is-dragging .image-slot.empty::after {
     width: 120px !important; /* Reduced width */
     z-index: 999999 !important; /* Even higher z-index */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 10px rgba(66, 153, 225, 0.3) !important;
-    font-size: 1.5rem !important; /* Smaller font */
+    font-size: 0.75rem !important; /* Smaller font */
     border: none !important;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
     backdrop-filter: blur(12px) !important;
@@ -472,6 +502,87 @@ body.is-dragging .image-slot.empty::after {
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
+}
+
+.close-filter-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #4299e1;
+}
+
+/* Filter Grid */
+.filter-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+/* Filter Box */
+.filter-box {
+    margin-bottom: 6px;
+    background-color: rgba(40, 40, 50, 0.5);
+    padding: 6px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.filter-box h4 {
+    margin: 0 0 4px 0;
+    font-size: 10px;
+    color: #4299e1;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.checkbox-group.compact {
+    gap: 2px;
+}
+
+/* Checkbox Label */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label.compact {
+    font-size: 9px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.checkbox-label.compact input[type="checkbox"] {
+    width: 10px;
+    height: 10px;
+}
+
+.checkbox-label span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px;
+}
+
+.checkbox-label.compact span {
+    max-width: 70px;
 }
 
 .close-filter-btn:hover {
@@ -649,6 +760,8 @@ body.is-dragging .image-slot.empty::after {
     background-color: rgba(17, 17, 17, 0.8);
     margin-bottom: 15px;
     width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .toggle-header .toggle-title, .gallery-header .gallery-title {
@@ -662,6 +775,56 @@ body.is-dragging .image-slot.empty::after {
     display: flex;
     gap: 8px;
     margin-left: 10px;
+}
+
+/* Gallery Controls */
+.gallery-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.gallery-control-btn {
+    background-color: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gallery-control-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+
+.gallery-control-btn:active {
+    transform: translateY(1px);
+}
+
+/* Gallery Search */
+.gallery-search {
+    margin: 0 0 15px 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+.gallery-search .search-bar {
+    width: 100%;
+    max-width: 100%;
+}
+
+.gallery-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
 }
 
 /* Team Title Container */
@@ -1232,37 +1395,43 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    position: relative;
+    position: sticky;
+    top: 0;
+    background-color: #222;
+    z-index: 10;
+    padding-bottom: 10px;
 }
 
 .close-saved-sets-btn {
     background: none;
     border: none;
     color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
+    font-size: 16px;
     cursor: pointer;
     padding: 0;
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    max-width: 24px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    max-width: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: fixed;
+    top: 20px;
+    right: 20px;
     line-height: 1;
     text-align: center;
     overflow: hidden;
     flex-shrink: 0;
+    z-index: 10000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .close-saved-sets-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.2);
     color: #4299e1;
 }
 
@@ -1391,6 +1560,9 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     background-color: #bc3a8e;
 }
 
+
+
+
 .tab-button.import-data {
     background-color: #9c6e2a;
     color: white;
@@ -1409,6 +1581,16 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
 
 .tab-button.saved-sets:hover {
     background-color: #3a8ebc;
+}
+
+.tab-button.export-compare {
+    background-color: #9c6e2a;
+    color: white;
+    font-weight: bold;
+}
+
+.tab-button.export-compare:hover {
+    background-color: #bc8e4a;
 }
 
 /* Toggle Tabs Container */
@@ -1793,16 +1975,6 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
     background-color: #3a7db6;
 }
 
-.debug-btn {
-    background-color: rgba(255, 100, 100, 0.3);
-    border: 1px solid rgba(255, 100, 100, 0.4);
-    font-size: 12px;
-    margin-left: 5px;
-}
-
-.debug-btn:hover {
-    background-color: rgba(255, 100, 100, 0.5);
-}
 
 .burst-btn.active {
     background-color: #2a6496;
@@ -2006,6 +2178,18 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         padding: 0;
         border-radius: 16px; /* Make buttons circular */
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+        background-color: #333;
+        transition: all 0.2s ease;
+    }
+
+    .burst-btn:hover {
+        background-color: #444;
+    }
+
+    .burst-btn.active {
+        background-color: #2a6496;
+        color: white;
+        box-shadow: 0 2px 8px rgba(42, 100, 150, 0.5);
     }
 
     .filter-btn {
@@ -2736,3 +2920,4 @@ body.is-dragging .image-slot:not(.sortable-ghost):not(.being-dragged):hover {
         padding: 8px 10px;
     }
 }
+

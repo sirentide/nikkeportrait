@@ -1,12 +1,19 @@
 import os
+import shutil
 
 # Define the folder where the images are stored
 current_dir = os.path.dirname(__file__)  # Get the directory of the current script
-folder_path = os.path.join(current_dir, 'image')  # Path to the 'image' folder
+image_path = os.path.join(current_dir, 'image')  # Path to the 'image' folder in the current project
 
-# Check if the folder exists
-if not os.path.exists(folder_path):
-    print(f"Folder does not exist: {folder_path}")
+# Check if the image folder exists, create it if it doesn't
+if not os.path.exists(image_path):
+    os.makedirs(image_path)
+    print(f"Created image folder: {image_path}")
+
+# Define the path to the assets repository
+assets_image_id_path = "E:\\Coding\\public-host\\nikkesportrait-assets\\image-id"
+if not os.path.exists(assets_image_id_path):
+    print(f"Assets image-id folder does not exist: {assets_image_id_path}")
     exit()
 
 html_template = """
@@ -18,10 +25,13 @@ html_template = """
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nikkes Arena</title>
-    <link rel="icon" href="image/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/favicon.ico" type="image/x-icon">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <script src="github-assets.js"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
-        .gallery { display: flex; flex-wrap: wrap; gap: 0px; }
         label { margin-right: 10px; color: #fff; }
         #selectedContainer { margin-top: 20px; }
         h3, h4 { color: #fff; }
@@ -34,75 +44,14 @@ html_template = """
 </head>
 <body>
 
-<div class="page-container">
-    <div class="flex-container-1">
-        <div class="top-controls-wrapper">
-            <div class="controls-container">
-                <div class="sort-controls">
-                    <button id="sortToggle" onclick="toggleSortCriteria()">Sort by Name</button>
-                    <button id="orderToggle" onclick="toggleSortOrder()">Lowest</button>
-                </div>
-            </div>
-            <div class="filter-section">
-                <button class="collapse-btn" onclick="toggleFilter(this)">Filters ▼</button>
-                <div class="filter-content" style="display: none;"> <!-- Hidden by default -->
-                    <div class="filter-grid">
-                        <div class="filter-box">
-                            <h4>Burst:</h4>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label"><input type="checkbox" value="b1" onchange="updateFilters()"> B1</label>
-                                <label class="checkbox-label"><input type="checkbox" value="b2" onchange="updateFilters()"> B2</label>
-                                <label class="checkbox-label"><input type="checkbox" value="b3" onchange="updateFilters()"> B3</label>
-                                <label class="checkbox-label"><input type="checkbox" value="a" onchange="updateFilters()"> A</label>
-                            </div>
-                        </div>
-                        <div class="filter-box">
-                            <h4>Class:</h4>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label"><input type="checkbox" value="def" onchange="updateFilters()"> Defender</label>
-                                <label class="checkbox-label"><input type="checkbox" value="sp" onchange="updateFilters()"> Supporter</label>
-                                <label class="checkbox-label"><input type="checkbox" value="atk" onchange="updateFilters()"> Attacker</label>
-                            </div>
-                        </div>
-                        <div class="filter-box">
-                            <h4>Industry:</h4>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label"><input type="checkbox" value="elysion" onchange="updateFilters()"> Elysion</label>
-                                <label class="checkbox-label"><input type="checkbox" value="missilis" onchange="updateFilters()"> Missilis</label>
-                                <label class="checkbox-label"><input type="checkbox" value="tetra" onchange="updateFilters()"> Tetra</label>
-                                <label class="checkbox-label"><input type="checkbox" value="abnormal" onchange="updateFilters()"> Abnormal</label>
-                                <label class="checkbox-label"><input type="checkbox" value="pilgrim" onchange="updateFilters()"> Pilgrim</label>
-                            </div>
-                        </div>
-                        <div class="filter-box">
-                            <h4>Rarity:</h4>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label"><input type="checkbox" value="ssr" onchange="updateFilters()"> SSR</label>
-                                <label class="checkbox-label"><input type="checkbox" value="sr" onchange="updateFilters()"> SR</label>
-                                <label class="checkbox-label"><input type="checkbox" value="r" onchange="updateFilters()"> R</label>
-                            </div>
-                        </div>
-                        <div class="filter-box">
-                            <h4>Weapon Type:</h4>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label"><input type="checkbox" value="smg" onchange="updateFilters()"> SMG</label>
-                                <label class="checkbox-label"><input type="checkbox" value="ar" onchange="updateFilters()"> AR</label>
-                                <label class="checkbox-label"><input type="checkbox" value="snr" onchange="updateFilters()"> SNR</label>
-                                <label class="checkbox-label"><input type="checkbox" value="rl" onchange="updateFilters()"> RL</label>
-                                <label class="checkbox-label"><input type="checkbox" value="sg" onchange="updateFilters()"> SG</label>
-                                <label class="checkbox-label"><input type="checkbox" value="mg" onchange="updateFilters()"> MG</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Team Selection Container (Fixed) - Multiple team sets with tabs -->
+    <!-- Team Set 1 -->
+    <div class="fixed-team-container" id="teamSet1" data-team-set="1">
+        <div class="team-title-container">
+            <h2 class="team-title">Defender</h2>
+            <button class="edit-team-name-btn" onclick="editTeamName('1')">✏️</button>
         </div>
-    </div>
-
-    <!-- Team Selection Container (Fixed) -->
-    <div class="fixed-team-container">
-        <h2 class="team-title">Teams</h2>
-        <div id="selectedContainer">
+        <div id="selectedContainer1" class="selected-container">
             <div class="team-row" data-team="1">
                 <div class="team-label">T1</div>
                 <div class="team-score">0.0</div>
@@ -159,25 +108,138 @@ html_template = """
                 </div>
             </div>
         </div>
-    </div> <!-- End of fixed-team-container -->
+    </div>
+
+    <!-- Team Set 2 -->
+    <div class="fixed-team-container hidden" id="teamSet2" data-team-set="2">
+        <div class="team-title-container">
+            <h2 class="team-title">Attacker</h2>
+            <button class="edit-team-name-btn" onclick="editTeamName('2')">✏️</button>
+        </div>
+        <div id="selectedContainer2" class="selected-container">
+            <div class="team-row" data-team="1">
+                <div class="team-label">T1</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="2">
+                <div class="team-label">T2</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="3">
+                <div class="team-label">T3</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="4">
+                <div class="team-label">T4</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+            <div class="team-row" data-team="5">
+                <div class="team-label">T5</div>
+                <div class="team-score">0.0</div>
+                <div class="team-images">
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                    <div class="image-slot empty"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SET3 has been removed -->
 
     <!-- Filter section moved to top controls wrapper -->
 </div>
 
-<div class="search-wrapper">
-    <div class="search-bar">
-        <input type="text" id="searchInput" oninput="updateFilters()" placeholder="Type to search...">
-    </div>
-</div>
+
 
 <!-- Fixed bottom buttons -->
 <div class="bottom-buttons">
-    <button id="exportBtn" class="fixed-button left" onclick="exportSelectedContainerAsPNG()">Export</button>
     <button id="clearSelectionBtn" class="fixed-button right">Clear Selected Team</button>
 </div>
-    <!-- Gallery Container -->
+
+<!-- Tab System for My Nikkes -->
+<div class="toggle-tabs-container">
+    <div class="toggle-container" id="toggleImagesContainer">
+        <div class="toggle-header">
+            <h2 class="toggle-title">My Nikkes List</h2>
+            <div class="burst-filter-buttons">
+                <button class="burst-btn" data-value="b1">I</button>
+                <button class="burst-btn" data-value="b2">II</button>
+                <button class="burst-btn" data-value="b3">III</button>
+                <button class="burst-btn" data-value="a">A</button>
+            </div>
+        </div>
+        <div class="toggle-images" id="toggleImages"></div>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-navigation">
+    <div class="tab-group">
+        <button class="tab-button" data-tab="gallery">Nikkes</button>
+        <button class="tab-button active" data-tab="toggleImages">My Nikke lists</button>
+        <button class="tab-button import-toggle" id="importToggleBtn">Add lists</button>
+        <button class="tab-button clear-toggle" id="clearToggleBtn">Remove lists</button>
+        <button class="tab-button export-data" id="exportToggleDataBtn">Save lists</button>
+        <button class="tab-button reset-data" id="resetDataBtn" title="Reset all saved data (for troubleshooting)">Reset Site Data</button>
+    </div>
+    <div class="tab-group">
+        <button id="exportBtn" class="tab-button">Compare</button>
+        <button class="tab-button team-tab active" data-set="1">Defender</button>
+        <button class="tab-button team-tab" data-set="2">Attacker</button>
+        <button class="tab-button saved-sets" id="savedSetsBtn">Saved Sets</button>
+        <div class="search-wrapper">
+            <div class="search-bar">
+                <input type="text" id="myNikkesSearchInput" placeholder="Search all Nikkes...">
+            </div>
+        </div>
+        <div class="filter-wrapper">
+            <button id="filterBtn" class="burst-btn filter-btn" onclick="event.stopPropagation(); event.preventDefault(); setTimeout(function() { toggleFilterPanel(); }, 10);"><i class="filter-icon">⚙️</i></button>
+        </div>
+    </div>
+</div>
+
+<!-- Gallery Container -->
     <div class="gallery-container">
-        <h2 class="gallery-title">Nikkes</h2>
+        <div class="gallery-header">
+            <h2 class="gallery-title">Nikkes</h2>
+            <div class="burst-filter-buttons">
+                <button class="burst-btn" data-value="b1">I</button>
+                <button class="burst-btn" data-value="b2">II</button>
+                <button class="burst-btn" data-value="b3">III</button>
+                <button class="burst-btn" data-value="a">A</button>
+            </div>
+        </div>
         <!-- Gallery -->
         <div class="gallery">
         {gallery_items}
@@ -188,6 +250,11 @@ html_template = """
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="script.js"></script>
     <script src="export.js"></script>
+    <script src="teamsets.js"></script>
+    <script src="filter.js"></script>
+    <script src="storage.js"></script>
+    <script src="optimized-storage.js"></script>
+    <script src="lzstring.min.js"></script>
      <script>
         // Initialize Sortable.js on each team-images container with group option
         document.querySelectorAll('.team-images').forEach((teamContainer) => {
@@ -254,26 +321,54 @@ html_template = """
 </html>
 """
 
+# Copy images from assets repo to local image folder
+print("Copying images from assets repo to local image folder...")
+for filename in os.listdir(assets_image_id_path):
+    if filename.endswith(".webp") and not filename == "rename.bat":
+        src_path = os.path.join(assets_image_id_path, filename)
+        dst_path = os.path.join(image_path, filename)
+        shutil.copy2(src_path, dst_path)
+        print(f"Copied: {filename}")
+
 # Generate gallery items
 gallery_items = []
-for filename in os.listdir(folder_path):
-    if filename.endswith(".webp"):
-        print(f"Processing file: {filename}")
+for filename in os.listdir(assets_image_id_path):
+    if not filename.endswith(".webp") or filename == "rename.bat":
+        continue
 
-        parts = filename.replace('.webp', '').split('_')
-        if len(parts) < 7:  # Expecting 7 parts with the number included
-            print(f"Skipping file with unexpected format: {filename}")
-            continue
+    print(f"Processing file: {filename}")
+    name = filename[:-5]  # Remove ".webp"
+    parts = name.split('_')
 
-        number, faction, rarity, type_, position, weapon_type, characterName = parts
-        print(f"Extracted: Number: {number}, Faction: {faction}, Rarity: {rarity}, Type: {type_}, Position: {position}, Weapon: {weapon_type}, Character: {characterName}")
+    # Debugging log: see how parts are split
+    print(f"Parts after split: {parts}")
 
-        # Add gallery item
-        gallery_items.append(f"""
-        <div class="photo" data-number="{number}" data-name="{characterName}" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}">
-            <img src="image/{filename}" alt="{filename}" onclick="toggleImageSelection(this)">
-        </div>
-        """)
+    if len(parts) < 9:
+        print(f"Skipping file with unexpected format: {filename}")
+        continue
+
+    # Extract fixed fields
+    ID = parts[0]
+    number = parts[1]
+    element = parts[2]
+    faction = parts[3]
+    rarity = parts[4]
+    type_ = parts[5]
+    position = parts[6]
+    weapon_type = parts[7]
+
+    # Join the rest as character name
+    characterName = '_'.join(parts[8:])
+
+    # Debugging log: check what each field looks like
+    print(f"Extracted fields: ID={ID}, number={number}, element={element}, faction={faction}, rarity={rarity}, type_={type_}, position={position}, weapon_type={weapon_type}, characterName={characterName}")
+
+    gallery_items.append(f"""
+    <div class="photo" data-id="{ID}" data-number="{number}" data-name="{characterName}" data-element="{element}" data-type="{type_}" data-position="{position}" data-faction="{faction}" data-rarity="{rarity}" data-weapon="{weapon_type}">
+        <img crossorigin="anonymous" src="https://raw.githubusercontent.com/sirentide/public-host/refs/heads/master/image-id/{filename}" alt="{filename}">
+    </div>
+    """)
+
 
 # Insert gallery items into the HTML template
 html_template = html_template.replace("{gallery_items}", "\n".join(gallery_items))

@@ -87,10 +87,11 @@ const getPhotoAttributes = (photo) => {
     let faction = safeGetAttribute(photo, 'data-faction');
     let rarity = safeGetAttribute(photo, 'data-rarity');
     let name = safeGetAttribute(photo, 'data-name');
+    let element = safeGetAttribute(photo, 'data-element');
 
     if (debugMode) {
         console.log(`${logPrefix} Raw attributes:`, {
-            position, weapon, type, faction, rarity, name,
+            position, weapon, type, faction, rarity, name, element,
             originalPosition: safeGetAttribute(photo, 'data-original-position')
         });
     }
@@ -152,6 +153,23 @@ const getPhotoAttributes = (photo) => {
                                 if (part === 'atk' || part === 'def' || part === 'sp') {
                                     position = part;
                                     if (debugMode) console.log(`${logPrefix} Found position in filename part:`, position);
+                                    photo.setAttribute('data-original-position', position);
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Special handling for filenames with unusual format
+                        // Example: 120_76_pilgrim_ssr_B1_snr_sp_rapunzel_pure_grace.webp
+                        // In this case, position (sp) appears after weapon (snr)
+                        if ((!position || position === '' || /^\d+$/.test(position)) && parts.length > 6) {
+                            // Look for position keywords in all parts
+                            const positionKeywords = ['atk', 'def', 'sp'];
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i].toLowerCase();
+                                if (positionKeywords.includes(part)) {
+                                    position = part;
+                                    if (debugMode) console.log(`${logPrefix} Found position keyword in unusual position:`, position);
                                     photo.setAttribute('data-original-position', position);
                                     break;
                                 }
@@ -231,7 +249,8 @@ const getPhotoAttributes = (photo) => {
             faction: safeGetAttribute(photo, 'data-faction'),
             rarity: safeGetAttribute(photo, 'data-rarity'),
             weapon: correctedWeapon,
-            name: safeGetAttribute(photo, 'data-name')
+            name: safeGetAttribute(photo, 'data-name'),
+            element: safeGetAttribute(photo, 'data-element')
         });
     }
 
@@ -243,6 +262,7 @@ const getPhotoAttributes = (photo) => {
         rarity: safeGetAttribute(photo, 'data-rarity'),
         weapon: correctedWeapon,
         name: safeGetAttribute(photo, 'data-name'),
+        element: safeGetAttribute(photo, 'data-element'),
         isToggleItem: isToggleItem,
         originalPosition: safeGetAttribute(photo, 'data-original-position')
     };
@@ -254,17 +274,17 @@ const getPhotoAttributes = (photo) => {
         if (img && img.src) {
             const filename = img.src.split('/').pop();
 
-            // Check for type indicators in the filename
-            if (filename.includes('_b1_') || filename.includes('_I_')) {
+            // Check for type indicators in the filename (case-insensitive)
+            if (filename.toLowerCase().includes('_b1_') || filename.toLowerCase().includes('_i_')) {
                 attributes.type = 'b1';
                 photo.setAttribute('data-type', 'b1');
-            } else if (filename.includes('_b2_') || filename.includes('_II_')) {
+            } else if (filename.toLowerCase().includes('_b2_') || filename.toLowerCase().includes('_ii_')) {
                 attributes.type = 'b2';
                 photo.setAttribute('data-type', 'b2');
-            } else if (filename.includes('_b3_') || filename.includes('_III_')) {
+            } else if (filename.toLowerCase().includes('_b3_') || filename.toLowerCase().includes('_iii_')) {
                 attributes.type = 'b3';
                 photo.setAttribute('data-type', 'b3');
-            } else if (filename.includes('_a_') || filename.includes('_A_')) {
+            } else if (filename.toLowerCase().includes('_a_')) {
                 attributes.type = 'a';
                 photo.setAttribute('data-type', 'a');
             }
@@ -273,6 +293,11 @@ const getPhotoAttributes = (photo) => {
                 console.log(`Extracted type from filename: ${attributes.type} for ${filename}`);
             }
         }
+    }
+
+    // Also normalize type to lowercase for consistency
+    if (attributes.type) {
+        attributes.type = attributes.type.toLowerCase();
     }
 
     return attributes;
@@ -496,7 +521,7 @@ function clearStorageCache() {
 }
 
 // Debounced version of saveStorageData
-const debouncedSaveStorageData = debounce((data) => {
+window.debouncedSaveStorageData = debounce((data) => {
     saveStorageData(data);
 }, 300); // 300ms debounce time
 
@@ -552,3 +577,4 @@ function updateAllTeamTitles() {
     updateTeamTitle('1');
     updateTeamTitle('2');
 }
+
