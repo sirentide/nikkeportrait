@@ -3351,6 +3351,17 @@ function updateToggleImageSelectionState(setId) {
         img.style.position = '';
     });
 
+    // Also clear all selections in the gallery
+    const galleryItems = Array.from(document.querySelectorAll('.gallery .photo img'));
+    galleryItems.forEach(img => {
+        img.classList.remove('selected');
+        img.style.border = '';
+        img.style.outline = '';
+        img.style.boxShadow = '';
+        img.style.zIndex = '';
+        img.style.position = '';
+    });
+
     // If there are no images in the team set, don't apply any selection
     if (teamImageSources.length === 0) {
         // console.log('No images in team set, all selections cleared');
@@ -3385,6 +3396,23 @@ function updateToggleImageSelectionState(setId) {
 
         // Always update the selection state in localStorage
         updateToggleImageSelectionInLocalStorage(img.src, isInTeam);
+    });
+
+    // Update the selection state of each gallery image
+    galleryItems.forEach(img => {
+        // Check if this image is in the current team set
+        const isInTeam = teamImageSources.includes(img.src);
+
+        // Apply the appropriate visual state based on whether it's in the team
+        if (isInTeam) {
+            img.classList.add('selected');
+            img.style.border = '3px solid #00ff00';
+            img.style.outline = '1px solid #ffffff';
+            img.style.boxShadow = '0 0 8px #00ff00';
+            img.style.zIndex = '10';
+            img.style.position = 'relative';
+            updatedCount++;
+        }
     });
 
     // Save the updated toggle images data
