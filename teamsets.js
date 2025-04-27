@@ -3023,10 +3023,22 @@ function showSavedSetsPanel() {
     // Create the panel
     const panel = document.createElement('div');
     panel.className = 'saved-sets-panel';
+    panel.style.display = 'flex';
+    panel.style.flexDirection = 'column';
+    panel.style.maxHeight = '80vh';
+    panel.style.overflow = 'hidden'; // Hide overflow for the panel itself
+
+    // Create fixed header container
+    const fixedHeaderContainer = document.createElement('div');
+    fixedHeaderContainer.className = 'saved-sets-fixed-header';
+    fixedHeaderContainer.style.flex = '0 0 auto'; // Don't allow the header to grow or shrink
+    fixedHeaderContainer.style.borderBottom = '1px solid #333';
+    fixedHeaderContainer.style.boxShadow = '0 4px 6px -2px rgba(0, 0, 0, 0.3)';
 
     // Create header
     const header = document.createElement('div');
     header.className = 'saved-sets-header';
+    header.style.position = 'relative'; // Make it a positioning context for the close button
 
     // Add title
     const title = document.createElement('h2');
@@ -3043,9 +3055,25 @@ function showSavedSetsPanel() {
     closeBtn.addEventListener('click', function() {
         panel.remove();
     });
+
+    // Add the close button to the header
     header.appendChild(closeBtn);
 
-    panel.appendChild(header);
+    // Add the header to the fixed header container
+    fixedHeaderContainer.appendChild(header);
+
+    // Add the fixed header container to the panel
+    panel.appendChild(fixedHeaderContainer);
+
+    // Create a scrollable container for the content
+    const scrollableContent = document.createElement('div');
+    scrollableContent.className = 'saved-sets-scrollable-content';
+    scrollableContent.style.flex = '1 1 auto'; // Allow it to grow and shrink
+    scrollableContent.style.overflowY = 'auto'; // Make it scrollable
+    scrollableContent.style.paddingRight = '10px'; // Add some padding for the scrollbar
+
+    // Add the scrollable content container to the panel
+    panel.appendChild(scrollableContent);
 
     // Create save form
     const saveForm = document.createElement('div');
@@ -3101,7 +3129,7 @@ function showSavedSetsPanel() {
     });
     saveForm.appendChild(saveButton);
 
-    panel.appendChild(saveForm);
+    fixedHeaderContainer.appendChild(saveForm);
 
     // Create a container for import/export buttons
     const importExportContainer = document.createElement('div');
@@ -3180,7 +3208,7 @@ function showSavedSetsPanel() {
     });
     importExportContainer.appendChild(importButton);
 
-    panel.appendChild(importExportContainer);
+    fixedHeaderContainer.appendChild(importExportContainer);
 
     // Create search form
     const searchForm = document.createElement('div');
@@ -3204,7 +3232,7 @@ function showSavedSetsPanel() {
     });
     searchForm.appendChild(searchInput);
 
-    panel.appendChild(searchForm);
+    fixedHeaderContainer.appendChild(searchForm);
 
     // Create list of saved sets
     const setsList = document.createElement('div');
@@ -3213,12 +3241,12 @@ function showSavedSetsPanel() {
     // Initialize with all sets (empty search query)
     filterSavedSets('', setsList, savedSets);
 
-    panel.appendChild(setsList);
+    scrollableContent.appendChild(setsList);
 
     // Add some bottom padding
     const bottomPadding = document.createElement('div');
     bottomPadding.style.height = '20px';
-    panel.appendChild(bottomPadding);
+    scrollableContent.appendChild(bottomPadding);
 
     // Add the panel to the body
     document.body.appendChild(panel);
